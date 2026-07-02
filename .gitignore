@@ -46,6 +46,11 @@ $RECYCLE.BIN/
 Vagrantfile
 
 #-------------------------
+# DB backups (contain resident PII - never commit)
+#-------------------------
+/backups/
+
+#-------------------------
 # Temporary Files
 #-------------------------
 writable/cache/*
