@@ -21,6 +21,7 @@ service('auth')->routes($routes);
 $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) {
     $routes->get('/', 'Admin\Dashboard::index');
     $routes->get('dashboard', 'Admin\Dashboard::index');
+    $routes->get('switch-tenant/(:num)', 'Admin\Dashboard::switchTenant/$1');
 
     // Warga
     $routes->get('warga', 'Admin\Warga::index');

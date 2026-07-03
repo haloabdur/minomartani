@@ -44,4 +44,20 @@ class Dashboard extends BaseController
         $this->global['pageTitle'] = 'Error 404';
         return $this->loadViews('admin/error_404', $this->global);
     }
+
+    public function switchTenant(int $idRt)
+    {
+        if (! auth()->user()->inGroup('superadmin')) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        // Verify if the RT exists and is active
+        $rt = model(\App\Models\RtModel::class)->find($idRt);
+        if ($rt !== null && (int)$rt->is_aktif === 1) {
+            session()->set('tenant_rt_id', $idRt);
+            setFlashData('success', 'Berhasil beralih ke ' . $rt->nama);
+        }
+
+        return redirect()->to('admin/dashboard');
+    }
 }

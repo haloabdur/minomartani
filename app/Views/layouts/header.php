@@ -65,6 +65,18 @@
 
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
+                <?php if (auth()->user() && auth()->user()->inGroup('superadmin')): ?>
+                    <?php $activeRts = model(\App\Models\RtModel::class)->aktif(); ?>
+                    <li class="nav-item">
+                        <select class="form-control mr-3 border-0 bg-primary text-white" onchange="window.location.href='<?= base_url('admin/switch-tenant') ?>/' + this.value" style="font-weight: bold; margin-top: 2px;">
+                            <?php foreach ($activeRts as $rt): ?>
+                                <option value="<?= $rt->id_rt ?>" <?= (int)current_rt_id() === (int)$rt->id_rt ? 'selected' : '' ?>>
+                                    <?= esc($rt->nama) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </li>
+                <?php endif; ?>
                 <!-- Notifications Dropdown Menu -->
                 <li class="nav-item dropdown">
                     <a class="nav-link" data-toggle="dropdown" href="#">
