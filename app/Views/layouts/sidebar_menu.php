@@ -11,6 +11,7 @@
             </a>
         </li>
 
+        <?php if (!auth()->user()->inGroup('rw')): ?>
         <li class="nav-item treeview-menu">
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-money-check-alt"></i>
@@ -76,7 +77,31 @@
                 </p>
             </a>
         </li>
+        <?php endif ?>
 
+        <?php if (auth()->user() && auth()->user()->inGroup('superadmin')): ?>
+        <li class="nav-item">
+            <a href="<?= base_url('admin/tenants') ?>" class="nav-link">
+                <i class="nav-icon fas fa-sitemap"></i>
+                <p>
+                    Kelola RT/RW
+                </p>
+            </a>
+        </li>
+        <?php endif ?>
+
+        <?php if (auth()->user() && (auth()->user()->inGroup('rw') || auth()->user()->inGroup('superadmin'))): ?>
+        <li class="nav-item">
+            <a href="<?= base_url('admin/rekap') ?>" class="nav-link">
+                <i class="nav-icon fas fa-chart-bar"></i>
+                <p>
+                    Rekap RW
+                </p>
+            </a>
+        </li>
+        <?php endif ?>
+
+        <?php if (!auth()->user()->inGroup('rw')): ?>
         <li class="nav-item">
             <a href="<?= base_url('admin/users') ?>" class="nav-link">
                 <i class="nav-icon fas fa-user"></i>
@@ -85,6 +110,7 @@
                 </p>
             </a>
         </li>
+        <?php endif ?>
 
     </ul>
 </nav>
