@@ -15,7 +15,11 @@ class Users extends BaseController
 
         // Using Shield's user provider
         $users = auth()->getProvider();
-        $data['users'] = $users->findAll();
+
+        // Display users except superadmin
+        $data['users'] = $users
+            ->where("id NOT IN (SELECT user_id FROM auth_groups_users WHERE `group` = 'superadmin')")
+            ->findAll();
 
         return $this->loadViews('admin/users', $this->global, $data);
     }
@@ -55,19 +59,28 @@ class Users extends BaseController
         }
 
         // Determine tenant binding and Shield group
-        $idRt = $this->request->getPost('id_rt');
-        $idRw = $this->request->getPost('id_rw');
+        $isSuperadmin = auth()->user()->inGroup('superadmin');
 
-        $targetGroup = 'superadmin';
-        $rtVal = null;
-        $rwVal = null;
+        if ($isSuperadmin) {
+            $idRt = $this->request->getPost('id_rt');
+            $idRw = $this->request->getPost('id_rw');
 
-        if (!empty($idRt)) {
+            $targetGroup = 'superadmin';
+            $rtVal = null;
+            $rwVal = null;
+
+            if (!empty($idRt)) {
+                $targetGroup = 'admin';
+                $rtVal = (int) $idRt;
+            } elseif (!empty($idRw)) {
+                $targetGroup = 'rw';
+                $rwVal = (int) $idRw;
+            }
+        } else {
+            // RT admins can only create fellow admins for their own RT.
             $targetGroup = 'admin';
-            $rtVal = (int) $idRt;
-        } elseif (!empty($idRw)) {
-            $targetGroup = 'rw';
-            $rwVal = (int) $idRw;
+            $rtVal = current_rt_id();
+            $rwVal = null;
         }
 
         $user = new User([
@@ -132,30 +145,34 @@ class Users extends BaseController
         $users->save($user);
 
         // Determine tenant binding and Shield group
-        $idRt = $this->request->getPost('id_rt');
-        $idRw = $this->request->getPost('id_rw');
+        $isSuperadmin = auth()->user()->inGroup('superadmin');
 
-        $targetGroup = 'superadmin';
-        $rtVal = null;
-        $rwVal = null;
+        if ($isSuperadmin) {
+            $idRt = $this->request->getPost('id_rt');
+            $idRw = $this->request->getPost('id_rw');
 
-        if (!empty($idRt)) {
-            $targetGroup = 'admin';
-            $rtVal = (int) $idRt;
-        } elseif (!empty($idRw)) {
-            $targetGroup = 'rw';
-            $rwVal = (int) $idRw;
+            $targetGroup = 'superadmin';
+            $rtVal = null;
+            $rwVal = null;
+
+            if (!empty($idRt)) {
+                $targetGroup = 'admin';
+                $rtVal = (int) $idRt;
+            } elseif (!empty($idRw)) {
+                $targetGroup = 'rw';
+                $rwVal = (int) $idRw;
+            }
+
+            // Update tenant columns directly
+            db_connect()->table('users')
+                ->where('id', $id)
+                ->update([
+                    'id_rt' => $rtVal,
+                    'id_rw' => $rwVal,
+                ]);
+
+            $user->syncGroups($targetGroup);
         }
-
-        // Update tenant columns directly
-        db_connect()->table('users')
-            ->where('id', $id)
-            ->update([
-                'id_rt' => $rtVal,
-                'id_rw' => $rwVal,
-            ]);
-
-        $user->syncGroups($targetGroup);
 
         setFlashData('success', 'Data user berhasil diubah!');
         return redirect()->to('admin/users');

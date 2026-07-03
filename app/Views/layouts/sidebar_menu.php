@@ -79,6 +79,7 @@
         </li>
         <?php endif ?>
 
+        <li class="nav-header">DATA RT/RW</li>
         <?php if (auth()->user() && auth()->user()->inGroup('superadmin')): ?>
         <li class="nav-item">
             <a href="<?= base_url('admin/tenants') ?>" class="nav-link">
@@ -101,7 +102,7 @@
         </li>
         <?php endif ?>
 
-        <?php if (!auth()->user()->inGroup('rw')): ?>
+        <?php if (auth()->user() && auth()->user()->inGroup('superadmin')): ?>
         <li class="nav-item">
             <a href="<?= base_url('admin/users') ?>" class="nav-link">
                 <i class="nav-icon fas fa-user"></i>

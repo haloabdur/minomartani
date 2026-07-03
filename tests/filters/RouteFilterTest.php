@@ -40,14 +40,14 @@ final class RouteFilterTest extends CIUnitTestCase
         $this->assertFilter('admin/warga/store', 'before', 'csrf');
     }
 
-    public function testAdminUsersRouteRequiresAdminGroup(): void
+    public function testAdminUsersRouteRequiresSuperadminGroup(): void
     {
-        $this->assertFilter('admin/users', 'before', 'group:admin');
+        $this->assertFilter('admin/users', 'before', 'group:superadmin');
 
         $this->collection->setHTTPVerb('get');
         // Dynamic routes are keyed by their registered pattern, not a
         // resolved example URI.
-        $this->assertFilter('admin/users/delete/([0-9]+)', 'before', 'group:admin');
+        $this->assertFilter('admin/users/delete/([0-9]+)', 'before', 'group:superadmin');
     }
 
     public function testLoginRouteRequiresTurnstileVerification(): void
@@ -85,5 +85,11 @@ final class RouteFilterTest extends CIUnitTestCase
 
         $this->collection->setHTTPVerb('post');
         $this->assertFilter('admin/warga/store', 'before', 'tenant');
+    }
+
+    public function testRekapRoutesAllowRwAndSuperadminOnly(): void
+    {
+        $this->assertFilter('admin/rekap', 'before', 'group:rw,superadmin');
+        $this->assertFilter('admin/rekap/warga/([0-9]+)', 'before', 'group:rw,superadmin');
     }
 }

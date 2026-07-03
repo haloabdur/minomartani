@@ -72,8 +72,8 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
     $routes->get('surat/setuju/(:num)', 'Admin\Surat::setuju/$1');
 
     // Users - highest blast-radius admin surface, restricted to the
-    // 'admin' Shield group (not just "logged in")
-    $routes->group('users', ['filter' => 'group:admin'], function ($routes) {
+    // 'superadmin' Shield group
+    $routes->group('users', ['filter' => 'group:superadmin'], function ($routes) {
         $routes->get('/', 'Admin\Users::index');
         $routes->get('add', 'Admin\Users::add');
         $routes->post('store', 'Admin\Users::store');
@@ -93,7 +93,12 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->get('add-rw', 'Admin\Tenants::addRw');
         $routes->post('store-rw', 'Admin\Tenants::storeRw');
         $routes->get('edit-rw/(:num)', 'Admin\Tenants::editRw/$1');
-        $routes->post('update-rw/(:num)', 'Admin\Tenants::updateRw/$1');
+    });
+
+    // RW rekap - read-only, rw group (and superadmin)
+    $routes->group('rekap', ['filter' => 'group:rw,superadmin'], function ($routes) {
+        $routes->get('/', 'Admin\Rekap::index');
+        $routes->get('warga/(:num)', 'Admin\Rekap::warga/$1');
     });
 });
 

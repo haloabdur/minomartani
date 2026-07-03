@@ -112,4 +112,31 @@ final class TenantIsolationTest extends CIUnitTestCase
         tenant_set_rt(1);
         $this->assertNull((new WargaModel())->nik('2222222222222222'), 'NIK lookup crossed tenants');
     }
+
+    public function testRekapOnlyCountsRtsOfTheGivenRw(): void
+    {
+        $db = Database::connect();
+
+        // A second RW with its own RT and one warga.
+        if ($db->table('rw')->where('slug', 'rw-lain')->countAllResults() === 0) {
+            $db->table('rw')->insert(['nama' => 'RW Lain', 'slug' => 'rw-lain']);
+        }
+        $idRwLain = (int) $db->table('rw')->where('slug', 'rw-lain')->get()->getRow()->id_rw;
+
+        if ($db->table('rt')->where('slug', 'rt99-test')->countAllResults() === 0) {
+            $db->table('rt')->insert(['id_rw' => $idRwLain, 'nama' => 'RT 99 Test', 'slug' => 'rt99-test']);
+        }
+
+        $idRwUtama = (int) $db->table('rw')->where('slug', 'rw-minomartani')->get()->getRow()->id_rw;
+
+        $rekap = (new \App\Models\RtModel())->rekap($idRwUtama);
+        $slugs = array_column($rekap, 'slug');
+
+        $this->assertContains('rt29', $slugs);
+        $this->assertContains('rt30-test', $slugs);
+        $this->assertNotContains('rt99-test', $slugs, 'rekap leaked an RT from another RW');
+
+        $rekapAll = (new \App\Models\RtModel())->rekap(null);
+        $this->assertContains('rt99-test', array_column($rekapAll, 'slug'), 'superadmin rekap must include all RTs');
+    }
 }
