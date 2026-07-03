@@ -81,6 +81,20 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->post('update/(:num)', 'Admin\Users::update/$1');
         $routes->get('delete/(:num)', 'Admin\Users::delete/$1');
     });
+
+    // Tenant Management (Superadmin only)
+    $routes->group('tenants', ['filter' => 'group:superadmin'], function ($routes) {
+        $routes->get('/', 'Admin\Tenants::index');
+        $routes->get('add-rt', 'Admin\Tenants::addRt');
+        $routes->post('store-rt', 'Admin\Tenants::storeRt');
+        $routes->get('edit-rt/(:num)', 'Admin\Tenants::editRt/$1');
+        $routes->post('update-rt/(:num)', 'Admin\Tenants::updateRt/$1');
+        
+        $routes->get('add-rw', 'Admin\Tenants::addRw');
+        $routes->post('store-rw', 'Admin\Tenants::storeRw');
+        $routes->get('edit-rw/(:num)', 'Admin\Tenants::editRw/$1');
+        $routes->post('update-rw/(:num)', 'Admin\Tenants::updateRw/$1');
+    });
 });
 
 // Slug-prefixed front-end routes (optional tenant routing)
