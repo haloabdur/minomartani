@@ -39,7 +39,8 @@ class Berita extends BaseController
             'deskripsi'  => $this->request->getPost('deskripsi'),
             'lampiran'   => $this->request->getPost('lampiran'),
             'kategori'   => $this->request->getPost('kategori'),
-            'created_by' => auth()->user() ? auth()->user()->id : 0
+            'created_by' => auth()->user() ? auth()->user()->id : 0,
+            'id_rt'      => current_rt_id(),
         ];
 
         $foto = $this->request->getFile('foto');

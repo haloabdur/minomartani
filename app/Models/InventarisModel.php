@@ -8,17 +8,20 @@ class InventarisModel extends Model
 {
     protected $table         = 'inventaris';
     protected $primaryKey    = 'id';
-    protected $allowedFields = ['nama_barang', 'stok', 'foto', 'created_at', 'updated_at'];
+    protected $allowedFields = ['nama_barang', 'stok', 'foto', 'created_at', 'updated_at', 'id_rt'];
 
     public function all()
     {
-        return $this->db->table($this->table)->get()->getResult();
+        return $this->db->table($this->table)
+            ->where('id_rt', current_rt_id())
+            ->get()->getResult();
     }
 
     public function detail($id)
     {
         return $this->db->table($this->table)
             ->where('id', $id)
+            ->where('id_rt', current_rt_id())
             ->get()->getRow();
     }
 
@@ -26,11 +29,14 @@ class InventarisModel extends Model
     {
         return $this->db->table($this->table)
             ->where('id', $id)
+            ->where('id_rt', current_rt_id())
             ->delete();
     }
 
     public function count()
     {
-        return $this->db->table($this->table)->get()->getNumRows();
+        return $this->db->table($this->table)
+            ->where('id_rt', current_rt_id())
+            ->get()->getNumRows();
     }
 }

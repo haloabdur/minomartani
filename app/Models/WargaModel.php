@@ -31,7 +31,8 @@ class WargaModel extends Model
         'status_warga',
         'id_status_penduduk',
         'is_hidup',
-        'sumber_air'
+        'sumber_air',
+        'id_rt'
     ];
 
     public function all()
@@ -41,6 +42,7 @@ class WargaModel extends Model
             ->join('alamat', 'alamat.id_alamat = warga.id_alamat')
             ->join('status_keluarga', 'status_keluarga.id_status_keluarga = warga.id_status_keluarga')
             ->join('status_penduduk', 'status_penduduk.id_status_penduduk = warga.id_status_penduduk')
+            ->where('warga.id_rt', current_rt_id())
             ->orderBy('alamat.id_alamat, warga.no_kk, warga.id_status_keluarga')
             ->get()->getResult();
     }
@@ -52,6 +54,7 @@ class WargaModel extends Model
             ->join('status_keluarga', 'status_keluarga.id_status_keluarga = warga.id_status_keluarga')
             ->join('alamat', 'alamat.id_alamat = warga.id_alamat')
             ->where('id_warga', $id)
+            ->where('warga.id_rt', current_rt_id())
             ->get()->getRow();
     }
 
@@ -60,6 +63,7 @@ class WargaModel extends Model
         return $this->db->table($this->table)
             ->select('DISTINCT(warga.`no_kk`)')
             ->where('status_warga', 1)
+            ->where('warga.id_rt', current_rt_id())
             ->get()->getNumRows();
     }
 
@@ -68,6 +72,7 @@ class WargaModel extends Model
         return $this->db->table($this->table)
             ->where('jenis_kelamin', 'L')
             ->where('status_warga', 1)
+            ->where('warga.id_rt', current_rt_id())
             ->get()->getNumRows();
     }
 
@@ -76,6 +81,7 @@ class WargaModel extends Model
         return $this->db->table($this->table)
             ->where('jenis_kelamin', 'P')
             ->where('status_warga', 1)
+            ->where('warga.id_rt', current_rt_id())
             ->get()->getNumRows();
     }
 
@@ -84,6 +90,7 @@ class WargaModel extends Model
         return $this->db->table($this->table)
             ->join('alamat', 'alamat.id_alamat = warga.id_alamat')
             ->where('nik', $nik)
+            ->where('warga.id_rt', current_rt_id())
             ->get()->getRow();
     }
 
@@ -106,11 +113,14 @@ class WargaModel extends Model
             ->join('status_penduduk', 'status_penduduk.id_status_penduduk = warga.id_status_penduduk')
             ->orderBy('alamat.id_alamat, warga.no_kk, warga.id_status_keluarga')
             ->where('status_warga', 1)
+            ->where('warga.id_rt', current_rt_id())
             ->get()->getResult();
     }
 
     public function count()
     {
-        return $this->db->table($this->table)->get()->getNumRows();
+        return $this->db->table($this->table)
+            ->where('warga.id_rt', current_rt_id())
+            ->get()->getNumRows();
     }
 }

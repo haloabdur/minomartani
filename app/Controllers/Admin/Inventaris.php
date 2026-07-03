@@ -46,7 +46,8 @@ class Inventaris extends BaseController
         $data = [
             'nama_barang' => $this->request->getPost('nama_barang'),
             'stok'        => $this->request->getPost('stok'),
-            'created_at'  => date('Y-m-d H:i:s')
+            'created_at'  => date('Y-m-d H:i:s'),
+            'id_rt'       => current_rt_id(),
         ];
 
         $foto = $this->request->getFile('foto');

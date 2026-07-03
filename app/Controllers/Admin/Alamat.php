@@ -51,7 +51,8 @@ class Alamat extends BaseController
             'jalan'      => $this->request->getPost('jalan'),
             'nomor'      => $this->request->getPost('nomor'),
             'kode_rumah' => $kode,
-            'qrcode'     => $kode
+            'qrcode'     => $kode,
+            'id_rt'      => current_rt_id(),
         ];
 
         $this->alamatModel->insert($data);

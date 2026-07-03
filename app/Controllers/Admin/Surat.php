@@ -56,7 +56,8 @@ class Surat extends BaseController
 
         $data = [
             'no_surat'  => $this->request->getPost('no_surat'),
-            'id_alamat' => $this->request->getPost('id_alamat')
+            'id_alamat' => $this->request->getPost('id_alamat'),
+            'id_rt'     => current_rt_id(),
         ];
 
         $this->suratModel->insert($data);

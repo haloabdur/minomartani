@@ -76,7 +76,8 @@ class Warga extends BaseController
             'email'             => $this->request->getPost('email'),
             'status_warga'      => $this->request->getPost('status_warga'),
             'id_status_penduduk' => $this->request->getPost('id_status_penduduk'),
-            'sumber_air'        => $this->request->getPost('sumber_air')
+            'sumber_air'        => $this->request->getPost('sumber_air'),
+            'id_rt'             => current_rt_id(),
         ];
 
         $this->wargaModel->insert($data);

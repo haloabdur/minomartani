@@ -8,11 +8,12 @@ class BeritaModel extends Model
 {
     protected $table         = 'berita';
     protected $primaryKey    = 'id_berita';
-    protected $allowedFields = ['judul', 'slug', 'deskripsi', 'lampiran', 'foto', 'kategori', 'is_status', 'created_by', 'timestamp'];
+    protected $allowedFields = ['judul', 'slug', 'deskripsi', 'lampiran', 'foto', 'kategori', 'is_status', 'created_by', 'timestamp', 'id_rt'];
 
     public function all()
     {
         return $this->db->table($this->table)
+            ->where('berita.id_rt', current_rt_id())
             ->orderBy('timestamp', 'desc')
             ->get()->getResult();
     }
@@ -21,6 +22,7 @@ class BeritaModel extends Model
     {
         return $this->db->table($this->table)
             ->where('id_berita', $id)
+            ->where('berita.id_rt', current_rt_id())
             ->get()->getRow();
     }
 
@@ -28,11 +30,14 @@ class BeritaModel extends Model
     {
         return $this->db->table($this->table)
             ->where('slug', $slug)
+            ->where('berita.id_rt', current_rt_id())
             ->get()->getRow();
     }
 
     public function count()
     {
-        return $this->db->table($this->table)->get()->getNumRows();
+        return $this->db->table($this->table)
+            ->where('berita.id_rt', current_rt_id())
+            ->get()->getNumRows();
     }
 }
