@@ -39,6 +39,32 @@
 						</div>
 					</div>
 
+					<div class="row mt-3">
+						<div class="col">
+							<div class="form-group">
+								<label>RT (Untuk Admin RT)</label>
+								<select name="id_rt" class="form-control">
+									<option value="">-- Bukan Admin RT --</option>
+									<?php foreach ($rts as $rt): ?>
+										<option value="<?= $rt->id_rt ?>" <?= (int)$user->id_rt === (int)$rt->id_rt ? 'selected' : '' ?>><?= esc($rt->nama) ?></option>
+									<?php endforeach; ?>
+								</select>
+							</div>
+						</div>
+
+						<div class="col">
+							<div class="form-group">
+								<label>RW (Untuk Pengurus RW)</label>
+								<select name="id_rw" class="form-control">
+									<option value="">-- Bukan Pengurus RW --</option>
+									<?php foreach ($rws as $rw): ?>
+										<option value="<?= $rw->id_rw ?>" <?= (int)$user->id_rw === (int)$rw->id_rw ? 'selected' : '' ?>><?= esc($rw->nama) ?></option>
+									<?php endforeach; ?>
+								</select>
+							</div>
+						</div>
+					</div>
+
 				</div>
 				<!-- /.card-body -->
 

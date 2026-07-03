@@ -3,6 +3,9 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Models\RtModel;
+use App\Models\RwModel;
+use CodeIgniter\Shield\Entities\User;
 
 class Users extends BaseController
 {
@@ -20,7 +23,9 @@ class Users extends BaseController
     public function add()
     {
         $this->global['pageTitle'] = 'Tambah User';
-        return $this->loadViews('admin/tambah_user', $this->global);
+        $data['rts'] = model(RtModel::class)->aktif();
+        $data['rws'] = model(RwModel::class)->aktif();
+        return $this->loadViews('admin/tambah_user', $this->global, $data);
     }
 
     public function store()
@@ -49,17 +54,42 @@ class Users extends BaseController
             return redirect()->to(back());
         }
 
-        $user = new \CodeIgniter\Shield\Entities\User([
+        // Determine tenant binding and Shield group
+        $idRt = $this->request->getPost('id_rt');
+        $idRw = $this->request->getPost('id_rw');
+
+        $targetGroup = 'superadmin';
+        $rtVal = null;
+        $rwVal = null;
+
+        if (!empty($idRt)) {
+            $targetGroup = 'admin';
+            $rtVal = (int) $idRt;
+        } elseif (!empty($idRw)) {
+            $targetGroup = 'rw';
+            $rwVal = (int) $idRw;
+        }
+
+        $user = new User([
             'username' => $username,
             'email'    => $email,
             'password' => $password,
         ]);
 
         $users->save($user);
+        $userId = $users->getInsertID();
+
+        // Update tenant columns directly
+        db_connect()->table('users')
+            ->where('id', $userId)
+            ->update([
+                'id_rt' => $rtVal,
+                'id_rw' => $rwVal,
+            ]);
 
         // Get the inserted user to add to group
-        $user = $users->findById($users->getInsertID());
-        $user->addGroup('user');
+        $user = $users->findById($userId);
+        $user->syncGroups($targetGroup);
 
         setFlashData('success', 'Data user berhasil ditambahkan!');
         return redirect()->to('admin/users');
@@ -71,6 +101,8 @@ class Users extends BaseController
 
         $users = auth()->getProvider();
         $data['user'] = $users->findById($id);
+        $data['rts'] = model(RtModel::class)->aktif();
+        $data['rws'] = model(RwModel::class)->aktif();
 
         return $this->loadViews('admin/ubah_user', $this->global, $data);
     }
@@ -98,6 +130,32 @@ class Users extends BaseController
         }
 
         $users->save($user);
+
+        // Determine tenant binding and Shield group
+        $idRt = $this->request->getPost('id_rt');
+        $idRw = $this->request->getPost('id_rw');
+
+        $targetGroup = 'superadmin';
+        $rtVal = null;
+        $rwVal = null;
+
+        if (!empty($idRt)) {
+            $targetGroup = 'admin';
+            $rtVal = (int) $idRt;
+        } elseif (!empty($idRw)) {
+            $targetGroup = 'rw';
+            $rwVal = (int) $idRw;
+        }
+
+        // Update tenant columns directly
+        db_connect()->table('users')
+            ->where('id', $id)
+            ->update([
+                'id_rt' => $rtVal,
+                'id_rw' => $rwVal,
+            ]);
+
+        $user->syncGroups($targetGroup);
 
         setFlashData('success', 'Data user berhasil diubah!');
         return redirect()->to('admin/users');
