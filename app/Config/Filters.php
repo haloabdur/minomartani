@@ -14,6 +14,7 @@ use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
 use CodeIgniter\Shield\Filters\GroupFilter;
 use App\Filters\TurnstileFilter;
+use App\Filters\TenantFilter;
 
 class Filters extends BaseFilters
 {
@@ -38,6 +39,7 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
         'group'         => GroupFilter::class,
         'turnstile'     => TurnstileFilter::class,
+        'tenant'        => TenantFilter::class,
     ];
 
     /**

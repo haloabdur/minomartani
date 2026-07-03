@@ -77,4 +77,13 @@ final class RouteFilterTest extends CIUnitTestCase
             $this->assertStringNotContainsString('sync', $uri, "unexpected sync route still registered: {$uri}");
         }
     }
+
+    public function testAdminRoutesRequireTenantContext(): void
+    {
+        $this->assertFilter('admin/warga', 'before', 'tenant');
+        $this->assertFilter('admin/dashboard', 'before', 'tenant');
+
+        $this->collection->setHTTPVerb('post');
+        $this->assertFilter('admin/warga/store', 'before', 'tenant');
+    }
 }

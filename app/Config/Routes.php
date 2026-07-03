@@ -17,8 +17,8 @@ $routes->get('layanan/sukses', 'Layanan::sukses');
 // Shield auth routes (login, register, logout)
 service('auth')->routes($routes);
 
-// Admin routes (protected by Shield session filter)
-$routes->group('admin', ['filter' => 'session'], function ($routes) {
+// Admin routes (protected by Shield session filter and tenant filter)
+$routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) {
     $routes->get('/', 'Admin\Dashboard::index');
     $routes->get('dashboard', 'Admin\Dashboard::index');
 
