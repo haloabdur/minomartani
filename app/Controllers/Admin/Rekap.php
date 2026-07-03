@@ -24,7 +24,11 @@ class Rekap extends BaseController
         $this->global['pageTitle'] = 'Rekap RW';
 
         // RW accounts see their own RTs; superadmin sees all.
-        $data['rekap'] = $this->rtModel->rekap(current_rw_id());
+        $rekap = $this->rtModel->rekap(current_rw_id());
+        $data['rekap'] = $rekap;
+
+        $idRts = array_map(static fn ($r) => (int) $r->id_rt, $rekap);
+        $data['wargas'] = (new WargaModel())->byRtIds($idRts);
 
         return $this->loadViews('admin/rekap', $this->global, $data);
     }

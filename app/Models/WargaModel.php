@@ -47,6 +47,26 @@ class WargaModel extends Model
             ->get()->getResult();
     }
 
+    /**
+     * Warga rows across a set of RTs, for cross-tenant recap aggregation
+     * (RW recap screen). Callers must already have authorized access to
+     * every id in $idRts - this bypasses the single-tenant id_rt filter.
+     *
+     * @param int[] $idRts
+     */
+    public function byRtIds(array $idRts): array
+    {
+        if (empty($idRts)) {
+            return [];
+        }
+
+        return $this->db->table($this->table)
+            ->select('warga.id_rt, jenis_kelamin, tanggal_lahir, pendidikan')
+            ->where('status_warga', 1)
+            ->whereIn('warga.id_rt', $idRts)
+            ->get()->getResult();
+    }
+
     public function detail($id)
     {
         return $this->db->table($this->table)

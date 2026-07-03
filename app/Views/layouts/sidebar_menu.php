@@ -2,6 +2,7 @@
 <nav class="mt-2">
     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
+        <?php if (!auth()->user()->inGroup('rw')): ?>
         <li class="nav-item">
             <a href="<?= base_url('admin/dashboard') ?>" class="nav-link">
                 <i class="nav-icon fas fa-th"></i>
@@ -11,7 +12,6 @@
             </a>
         </li>
 
-        <?php if (!auth()->user()->inGroup('rw')): ?>
         <li class="nav-item treeview-menu">
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-money-check-alt"></i>
