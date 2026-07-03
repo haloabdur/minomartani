@@ -50,6 +50,12 @@ final class RouteFilterTest extends CIUnitTestCase
         $this->assertFilter('admin/users/delete/([0-9]+)', 'before', 'group:admin');
     }
 
+    public function testLoginRouteRequiresTurnstileVerification(): void
+    {
+        $this->collection->setHTTPVerb('post');
+        $this->assertFilter('login', 'before', 'turnstile');
+    }
+
     public function testOrdinaryAdminRouteDoesNotRequireAdminGroup(): void
     {
         // Regular admin routes (warga, alamat, etc.) only require being

@@ -34,6 +34,17 @@ php spark key:generate
 
 Shield's remember-me tokens and encrypted session data depend on this. Keep `.env` out of version control (already gitignored) and keep a secure backup of the key outside the app server.
 
+## Cloudflare Turnstile (login)
+
+`app/Filters/TurnstileFilter.php` verifies a Turnstile token server-side on every `POST /login`, before Shield's `LoginController` even sees the credentials — see `app/Config/Filters.php` (`'turnstile' => ['before' => ['login']]`). Configured via `.env`:
+
+```
+turnstile.siteKey = ...
+turnstile.secretKey = ...
+```
+
+The site key and secret key are **two different values** from the Cloudflare dashboard's Turnstile widget settings — the site key is public (embedded in `app/Views/admin/login.php`), the secret key is server-only. If `turnstile.secretKey` is blank or wrong, every login attempt is blocked (fails closed).
+
 ## Schema changes going forward
 
 `Admin\Sync` (a stopgap tool that let any logged-in session upload JSON and run arbitrary `CREATE TABLE`/`ADD COLUMN` against the live DB) has been removed. **All schema changes now go through `app/Database/Migrations/`** — write a new migration class, test it, commit it, then `php spark migrate` on each environment. Never hand-edit the schema directly on production.

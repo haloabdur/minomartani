@@ -20,6 +20,10 @@
   <link rel="stylesheet" href="<?php echo base_url('public') ?>/dist/css/adminlte.min.css">
   <!-- Google Font: Source Sans Pro -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+  <?php if (config('Turnstile')->enabled): ?>
+    <!-- Cloudflare Turnstile -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <?php endif; ?>
 </head>
 
 <body class="hold-transition login-page">
@@ -85,6 +89,12 @@
                   </label>
                 </div>
               </div>
+            </div>
+          <?php endif; ?>
+
+          <?php if (config('Turnstile')->enabled): ?>
+            <div class="row mb-3 justify-content-center">
+              <div class="cf-turnstile" data-sitekey="<?= esc(config('Turnstile')->siteKey) ?>"></div>
             </div>
           <?php endif; ?>
 
