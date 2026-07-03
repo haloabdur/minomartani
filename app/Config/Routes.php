@@ -82,3 +82,12 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->get('delete/(:num)', 'Admin\Users::delete/$1');
     });
 });
+
+// Slug-prefixed front-end routes (optional tenant routing)
+$routes->get('(:segment)', 'Home::index/$1');
+$routes->get('(:segment)/detail/(:any)', 'Home::alamat/$1/$2');
+$routes->get('(:segment)/berita/(:any)', 'Home::berita/$1/$2');
+$routes->get('(:segment)/layanan', 'Layanan::index/$1');
+$routes->post('(:segment)/layanan/store', 'Layanan::store/$1');
+$routes->get('(:segment)/layanan/sukses', 'Layanan::sukses/$1');
+

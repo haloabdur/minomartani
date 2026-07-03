@@ -46,4 +46,24 @@ abstract class BaseController extends Controller
             . view($viewName, $data ?? [])
             . view('includes/footer', $data ?? []);
     }
+
+    /**
+     * Resolve the current tenant from the public slug
+     */
+    protected function resolveTenant(?string $slug): void
+    {
+        if (empty($slug)) {
+            // Default fallback is RT 29 (id_rt = 1)
+            tenant_set_rt(1);
+            return;
+        }
+
+        $rt = model(\App\Models\RtModel::class)->where('slug', $slug)->first();
+        if ($rt !== null && (int)$rt->is_aktif === 1) {
+            tenant_set_rt((int) $rt->id_rt);
+        } else {
+            // Fallback to RT 29 (id_rt = 1) if not found or inactive
+            tenant_set_rt(1);
+        }
+    }
 }

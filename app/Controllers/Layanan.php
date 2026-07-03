@@ -16,13 +16,16 @@ class Layanan extends BaseController
         $this->wargaModel = new WargaModel();
     }
 
-    public function index()
+    public function index($slug = null)
     {
+        $this->resolveTenant($slug);
         return $this->load_view('layanan');
     }
 
-    public function store()
+    public function store($slug = null)
     {
+        $this->resolveTenant($slug);
+
         if (empty($this->request->getPost())) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
@@ -43,16 +46,23 @@ class Layanan extends BaseController
             'id_warga' => $nik->id_warga,
             'maksut'   => $this->request->getPost('maksut'),
             'perlu'    => $this->request->getPost('perlu'),
-            'lampiran' => $this->request->getPost('lampiran')
+            'lampiran' => $this->request->getPost('lampiran'),
+            'id_rt'    => current_rt_id(),
         ];
 
         $this->suratModel->insert($data);
 
-        return redirect()->to('layanan/sukses');
+        $redirectUrl = 'layanan/sukses';
+        if (!empty($slug)) {
+            $redirectUrl = $slug . '/' . $redirectUrl;
+        }
+
+        return redirect()->to($redirectUrl);
     }
 
-    public function sukses()
+    public function sukses($slug = null)
     {
+        $this->resolveTenant($slug);
         return $this->load_view('layanan_sukses');
     }
 }
