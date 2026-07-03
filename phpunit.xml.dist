@@ -50,14 +50,16 @@
         <const name="CONFIGPATH" value="./app/Config/"/>
         <!-- Directory containing the front controller (index.php) -->
         <const name="PUBLICPATH" value="./public/"/>
-        <!-- Database configuration -->
-        <!-- Uncomment to provide your own database for testing
-            <env name="database.tests.hostname" value="localhost"/>
-            <env name="database.tests.database" value="tests"/>
-            <env name="database.tests.username" value="tests_user"/>
-            <env name="database.tests.password" value=""/>
-            <env name="database.tests.DBDriver" value="MySQLi"/>
-            <env name="database.tests.DBPrefix" value="tests_"/>
-            -->
+        <!-- Database configuration: MySQL, not the SQLite default -
+             migrations use MySQL-specific syntax (ON UPDATE
+             CURRENT_TIMESTAMP, raw ALTER TABLE), so schema tests need
+             a real MySQL DB. Create it once with:
+             mysql -u root -e "CREATE DATABASE rt29mino_test CHARACTER SET utf8mb4" -->
+        <env name="database.tests.hostname" value="localhost"/>
+        <env name="database.tests.database" value="rt29mino_test"/>
+        <env name="database.tests.username" value="root"/>
+        <env name="database.tests.password" value=""/>
+        <env name="database.tests.DBDriver" value="MySQLi"/>
+        <env name="database.tests.DBPrefix" value=""/>
     </php>
 </phpunit>
