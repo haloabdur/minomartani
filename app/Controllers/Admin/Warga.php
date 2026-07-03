@@ -34,6 +34,7 @@ class Warga extends BaseController
         $data['alamats']          = $this->alamatModel->all();
         $data['status_keluargas'] = $this->wargaModel->get_status_keluarga();
         $data['status_penduduks'] = $this->wargaModel->get_status_penduduk();
+        $data['wargas']           = $this->wargaModel->all();
         return $this->loadViews('admin/tambah_warga', $this->global, $data);
     }
 
@@ -101,6 +102,7 @@ class Warga extends BaseController
         $data['status_keluargas'] = $this->wargaModel->get_status_keluarga();
         $data['alamats']          = $this->alamatModel->all();
         $data['status_penduduks'] = $this->wargaModel->get_status_penduduk();
+        $data['wargas']           = $this->wargaModel->all();
         return $this->loadViews('admin/ubah_warga', $this->global, $data);
     }
 
@@ -154,7 +156,9 @@ class Warga extends BaseController
 
     public function export()
     {
-        $data['content'] = $this->wargaModel->export();
+        $type  = $this->request->getGet('type');
+        $value = $this->request->getGet('value');
+        $data['content'] = $this->wargaModel->export($type, $value);
         return view('admin/export_warga', $data);
     }
 }

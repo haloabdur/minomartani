@@ -208,13 +208,29 @@
 										<div class="col-md-6">
 											<div class="form-group">
 												<label>Ayah</label>
-												<input type="text" name="ayah" class="form-control" placeholder="Ayah" value="<?php echo $warga->ayah ?>">
+												<div class="input-group">
+													<input type="text" name="ayah" id="input-ayah" class="form-control" placeholder="Ayah" value="<?php echo $warga->ayah ?>">
+													<div class="input-group-append">
+														<button type="button" class="btn btn-outline-primary" onclick="openWargaModal('ayah')">
+															<i class="fas fa-search mr-1"></i> Pilih Warga
+														</button>
+													</div>
+												</div>
+												<p class="text-muted small mt-1">Apabila <strong>Ayah</strong> adalah warga RT 29 maka masukkan nomor ID. Contoh : 1</p>
 											</div>
 										</div>
 										<div class="col-md-6">
 											<div class="form-group">
 												<label>Ibu</label>
-												<input type="text" name="ibu" class="form-control" placeholder="Ibu" value="<?php echo $warga->ibu ?>">
+												<div class="input-group">
+													<input type="text" name="ibu" id="input-ibu" class="form-control" placeholder="Ibu" value="<?php echo $warga->ibu ?>">
+													<div class="input-group-append">
+														<button type="button" class="btn btn-outline-primary" onclick="openWargaModal('ibu')">
+															<i class="fas fa-search mr-1"></i> Pilih Warga
+														</button>
+													</div>
+												</div>
+												<p class="text-muted small mt-1">Apabila <strong>Ibu</strong> adalah warga RT 29 maka masukkan nomor ID. Contoh : 2</p>
 											</div>
 										</div>
 									</div>
@@ -301,6 +317,52 @@
 	</div>
 </div>
 
+<!-- Modal Pilih Warga -->
+<div class="modal fade" id="wargaModal" tabindex="-1" role="dialog" aria-labelledby="wargaModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="wargaModalLabel">Pilih Warga Terdaftar</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="table-responsive">
+					<table class="table table-bordered table-striped datatable" id="table-select-warga" style="width: 100%">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>Nama Warga</th>
+								<th>NIK</th>
+								<th>Alamat</th>
+								<th>Aksi</th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php if (!empty($wargas)): ?>
+								<?php foreach ($wargas as $w): ?>
+									<tr>
+										<td><?php echo $w->id_warga; ?></td>
+										<td><strong><?php echo $w->nama_warga; ?></strong></td>
+										<td><?php echo $w->nik; ?></td>
+										<td><?php echo 'Jl. ' . $w->alamat . ($w->alamat_lengkap ? ' (' . $w->alamat_lengkap . ')' : ''); ?></td>
+										<td>
+											<button type="button" class="btn btn-primary btn-sm btn-select-warga" data-id="<?php echo $w->id_warga; ?>" data-nama="<?php echo htmlspecialchars($w->nama_warga, ENT_QUOTES, 'UTF-8'); ?>">
+												Pilih
+											</button>
+										</td>
+									</tr>
+								<?php endforeach; ?>
+							<?php endif; ?>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
 <script>
 	function toggleNik(e) {
 		e.preventDefault();
@@ -308,4 +370,29 @@
 		nikField.readOnly = !nikField.readOnly;
 		if (!nikField.readOnly) nikField.focus();
 	}
+
+	let currentTargetInputId = '';
+
+	window.openWargaModal = function(target) {
+		currentTargetInputId = 'input-' + target;
+		jQuery('#wargaModal').modal('show');
+	};
+
+	document.addEventListener("DOMContentLoaded", function() {
+		// When the modal is shown, adjust columns of DataTable inside it
+		jQuery('#wargaModal').on('shown.bs.modal', function () {
+			jQuery(jQuery.fn.dataTable.tables(true)).DataTable().columns.adjust();
+		});
+
+		// Handle Pilih button click inside modal
+		jQuery(document).on('click', '.btn-select-warga', function() {
+			var idWarga = jQuery(this).data('id');
+			var namaWarga = jQuery(this).data('nama');
+			
+			if (currentTargetInputId) {
+				jQuery('#' + currentTargetInputId).val(idWarga);
+			}
+			jQuery('#wargaModal').modal('hide');
+		});
+	});
 </script>

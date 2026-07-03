@@ -103,12 +103,32 @@
 
 					<dl class="row">
 						<dd class="col-sm-2">Ayah</dd>
-						<dt class="col-sm-10"><?php echo $warga->ayah ?></dt>
+						<dt class="col-sm-10">
+							<?php
+							if (!empty($warga->ayah) && is_numeric($warga->ayah)) {
+								$db = \Config\Database::connect();
+								$parent = $db->table('warga')->where('id_warga', $warga->ayah)->get()->getRow();
+								echo $parent ? $parent->nama_warga . ' (ID: ' . $warga->ayah . ')' : $warga->ayah;
+							} else {
+								echo !empty($warga->ayah) ? $warga->ayah : '-';
+							}
+							?>
+						</dt>
 					</dl>
 
 					<dl class="row">
 						<dd class="col-sm-2">Ibu</dd>
-						<dt class="col-sm-10"><?php echo $warga->ibu ?></dt>
+						<dt class="col-sm-10">
+							<?php
+							if (!empty($warga->ibu) && is_numeric($warga->ibu)) {
+								$db = \Config\Database::connect();
+								$parent = $db->table('warga')->where('id_warga', $warga->ibu)->get()->getRow();
+								echo $parent ? $parent->nama_warga . ' (ID: ' . $warga->ibu . ')' : $warga->ibu;
+							} else {
+								echo !empty($warga->ibu) ? $warga->ibu : '-';
+							}
+							?>
+						</dt>
 					</dl>
 
 					<p class="mt-4 text-muted small border-bottom">INFORMASI KONTAK</p>
