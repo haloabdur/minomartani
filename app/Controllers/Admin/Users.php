@@ -65,6 +65,12 @@ class Users extends BaseController
             return redirect()->to(back());
         }
 
+        // Check if username already exists
+        if ($users->findByCredentials(['username' => $username])) {
+            setFlashData('error', 'Data user gagal ditambahkan! Username ' . $username . ' sudah digunakan.');
+            return redirect()->to(back());
+        }
+
         // Determine tenant binding and Shield group
         $isSuperadmin = auth()->user()->inGroup('superadmin');
 
@@ -136,7 +142,17 @@ class Users extends BaseController
         $users = auth()->getProvider();
         $user = $users->findById($id);
 
-        $user->username = $this->request->getPost('username');
+        $username = $this->request->getPost('username');
+
+        if ($username !== $user->username) {
+            $existingUser = $users->findByCredentials(['username' => $username]);
+            if ($existingUser && (int) $existingUser->id !== (int) $id) {
+                setFlashData('error', 'Data user gagal diubah! Username ' . $username . ' sudah digunakan.');
+                return redirect()->to(back());
+            }
+        }
+
+        $user->username = $username;
 
         $password = $this->request->getPost('password');
 
