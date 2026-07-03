@@ -50,6 +50,44 @@ final class TenancyMigrationsTest extends CIUnitTestCase
         $this->assertNotNull($rw, 'seeded RT 29 does not belong to a seeded RW');
     }
 
+    public function testAllTenantDataTablesHaveIdRtColumn(): void
+    {
+        $db = Database::connect();
+        // The migration itself calls fieldExists() before ADD COLUMN,
+        // which caches the pre-alter field list on this connection.
+        $db->resetDataCache();
+
+        foreach (['warga', 'alamat', 'berita', 'surat', 'inventaris', 'dawis', 'ketua'] as $table) {
+            $this->assertTrue(
+                $db->fieldExists('id_rt', $table),
+                "{$table}.id_rt is missing",
+            );
+        }
+    }
+
+    public function testLookupTablesStayGlobal(): void
+    {
+        $db = Database::connect();
+
+        // Master/lookup data is shared across tenants by design.
+        foreach (['pekerjaan', 'status_keluarga', 'status_penduduk'] as $table) {
+            $this->assertFalse(
+                $db->fieldExists('id_rt', $table),
+                "{$table} must NOT be tenant-scoped",
+            );
+        }
+    }
+
+    public function testIdRtDefaultsToRt29(): void
+    {
+        $db = Database::connect();
+
+        $db->table('alamat')->insert(['alamat' => 'Uji Backfill']);
+        $row = $db->table('alamat')->where('alamat', 'Uji Backfill')->get()->getRow();
+
+        $this->assertSame(1, (int) $row->id_rt, 'rows without explicit id_rt must land in RT 29');
+    }
+
     public function testTenantSeedIsIdempotent(): void
     {
         $db = Database::connect();

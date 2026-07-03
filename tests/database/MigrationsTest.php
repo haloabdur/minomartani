@@ -35,7 +35,7 @@ final class MigrationsTest extends CIUnitTestCase
         $db     = Database::connect();
         $fields = array_map(static fn ($f) => $f->name, $db->getFieldData('alamat'));
 
-        $this->assertSame(['id_alamat', 'alamat', 'qrcode', 'timestamp'], $fields);
+        $this->assertSame(['id_alamat', 'alamat', 'qrcode', 'timestamp', 'id_rt'], $fields);
     }
 
     public function testSuratTableHasExpectedColumns(): void
