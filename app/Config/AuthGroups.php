@@ -57,6 +57,10 @@ class AuthGroups extends ShieldAuthGroups
             'title'       => 'User',
             'description' => 'General users of the site. Often customers.',
         ],
+        'rw' => [
+            'title'       => 'Pengurus RW',
+            'description' => 'Read-only recap access over the RTs in their RW.',
+        ],
         'beta' => [
             'title'       => 'Beta User',
             'description' => 'Has access to beta-level features.',
@@ -110,6 +114,7 @@ class AuthGroups extends ShieldAuthGroups
             'beta.access',
         ],
         'user' => [],
+        'rw'   => [],
         'beta' => [
             'beta.access',
         ],

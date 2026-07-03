@@ -88,6 +88,28 @@ final class TenancyMigrationsTest extends CIUnitTestCase
         $this->assertSame(1, (int) $row->id_rt, 'rows without explicit id_rt must land in RT 29');
     }
 
+    public function testUsersTableHasTenantColumns(): void
+    {
+        $db = Database::connect();
+        $db->resetDataCache();
+
+        $this->assertTrue($db->fieldExists('id_rt', 'users'), 'users.id_rt is missing');
+        $this->assertTrue($db->fieldExists('id_rw', 'users'), 'users.id_rw is missing');
+    }
+
+    public function testExistingAdminAccountsAreBackfilledToRt29(): void
+    {
+        $db = Database::connect();
+
+        $unassigned = $db->table('users')
+            ->join('auth_groups_users', 'auth_groups_users.user_id = users.id')
+            ->where('auth_groups_users.group', 'admin')
+            ->where('users.id_rt IS NULL')
+            ->countAllResults();
+
+        $this->assertSame(0, $unassigned, 'admin-group users must be backfilled to id_rt = 1');
+    }
+
     public function testTenantSeedIsIdempotent(): void
     {
         $db = Database::connect();
