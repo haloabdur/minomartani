@@ -70,16 +70,14 @@ $routes->group('admin', ['filter' => 'session'], function ($routes) {
     $routes->post('surat/update/(:num)', 'Admin\Surat::update/$1');
     $routes->get('surat/setuju/(:num)', 'Admin\Surat::setuju/$1');
 
-    // Users
-    $routes->get('users', 'Admin\Users::index');
-    $routes->get('users/add', 'Admin\Users::add');
-    $routes->post('users/store', 'Admin\Users::store');
-    $routes->get('users/edit/(:num)', 'Admin\Users::edit/$1');
-    $routes->post('users/update/(:num)', 'Admin\Users::update/$1');
-    $routes->get('users/delete/(:num)', 'Admin\Users::delete/$1');
-
-    // Database Sync
-    $routes->get('sync', 'Admin\Sync::index');
-    $routes->get('sync/export_schema', 'Admin\Sync::export_schema');
-    $routes->post('sync/import_schema', 'Admin\Sync::import_schema');
+    // Users - highest blast-radius admin surface, restricted to the
+    // 'admin' Shield group (not just "logged in")
+    $routes->group('users', ['filter' => 'group:admin'], function ($routes) {
+        $routes->get('/', 'Admin\Users::index');
+        $routes->get('add', 'Admin\Users::add');
+        $routes->post('store', 'Admin\Users::store');
+        $routes->get('edit/(:num)', 'Admin\Users::edit/$1');
+        $routes->post('update/(:num)', 'Admin\Users::update/$1');
+        $routes->get('delete/(:num)', 'Admin\Users::delete/$1');
+    });
 });

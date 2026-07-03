@@ -86,16 +86,6 @@
             </a>
         </li>
 
-        <li class="nav-header">SYSTEM</li>
-        <li class="nav-item">
-            <a href="<?= base_url('admin/sync') ?>" class="nav-link">
-                <i class="nav-icon fas fa-database"></i>
-                <p>
-                    Sinkronisasi Struktur DB
-                </p>
-            </a>
-        </li>
-
     </ul>
 </nav>
 <!-- /.sidebar-menu -->
