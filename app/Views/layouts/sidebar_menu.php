@@ -111,6 +111,14 @@
                 </p>
             </a>
         </li>
+        <li class="nav-item">
+            <a href="<?= base_url('admin/dbsync') ?>" class="nav-link">
+                <i class="nav-icon fas fa-sync-alt"></i>
+                <p>
+                    Sinkronisasi DB
+                </p>
+            </a>
+        </li>
         <?php endif ?>
 
     </ul>

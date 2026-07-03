@@ -14,6 +14,9 @@ $routes->get('layanan', 'Layanan::index');
 $routes->post('layanan/store', 'Layanan::store');
 $routes->get('layanan/sukses', 'Layanan::sukses');
 
+// DB Sync API Endpoint (Token-protected, bypasses session filters)
+$routes->post('api/dbsync', 'Admin\DbSync::api');
+
 // Shield auth routes (login, register, logout)
 service('auth')->routes($routes);
 
@@ -93,6 +96,17 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->get('add-rw', 'Admin\Tenants::addRw');
         $routes->post('store-rw', 'Admin\Tenants::storeRw');
         $routes->get('edit-rw/(:num)', 'Admin\Tenants::editRw/$1');
+    });
+
+    // Database Sync Group (Superadmin only)
+    $routes->group('dbsync', ['filter' => 'group:superadmin'], function ($routes) {
+        $routes->get('/', 'Admin\DbSync::index');
+        $routes->get('export', 'Admin\DbSync::export');
+        $routes->post('import', 'Admin\DbSync::import');
+        $routes->post('push', 'Admin\DbSync::push');
+        $routes->post('pull', 'Admin\DbSync::pull');
+        $routes->post('migrate', 'Admin\DbSync::migrate');
+        $routes->post('check-migrations', 'Admin\DbSync::checkMigrations');
     });
 
     // RW rekap - read-only, rw group (and superadmin)
