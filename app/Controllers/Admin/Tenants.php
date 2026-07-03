@@ -58,10 +58,8 @@ class Tenants extends BaseController
         ]);
 
         if (!$validation->run($this->request->getPost())) {
-            throw new \Exception(json_encode([
-                'post' => $this->request->getPost(),
-                'errors' => $validation->getErrors()
-            ]));
+            setFlashData('error', 'Nama RT dan RW wajib diisi dengan benar!');
+            return redirect()->to(back());
         }
 
         $nama = $this->request->getPost('nama');
@@ -160,10 +158,8 @@ class Tenants extends BaseController
         ]);
 
         if (!$validation->run($this->request->getPost())) {
-            throw new \Exception(json_encode([
-                'post' => $this->request->getPost(),
-                'errors' => $validation->getErrors()
-            ]));
+            setFlashData('error', 'Nama RW wajib diisi dengan benar!');
+            return redirect()->to(back());
         }
 
         $nama = $this->request->getPost('nama');

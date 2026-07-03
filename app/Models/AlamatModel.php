@@ -62,4 +62,19 @@ class AlamatModel extends Model
             ->where('alamat.id_rt', current_rt_id())
             ->get()->getRow();
     }
+
+    /**
+     * Owning tenant of a QR code, ignoring the current tenant scope.
+     * Used only to 301-redirect legacy unprefixed /detail/{kode} links
+     * (printed before multi-tenancy) to their correct slug-prefixed URL.
+     */
+    public function findRtByQrcode(string $kode): ?int
+    {
+        $row = $this->db->table($this->table)
+            ->select('id_rt')
+            ->where('qrcode', $kode)
+            ->get()->getRow();
+
+        return $row === null ? null : (int) $row->id_rt;
+    }
 }

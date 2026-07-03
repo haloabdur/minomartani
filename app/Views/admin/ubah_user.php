@@ -42,8 +42,8 @@
 					<div class="row mt-3">
 						<div class="col">
 							<div class="form-group">
-								<label>RT (Untuk Admin RT)</label>
-								<select name="id_rt" class="form-control">
+								<label for="id_rt">RT (Untuk Admin RT)</label>
+								<select id="id_rt" name="id_rt" class="form-control">
 									<option value="">-- Bukan Admin RT --</option>
 									<?php foreach ($rts as $rt): ?>
 										<option value="<?= $rt->id_rt ?>" <?= (int)$user->id_rt === (int)$rt->id_rt ? 'selected' : '' ?>><?= esc($rt->nama) ?></option>
@@ -54,8 +54,8 @@
 
 						<div class="col">
 							<div class="form-group">
-								<label>RW (Untuk Pengurus RW)</label>
-								<select name="id_rw" class="form-control">
+								<label for="id_rw">RW (Untuk Pengurus RW)</label>
+								<select id="id_rw" name="id_rw" class="form-control">
 									<option value="">-- Bukan Pengurus RW --</option>
 									<?php foreach ($rws as $rw): ?>
 										<option value="<?= $rw->id_rw ?>" <?= (int)$user->id_rw === (int)$rw->id_rw ? 'selected' : '' ?>><?= esc($rw->nama) ?></option>
@@ -64,6 +64,7 @@
 							</div>
 						</div>
 					</div>
+					<small class="form-text text-muted">Pilih salah satu saja: RT untuk Admin RT, atau RW untuk Pengurus RW. Kosongkan keduanya untuk menjadikan Superadmin.</small>
 
 				</div>
 				<!-- /.card-body -->
@@ -78,3 +79,18 @@
 		</div>
 	</div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var idRt = document.getElementById('id_rt');
+    var idRw = document.getElementById('id_rw');
+    if (idRt && idRw) {
+        idRt.addEventListener('change', function () {
+            if (this.value !== '') idRw.value = '';
+        });
+        idRw.addEventListener('change', function () {
+            if (this.value !== '') idRt.value = '';
+        });
+    }
+});
+</script>

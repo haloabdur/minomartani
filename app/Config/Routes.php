@@ -96,6 +96,7 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->get('add-rw', 'Admin\Tenants::addRw');
         $routes->post('store-rw', 'Admin\Tenants::storeRw');
         $routes->get('edit-rw/(:num)', 'Admin\Tenants::editRw/$1');
+        $routes->post('update-rw/(:num)', 'Admin\Tenants::updateRw/$1');
     });
 
     // Database Sync Group (Superadmin only)

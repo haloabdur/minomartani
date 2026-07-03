@@ -5,12 +5,12 @@
                 <?php echo form_open('admin/tenants/store-rw') ?>
                     <div class="card-body">
                         <div class="form-group">
-                            <label>Nama RW</label>
-                            <input type="text" name="nama" class="form-control" placeholder="Contoh: RW 06" required>
+                            <label for="nama">Nama RW <span class="text-danger">*</span></label>
+                            <input type="text" id="nama" name="nama" class="form-control" placeholder="Contoh: RW 06" required autofocus>
                         </div>
                         <div class="form-group">
-                            <label>Status</label>
-                            <select name="is_aktif" class="form-control">
+                            <label for="is_aktif">Status</label>
+                            <select id="is_aktif" name="is_aktif" class="form-control">
                                 <option value="1">Aktif</option>
                                 <option value="0">Non-aktif</option>
                             </select>

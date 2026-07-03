@@ -43,9 +43,10 @@ class Alamat extends BaseController
         }
 
         $kode = str_replace(" ", "", $this->request->getPost('jalan') . $this->request->getPost('nomor'));
+        $slug = current_rt()->slug ?? 'rt29';
 
         // Generate QR Code image
-        $this->createQrCodeImage($kode, base_url('detail/' . $kode));
+        $this->createQrCodeImage($kode, base_url($slug . '/detail/' . $kode));
 
         $data = [
             'jalan'      => $this->request->getPost('jalan'),
@@ -86,9 +87,10 @@ class Alamat extends BaseController
     {
         $alamat = $this->alamatModel->detail($id);
         $kode   = "mino_" . $alamat->id_alamat;
+        $slug   = current_rt()->slug ?? 'rt29';
 
         // Generate QR Code image
-        $this->createQrCodeImage($kode, base_url('detail/' . $kode));
+        $this->createQrCodeImage($kode, base_url($slug . '/detail/' . $kode));
 
         $data = [
             'qrcode' => $kode

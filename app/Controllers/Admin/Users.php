@@ -17,9 +17,16 @@ class Users extends BaseController
         $users = auth()->getProvider();
 
         // Display users except superadmin
-        $data['users'] = $users
-            ->where("id NOT IN (SELECT user_id FROM auth_groups_users WHERE `group` = 'superadmin')")
-            ->findAll();
+        $query = $users->where("id NOT IN (SELECT user_id FROM auth_groups_users WHERE `group` = 'superadmin')");
+
+        // Defense in depth: non-superadmin viewers only ever see their
+        // own RT's users, even if this route's filter is ever relaxed
+        // from group:superadmin to group:admin.
+        if (! auth()->user()->inGroup('superadmin')) {
+            $query = $query->where('id_rt', current_rt_id());
+        }
+
+        $data['users'] = $query->findAll();
 
         return $this->loadViews('admin/users', $this->global, $data);
     }

@@ -37,14 +37,24 @@ class Home extends BaseController
     public function alamat($param1, $param2 = null)
     {
         if ($param2 === null) {
-            // Unslugged: $param1 is $kode
-            $slug = null;
+            // Unslugged legacy QR link (printed before multi-tenancy):
+            // look up the owning RT across all tenants and 301-redirect
+            // to the slug-prefixed URL instead of guessing a default.
             $kode = $param1;
-        } else {
-            // Slugged: $param1 is $slug, $param2 is $kode
-            $slug = $param1;
-            $kode = $param2;
+            $idRt = $this->alamatModel->findRtByQrcode($kode);
+
+            if ($idRt === null) {
+                throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+            }
+
+            $rt = model(\App\Models\RtModel::class)->find($idRt);
+
+            return redirect()->to('/' . ($rt->slug ?? 'rt29') . '/detail/' . $kode)->setStatusCode(301);
         }
+
+        // Slugged: $param1 is $slug, $param2 is $kode
+        $slug = $param1;
+        $kode = $param2;
 
         $this->resolveTenant($slug);
 

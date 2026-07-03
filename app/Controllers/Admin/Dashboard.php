@@ -25,7 +25,7 @@ class Dashboard extends BaseController
 
     public function index()
     {
-        $this->global['pageTitle'] = 'Dashboard Warga RT 29 Minomartani';
+        $this->global['pageTitle'] = 'Dashboard Warga ' . (current_rt()->nama ?? 'RT 29 Minomartani');
 
         $data['warga']     = $this->wargaModel->count();
         $data['kk']        = $this->wargaModel->kk_count();
