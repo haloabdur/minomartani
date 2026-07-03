@@ -25,9 +25,9 @@
 								<td><?php echo $i+1 ?></td>
 								<td><?php echo $alamat->alamat ?></td>
 								<td>
-									<?php 
+									<?php
 										if ($alamat->qrcode) {
-											echo '<a target="_blank" href=""><img width="120" src="' . base_url('public/qrcode/'.$alamat->qrcode.'.png') . '"></a>';
+											echo '<div class="qrcode-render" data-url="' . esc(base_url($slug . '/detail/' . $alamat->qrcode)) . '"></div>';
 										} else {
 											echo '-';
 										}
@@ -51,3 +51,10 @@
 	</div>
 	<!-- /.row -->
 </div><!-- /.container-fluid -->
+
+<script src="<?php echo base_url('public/plugins/qrcodejs/qrcode.min.js') ?>"></script>
+<script>
+	document.querySelectorAll('.qrcode-render').forEach(function (el) {
+		new QRCode(el, { text: el.dataset.url, width: 120, height: 120 });
+	});
+</script>

@@ -61,15 +61,6 @@
         </li>
 
         <li class="nav-item">
-            <a href="<?= base_url('admin/pekerjaan') ?>" class="nav-link">
-                <i class="nav-icon fas fa-users"></i>
-                <p>
-                    Pekerjaan
-                </p>
-            </a>
-        </li>
-
-        <li class="nav-item">
             <a href="<?= base_url('admin/alamat') ?>" class="nav-link">
                 <i class="nav-icon fas fa-address-book"></i>
                 <p>
@@ -81,6 +72,14 @@
 
         <li class="nav-header">DATA RT/RW</li>
         <?php if (auth()->user() && auth()->user()->inGroup('superadmin')): ?>
+        <li class="nav-item">
+            <a href="<?= base_url('admin/pekerjaan') ?>" class="nav-link">
+                <i class="nav-icon fas fa-users"></i>
+                <p>
+                    Pekerjaan
+                </p>
+            </a>
+        </li>
         <li class="nav-item">
             <a href="<?= base_url('admin/tenants') ?>" class="nav-link">
                 <i class="nav-icon fas fa-sitemap"></i>

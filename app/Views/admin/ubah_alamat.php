@@ -26,9 +26,9 @@
 
 						<div class="row">
 							<div class="col">
-								<?php 
+								<?php
 									if ($alamat->qrcode) {
-										echo '<img src="'. base_url('public/qrcode/'.$alamat->qrcode.'.png') .'" alt="Qr Code Alamat '. $alamat->alamat .'">';
+										echo '<div id="qrcode-render" data-url="' . esc(base_url($slug . '/detail/' . $alamat->qrcode)) . '"></div>';
 									} else {
 										echo "<span class='text-danger font-weight-bold'>Belum ada QR Code</span>";
 									}
@@ -48,3 +48,11 @@
 		</div>
 	</div>
 </div>
+
+<script src="<?php echo base_url('public/plugins/qrcodejs/qrcode.min.js') ?>"></script>
+<script>
+	var qrEl = document.getElementById('qrcode-render');
+	if (qrEl) {
+		new QRCode(qrEl, { text: qrEl.dataset.url, width: 160, height: 160 });
+	}
+</script>

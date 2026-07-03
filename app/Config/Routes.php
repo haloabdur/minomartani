@@ -58,12 +58,16 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
     $routes->post('inventaris/update/(:num)', 'Admin\Inventaris::update/$1');
     $routes->get('inventaris/delete/(:num)', 'Admin\Inventaris::delete/$1');
 
-    // Pekerjaan
-    $routes->get('pekerjaan', 'Admin\Pekerjaan::index');
-    $routes->get('pekerjaan/add', 'Admin\Pekerjaan::add');
-    $routes->post('pekerjaan/store', 'Admin\Pekerjaan::store');
-    $routes->get('pekerjaan/edit/(:num)', 'Admin\Pekerjaan::edit/$1');
-    $routes->post('pekerjaan/update/(:num)', 'Admin\Pekerjaan::update/$1');
+    // Pekerjaan - shared lookup table (no id_rt), so edits affect every
+    // tenant; restrict to the 'superadmin' Shield group like other
+    // cross-tenant master data (users, tenants, dbsync)
+    $routes->group('pekerjaan', ['filter' => 'group:superadmin'], function ($routes) {
+        $routes->get('/', 'Admin\Pekerjaan::index');
+        $routes->get('add', 'Admin\Pekerjaan::add');
+        $routes->post('store', 'Admin\Pekerjaan::store');
+        $routes->get('edit/(:num)', 'Admin\Pekerjaan::edit/$1');
+        $routes->post('update/(:num)', 'Admin\Pekerjaan::update/$1');
+    });
 
     // Surat
     $routes->get('surat', 'Admin\Surat::index');

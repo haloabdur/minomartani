@@ -4,8 +4,6 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Models\AlamatModel;
-use chillerlan\QRCode\QRCode;
-use chillerlan\QRCode\QROptions;
 
 class Alamat extends BaseController
 {
@@ -20,6 +18,7 @@ class Alamat extends BaseController
     {
         $this->global['pageTitle'] = 'Kelola Alamat';
         $data['alamats'] = $this->alamatModel->all();
+        $data['slug'] = current_rt()->slug ?? 'rt29';
         return $this->loadViews('admin/alamat', $this->global, $data);
     }
 
@@ -43,10 +42,6 @@ class Alamat extends BaseController
         }
 
         $kode = str_replace(" ", "", $this->request->getPost('jalan') . $this->request->getPost('nomor'));
-        $slug = current_rt()->slug ?? 'rt29';
-
-        // Generate QR Code image
-        $this->createQrCodeImage($kode, base_url($slug . '/detail/' . $kode));
 
         $data = [
             'jalan'      => $this->request->getPost('jalan'),
@@ -65,6 +60,7 @@ class Alamat extends BaseController
     {
         $this->global['pageTitle'] = 'Ubah Alamat';
         $data['alamat'] = $this->alamatModel->detail($id);
+        $data['slug'] = current_rt()->slug ?? 'rt29';
         return $this->loadViews('admin/ubah_alamat', $this->global, $data);
     }
 
@@ -87,10 +83,6 @@ class Alamat extends BaseController
     {
         $alamat = $this->alamatModel->detail($id);
         $kode   = "mino_" . $alamat->id_alamat;
-        $slug   = current_rt()->slug ?? 'rt29';
-
-        // Generate QR Code image
-        $this->createQrCodeImage($kode, base_url($slug . '/detail/' . $kode));
 
         $data = [
             'qrcode' => $kode
@@ -99,29 +91,5 @@ class Alamat extends BaseController
         $this->alamatModel->update($id, $data);
         setFlashData('success', 'QR Code berhasil di-generate!');
         return redirect()->to('admin/alamat');
-    }
-
-    /**
-     * Generate QR Code PNG file and save to public/public/qrcode/
-     */
-    private function createQrCodeImage(string $kode, string $url): void
-    {
-        $qrDir = FCPATH . 'public/qrcode';
-
-        if (!is_dir($qrDir)) {
-            mkdir($qrDir, 0777, true);
-        }
-
-        $options = new QROptions([
-            'outputType'   => QRCode::OUTPUT_IMAGE_PNG,
-            'scale'        => 10,
-            'eccLevel'     => QRCode::ECC_H,
-            'imageBase64'  => false,
-        ]);
-
-        $qrcode  = new QRCode($options);
-        $qrImage = $qrcode->render($url);
-
-        file_put_contents($qrDir . '/' . $kode . '.png', $qrImage);
     }
 }
