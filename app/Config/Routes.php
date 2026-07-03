@@ -118,6 +118,7 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
     $routes->group('rekap', ['filter' => 'group:rw,superadmin'], function ($routes) {
         $routes->get('/', 'Admin\Rekap::index');
         $routes->get('warga/(:num)', 'Admin\Rekap::warga/$1');
+        $routes->get('warga/(:num)/export', 'Admin\Rekap::export/$1');
     });
 });
 

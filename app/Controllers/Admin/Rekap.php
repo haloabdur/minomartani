@@ -50,4 +50,26 @@ class Rekap extends BaseController
 
         return $this->loadViews('admin/rekap_warga', $this->global, $data);
     }
+
+    public function export($idRt)
+    {
+        $rt = $this->rtModel->find($idRt);
+
+        if ($rt === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        // RW may only export RTs inside their RW.
+        if (current_rw_id() !== null && (int) $rt->id_rw !== current_rw_id()) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        tenant_set_rt((int) $rt->id_rt);
+
+        $type  = $this->request->getGet('type');
+        $value = $this->request->getGet('value');
+        $data['content'] = (new WargaModel())->export($type, $value);
+
+        return view('admin/export_warga', $data);
+    }
 }
