@@ -150,6 +150,13 @@ class WargaModel extends Model
     ];
 
     /**
+     * Columns exported as Excel text so long all-digit strings (NIK,
+     * no. KK, phone) aren't mangled into scientific notation / stripped
+     * leading zeros when the .xls is opened.
+     */
+    public const EXPORT_TEXT_COLUMNS = ['nik', 'no_kk', 'no_hp'];
+
+    /**
      * Parse the `columns` GET param (comma-separated keys) into a
      * validated, non-empty list of EXPORT_COLUMNS keys. Falls back to
      * all columns when the param is missing, empty, or contains no
@@ -222,7 +229,41 @@ class WargaModel extends Model
             }
         }
 
-        return $builder->get()->getResult();
+        $results = $builder->get()->getResult();
+
+        $this->resolveParentNames($results);
+
+        return $results;
+    }
+
+    /**
+     * The ayah/ibu columns may hold either a literal name or a numeric
+     * id_warga reference to another resident (legacy CI3 data). Replace
+     * numeric references with that resident's name when it exists in the
+     * same tenant; leave literal names (and unresolved numbers) as-is.
+     *
+     * @param object[] $results
+     */
+    private function resolveParentNames(array $results): void
+    {
+        $map = [];
+        foreach (
+            $this->db->table($this->table)
+                ->select('id_warga, nama_warga')
+                ->where('warga.id_rt', current_rt_id())
+                ->get()->getResult() as $row
+        ) {
+            $map[(string) $row->id_warga] = $row->nama_warga;
+        }
+
+        foreach ($results as $row) {
+            foreach (['ayah', 'ibu'] as $field) {
+                $val = $row->{$field} ?? null;
+                if ($val !== null && ctype_digit((string) $val) && isset($map[(string) $val])) {
+                    $row->{$field} = $map[(string) $val];
+                }
+            }
+        }
     }
 
     public function count()
