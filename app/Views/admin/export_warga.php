@@ -1,4 +1,5 @@
 <?php
+
 header("Content-type: application/vnd.ms-excel");
 header("Content-Disposition: attachment; filename=datart29_" . date('dmY-His') . ".xls");
 header("Pragma: no-cache");
@@ -16,16 +17,18 @@ ob_end_clean();
             <table cellspacing=0 border=1>
                 <tr>
                     <th style=min-width:50px;text-align:center;font-weight:bold>NO</th>
-                    <th style=min-width:50px;text-align:center;font-weight:bold>Nama Lengkap</th>
-                    <th style=min-width:50px;text-align:center;font-weight:bold>Alamat</th>
+                    <?php foreach ($columns as $key) : ?>
+                        <th style=min-width:50px;text-align:center;font-weight:bold><?php echo esc(\App\Models\WargaModel::EXPORT_COLUMNS[$key]); ?></th>
+                    <?php endforeach; ?>
                 </tr>
                 <?php
                 foreach ($content as $i=>$value) :
                     ?>
                     <tr>
                         <td style=min-width:50px;><?php echo ($i+1); ?></td>
-                        <td style=min-width:50px;><?php echo $value->nama_warga; ?></td>
-                        <td style=min-width:50px;><?php echo $value->alamat_lengkap; ?></td>
+                        <?php foreach ($columns as $key) : ?>
+                            <td style=min-width:50px;><?php echo export_format_warga_field($key, $value); ?></td>
+                        <?php endforeach; ?>
                     </tr>
                     <?php
                 endforeach;
