@@ -7,6 +7,7 @@
 		<div class="col-12">
 			<div class="card">
 				<div class="card-body">
+					<div class="table-responsive">
 					<table class="table table-bordered table-striped datatable">
 						<thead>
 							<tr>
@@ -44,6 +45,7 @@
 						<?php } ?>
 						</tbody>
 					</table>
+					</div>
 				</div>
 				<!-- /.card-body -->
 			</div>

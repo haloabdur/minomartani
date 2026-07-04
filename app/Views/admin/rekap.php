@@ -207,6 +207,7 @@ foreach ($wargas as $w) {
 		<div class="col-12">
 			<div class="card">
 				<div class="card-body">
+					<div class="table-responsive">
 					<table class="table table-bordered table-striped datatable">
 						<thead>
 							<tr>
@@ -244,6 +245,7 @@ foreach ($wargas as $w) {
 							<?php endforeach ?>
 						</tbody>
 					</table>
+					</div>
 				</div>
 			</div>
 		</div>
