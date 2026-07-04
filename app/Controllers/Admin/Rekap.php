@@ -72,7 +72,11 @@ class Rekap extends BaseController
 
         $type  = $this->request->getGet('type');
         $value = $this->request->getGet('value');
-        $data['content'] = (new WargaModel())->export($type, $value);
+
+        $data['columns'] = WargaModel::resolveExportColumns($this->request->getGet('columns'));
+        $includeDeceased = $this->request->getGet('include_deceased') === '1';
+
+        $data['content'] = (new WargaModel())->export($type, $value, $includeDeceased);
 
         return view('admin/export_warga', $data);
     }
