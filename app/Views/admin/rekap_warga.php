@@ -55,7 +55,12 @@ foreach ($wargas as $w) {
 <div class="container-fluid">
 	<div class="row mb-3">
 		<div class="col"><a href="<?= base_url('admin/rekap') ?>" class="btn btn-light"><i class="fa fa-arrow-left"></i> Kembali ke Rekap</a></div>
-		<div class="col text-right"><a id="btn-export-warga" href="<?= base_url('admin/rekap/warga/' . $rt->id_rt . '/export') ?>" class="btn btn-success">Export Data</a></div>
+		<div class="col text-right">
+			<a id="btn-export-warga" href="<?= base_url('admin/rekap/warga/' . $rt->id_rt . '/export') ?>" class="btn btn-success">Export Data</a>
+			<button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#modal-export-custom" title="Pilih kolom export">
+				<i class="fas fa-cog"></i>
+			</button>
+		</div>
 	</div>
 
 	<!-- mini statistik -->
@@ -227,6 +232,44 @@ foreach ($wargas as $w) {
 	</div>
 </div>
 
+<div class="modal fade" id="modal-export-custom" tabindex="-1" role="dialog" aria-labelledby="modalExportCustomLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="modalExportCustomLabel">Pilih Kolom Export</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="mb-2">
+					<a href="javascript:void(0)" id="export-columns-select-all">Pilih Semua</a> /
+					<a href="javascript:void(0)" id="export-columns-select-none">Kosongkan Semua</a>
+				</div>
+				<div class="row">
+					<?php foreach (\App\Models\WargaModel::EXPORT_COLUMNS as $key => $label) : ?>
+						<div class="col-md-4">
+							<div class="form-check">
+								<input class="form-check-input export-column-checkbox" type="checkbox" value="<?php echo esc($key) ?>" id="export-col-<?php echo esc($key) ?>" checked>
+								<label class="form-check-label" for="export-col-<?php echo esc($key) ?>"><?php echo esc($label) ?></label>
+							</div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+				<hr>
+				<div class="form-check">
+					<input class="form-check-input" type="checkbox" id="export-include-deceased">
+					<label class="form-check-label" for="export-include-deceased">Sertakan warga yang sudah meninggal</label>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+				<button type="button" class="btn btn-success" id="btn-export-custom-confirm">Export</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 <script>
 	document.addEventListener("DOMContentLoaded", function() {
 		let activeFilterType = null;
@@ -279,6 +322,30 @@ foreach ($wargas as $w) {
 			jQuery('#btn-export-warga').attr('href', "<?= base_url('admin/rekap/warga/' . $rt->id_rt . '/export') ?>");
 
 			jQuery('.datatable').DataTable().draw();
+		});
+
+		jQuery('#export-columns-select-all').on('click', function() {
+			jQuery('.export-column-checkbox').prop('checked', true);
+		});
+
+		jQuery('#export-columns-select-none').on('click', function() {
+			jQuery('.export-column-checkbox').prop('checked', false);
+		});
+
+		jQuery('#btn-export-custom-confirm').on('click', function() {
+			var selected = jQuery('.export-column-checkbox:checked').map(function() {
+				return this.value;
+			}).get();
+
+			var params = new URLSearchParams();
+			if (activeFilterType) {
+				params.set('type', activeFilterType);
+				params.set('value', activeFilterValue);
+			}
+			params.set('columns', selected.join(','));
+			params.set('include_deceased', jQuery('#export-include-deceased').is(':checked') ? '1' : '0');
+
+			window.location.href = "<?= base_url('admin/rekap/warga/' . $rt->id_rt . '/export') ?>?" + params.toString();
 		});
 	});
 </script>
