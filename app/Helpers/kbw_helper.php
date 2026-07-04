@@ -205,3 +205,30 @@ if (!function_exists('loadFlashData')) {
         }
     }
 }
+
+/**
+ * Format one WargaModel::EXPORT_COLUMNS field for display in the
+ * export table. Handles the 3 coded fields (jenis_kelamin,
+ * status_kawin, is_hidup); everything else is echoed as-is.
+ */
+if (!function_exists('export_format_warga_field')) {
+    function export_format_warga_field(string $key, object $row): string
+    {
+        $value = $row->{$key} ?? null;
+
+        if ($key === 'jenis_kelamin') {
+            return $value === 'L' ? 'Laki-Laki' : ($value === 'P' ? 'Perempuan' : '-');
+        }
+
+        if ($key === 'status_kawin') {
+            $labels = ['0' => 'Belum Kawin', '1' => 'Kawin', '2' => 'Cerai Hidup', '3' => 'Cerai Mati'];
+            return $labels[(string) $value] ?? '-';
+        }
+
+        if ($key === 'is_hidup') {
+            return ((int) $value === 1) ? 'Hidup' : 'Meninggal';
+        }
+
+        return ($value !== null && $value !== '') ? esc((string) $value) : '-';
+    }
+}
