@@ -1,7 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git init *)"
+      "Bash(git init *)",
+      "Bash(php -l app/Models/WargaModel.php)",
+      "Bash(php -l app/Views/admin/export_warga.php)",
+      "Bash(vendor/bin/phpunit tests/database/ExportWargaParentVerifyTest.php)",
+      "Bash(git commit -m ' *)",
+      "Bash(php -l \"d:/dev/rt29mino/app/Views/admin/warga.php\")",
+      "Bash(command -v mysql)",
+      "Bash(mysql --version)",
+      "Bash(echo \"---exit $?---\")",
+      "Bash(php \"C:/Users/dell/AppData/Local/Temp/claude/d--dev-rt29mino/d25e2b03-b1fa-483b-a55e-905764a08d3d/scratchpad/q.php\")",
+      "Bash(php \"C:/Users/dell/AppData/Local/Temp/claude/d--dev-rt29mino/d25e2b03-b1fa-483b-a55e-905764a08d3d/scratchpad/upd.php\")",
+      "Bash(php -l \"d:/dev/rt29mino/app/Views/admin/rekap_warga.php\")"
     ]
   }
 }

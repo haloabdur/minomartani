@@ -1,5 +1,12 @@
 <?php
 $total_warga = count($wargas);
+
+// Pemisahan status
+$total_hidup     = 0; // is_hidup == 1
+$total_meninggal = 0; // is_hidup == 0
+$total_aktif     = 0; // status_warga == 1
+$total_aktif_hidup = 0; // aktif DAN hidup — dasar seluruh statistik demografi
+
 $total_lk = 0;
 $total_pr = 0;
 
@@ -16,6 +23,24 @@ $pend_sma = 0;
 $pend_kuliah = 0;
 
 foreach ($wargas as $w) {
+	$is_hidup = ($w->is_hidup == 1);
+	$is_aktif = ($w->status_warga == 1);
+
+	if ($is_hidup) {
+		$total_hidup++;
+	} else {
+		$total_meninggal++;
+	}
+	if ($is_aktif) {
+		$total_aktif++;
+	}
+
+	// Statistik demografi (gender/umur/pendidikan) hanya untuk warga aktif & hidup
+	if (!($is_aktif && $is_hidup)) {
+		continue;
+	}
+	$total_aktif_hidup++;
+
 	if ($w->jenis_kelamin == 'L') {
 		$total_lk++;
 	} else if ($w->jenis_kelamin == 'P') {
@@ -72,9 +97,31 @@ foreach ($wargas as $w) {
 				</div>
 				<div class="card-body p-3">
 					<div class="d-flex align-items-center justify-content-between mb-2">
-						<span class="display-4 font-weight-bold text-primary" style="font-size: 2.2rem; line-height: 1;"><?php echo $total_warga; ?></span>
-						<span class="text-muted small">Orang</span>
+						<span class="display-4 font-weight-bold text-primary" style="font-size: 2.2rem; line-height: 1;"><?php echo $total_aktif_hidup; ?></span>
+						<span class="text-muted small text-right" style="line-height: 1.1;">Aktif &amp;<br>Hidup</span>
 					</div>
+					<!-- status: hidup / meninggal / aktif -->
+					<div class="row pt-2 border-top">
+						<div class="col-4 border-right py-0">
+							<a href="javascript:void(0)" class="filter-trigger text-dark d-block text-center" data-filter-type="hidup" data-filter-value="1">
+								<h6 class="font-weight-bold text-success mb-0"><?php echo $total_hidup; ?></h6>
+								<span class="text-muted text-xs">Hidup</span>
+							</a>
+						</div>
+						<div class="col-4 border-right py-0">
+							<a href="javascript:void(0)" class="filter-trigger text-dark d-block text-center" data-filter-type="hidup" data-filter-value="0">
+								<h6 class="font-weight-bold text-danger mb-0"><?php echo $total_meninggal; ?></h6>
+								<span class="text-muted text-xs">Meninggal</span>
+							</a>
+						</div>
+						<div class="col-4 py-0">
+							<a href="javascript:void(0)" class="filter-trigger text-dark d-block text-center" data-filter-type="aktif" data-filter-value="1">
+								<h6 class="font-weight-bold text-primary mb-0"><?php echo $total_aktif; ?></h6>
+								<span class="text-muted text-xs">Aktif</span>
+							</a>
+						</div>
+					</div>
+					<!-- gender (hanya aktif & hidup) -->
 					<div class="row pt-2 border-top">
 						<div class="col-6 border-right py-0">
 							<a href="javascript:void(0)" class="filter-trigger text-dark d-block text-center" data-filter-type="gender" data-filter-value="L">
@@ -213,6 +260,8 @@ foreach ($wargas as $w) {
 							?>
 							<tr data-gender="<?= esc($warga->jenis_kelamin) ?>"
 								data-age="<?= $age ?>"
+								data-hidup="<?= esc($warga->is_hidup) ?>"
+								data-aktif="<?= esc($warga->status_warga) ?>"
 								data-age-group="<?= ($age <= 5 ? 'balita' : ($age <= 11 ? 'anak' : ($age <= 25 ? 'remaja' : ($age <= 59 ? 'dewasa' : 'lansia')))) ?>"
 								data-education="<?= $edu ?>">
 								<td><?= $i + 1 ?></td>
@@ -275,6 +324,9 @@ foreach ($wargas as $w) {
 		let activeFilterType = null;
 		let activeFilterValue = null;
 
+		// Jenis filter yang bisa diteruskan ke backend export
+		var EXPORTABLE_FILTERS = ['gender', 'age-group', 'education'];
+
 		jQuery.fn.dataTable.ext.search.push(
 			function(settings, data, dataIndex) {
 				if (!activeFilterType) {
@@ -304,8 +356,14 @@ foreach ($wargas as $w) {
 			jQuery('.filter-trigger').removeClass('active bg-light border-primary');
 			jQuery(this).addClass('active bg-light border-primary');
 
-			var exportUrl = "<?= base_url('admin/rekap/warga/' . $rt->id_rt . '/export') ?>?type=" + encodeURIComponent(type) + "&value=" + encodeURIComponent(val);
-			jQuery('#btn-export-warga').attr('href', exportUrl);
+			// Update Export link — hanya untuk filter yang didukung export
+			// (status hidup/aktif tidak didukung backend export, jadi tetap default)
+			if (EXPORTABLE_FILTERS.indexOf(type) !== -1) {
+				var exportUrl = "<?= base_url('admin/rekap/warga/' . $rt->id_rt . '/export') ?>?type=" + encodeURIComponent(type) + "&value=" + encodeURIComponent(val);
+				jQuery('#btn-export-warga').attr('href', exportUrl);
+			} else {
+				jQuery('#btn-export-warga').attr('href', "<?= base_url('admin/rekap/warga/' . $rt->id_rt . '/export') ?>");
+			}
 
 			jQuery('.datatable').DataTable().draw();
 		});
@@ -338,7 +396,7 @@ foreach ($wargas as $w) {
 			}).get();
 
 			var params = new URLSearchParams();
-			if (activeFilterType) {
+			if (activeFilterType && EXPORTABLE_FILTERS.indexOf(activeFilterType) !== -1) {
 				params.set('type', activeFilterType);
 				params.set('value', activeFilterValue);
 			}
