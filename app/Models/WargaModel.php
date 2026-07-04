@@ -124,16 +124,63 @@ class WargaModel extends Model
         return $this->db->table('status_penduduk')->get()->getResult();
     }
 
-    public function export($type = null, $value = null)
+    public const EXPORT_COLUMNS = [
+        'nama_warga'      => 'Nama Lengkap',
+        'nik'             => 'NIK',
+        'no_kk'           => 'No. KK',
+        'jenis_kelamin'   => 'Jenis Kelamin',
+        'tempat_lahir'    => 'Tempat Lahir',
+        'tanggal_lahir'   => 'Tanggal Lahir',
+        'gol_darah'       => 'Golongan Darah',
+        'agama'           => 'Agama',
+        'pendidikan'      => 'Pendidikan',
+        'nama_pekerjaan'  => 'Pekerjaan',
+        'status_kawin'    => 'Status Kawin',
+        'tanggal_kawin'   => 'Tanggal Kawin',
+        'status_keluarga' => 'Status dlm Keluarga',
+        'ayah'            => 'Nama Ayah',
+        'ibu'             => 'Nama Ibu',
+        'no_hp'           => 'No. HP',
+        'email'           => 'Email',
+        'status_penduduk' => 'Status Penduduk',
+        'sumber_air'      => 'Sumber Air',
+        'alamat'          => 'Alamat (Blok)',
+        'alamat_lengkap'  => 'Alamat Lengkap',
+        'is_hidup'        => 'Status Hidup',
+    ];
+
+    /**
+     * Parse the `columns` GET param (comma-separated keys) into a
+     * validated, non-empty list of EXPORT_COLUMNS keys. Falls back to
+     * all columns when the param is missing, empty, or contains no
+     * recognized key.
+     */
+    public static function resolveExportColumns(?string $columnsParam): array
+    {
+        if ($columnsParam === null || $columnsParam === '') {
+            return array_keys(self::EXPORT_COLUMNS);
+        }
+
+        $columns = array_values(array_intersect(explode(',', $columnsParam), array_keys(self::EXPORT_COLUMNS)));
+
+        return empty($columns) ? array_keys(self::EXPORT_COLUMNS) : $columns;
+    }
+
+    public function export($type = null, $value = null, bool $includeDeceased = false)
     {
         $builder = $this->db->table($this->table)
-            ->select('*, status_keluarga.status status_keluarga, status_penduduk.status status_penduduk, status_penduduk.label label_penduduk')
+            ->select('*, status_keluarga.status status_keluarga, status_penduduk.status status_penduduk, status_penduduk.label label_penduduk, pekerjaan.nama_pekerjaan nama_pekerjaan')
             ->join('alamat', 'alamat.id_alamat = warga.id_alamat')
             ->join('status_keluarga', 'status_keluarga.id_status_keluarga = warga.id_status_keluarga')
             ->join('status_penduduk', 'status_penduduk.id_status_penduduk = warga.id_status_penduduk')
+            ->join('pekerjaan', 'pekerjaan.id_pekerjaan = warga.id_pekerjaan', 'left')
             ->orderBy('alamat.id_alamat, warga.no_kk, warga.id_status_keluarga')
             ->where('status_warga', 1)
             ->where('warga.id_rt', current_rt_id());
+
+        if (!$includeDeceased) {
+            $builder->where('warga.is_hidup', 1);
+        }
 
         if (!empty($type) && !empty($value)) {
             if ($type === 'gender') {
