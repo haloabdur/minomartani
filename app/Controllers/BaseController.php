@@ -48,10 +48,27 @@ abstract class BaseController extends Controller
     }
 
     /**
-     * Resolve the current tenant from the public slug
+     * Resolve the current tenant from the host header or public slug
      */
     protected function resolveTenant(?string $slug): void
     {
+        $hostTenant = resolve_tenant_by_host(request_host($this->request));
+
+        if ($hostTenant !== null && $hostTenant['type'] === 'rw') {
+            // RW hosts have no RT-scoped public content beyond the
+            // dedicated RW landing page (Home::index() branches to that
+            // page before ever calling resolveTenant() — see below). Any
+            // other RT-shaped public route (alamat/berita/layanan) hit on
+            // an RW host is a 404 by design.
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        if ($hostTenant !== null && $hostTenant['type'] === 'rt') {
+            // Host wins over path-slug/default.
+            tenant_set_rt((int) $hostTenant['rt']->id_rt);
+            return;
+        }
+
         if (empty($slug)) {
             // Default fallback is RT 29 (id_rt = 1)
             tenant_set_rt(1);

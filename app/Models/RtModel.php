@@ -9,11 +9,16 @@ class RtModel extends Model
     protected $table         = 'rt';
     protected $primaryKey    = 'id_rt';
     protected $returnType    = 'object';
-    protected $allowedFields = ['id_rw', 'nama', 'slug', 'is_aktif'];
+    protected $allowedFields = ['id_rw', 'nama', 'slug', 'subdomain', 'is_aktif'];
 
     public function bySlug(string $slug): ?object
     {
         return $this->where('slug', $slug)->where('is_aktif', 1)->first();
+    }
+
+    public function bySubdomain(string $subdomain): ?object
+    {
+        return $this->where('subdomain', $subdomain)->where('is_aktif', 1)->first();
     }
 
     /** @return list<object> */

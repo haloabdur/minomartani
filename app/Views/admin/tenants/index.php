@@ -21,6 +21,7 @@
                             <tr>
                                 <th>Nama</th>
                                 <th>Slug</th>
+                                <th>Subdomain</th>
                                 <th>Status</th>
                                 <th style="width: 100px">Aksi</th>
                             </tr>
@@ -28,13 +29,14 @@
                         <tbody>
                             <?php if (empty($rws)): ?>
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-3">Belum ada data RW.</td>
+                                    <td colspan="5" class="text-center text-muted py-3">Belum ada data RW.</td>
                                 </tr>
                             <?php endif; ?>
                             <?php foreach ($rws as $rw): ?>
                                 <tr>
                                     <td><?= esc($rw->nama) ?></td>
                                     <td><code><?= esc($rw->slug) ?></code></td>
+                                    <td><code><?= esc($rw->subdomain ?? '—') ?></code></td>
                                     <td>
                                         <span class="badge badge-<?= $rw->is_aktif ? 'success' : 'danger' ?>">
                                             <?= $rw->is_aktif ? 'Aktif' : 'Non-aktif' ?>
@@ -65,6 +67,7 @@
                             <tr>
                                 <th>Nama</th>
                                 <th>Slug</th>
+                                <th>Subdomain</th>
                                 <th>Status</th>
                                 <th style="width: 100px">Aksi</th>
                             </tr>
@@ -72,13 +75,14 @@
                         <tbody>
                             <?php if (empty($rts)): ?>
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-3">Belum ada data RT.</td>
+                                    <td colspan="5" class="text-center text-muted py-3">Belum ada data RT.</td>
                                 </tr>
                             <?php endif; ?>
                             <?php foreach ($rts as $rt): ?>
                                 <tr>
                                     <td><?= esc($rt->nama) ?></td>
                                     <td><code><?= esc($rt->slug) ?></code></td>
+                                    <td><code><?= esc($rt->subdomain ?? '—') ?></code></td>
                                     <td>
                                         <span class="badge badge-<?= $rt->is_aktif ? 'success' : 'danger' ?>">
                                             <?= $rt->is_aktif ? 'Aktif' : 'Non-aktif' ?>

@@ -21,6 +21,15 @@ class Home extends BaseController
 
     public function index(string $slug = null)
     {
+        $hostTenant = resolve_tenant_by_host(request_host($this->request));
+
+        if ($hostTenant !== null && $hostTenant['type'] === 'rw') {
+            $rwHome = new RwHome();
+            $rwHome->initController($this->request, $this->response, service('logger'));
+
+            return $rwHome->index();
+        }
+
         $this->resolveTenant($slug);
 
         $db = \Config\Database::connect();

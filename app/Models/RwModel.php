@@ -9,11 +9,17 @@ class RwModel extends Model
     protected $table         = 'rw';
     protected $primaryKey    = 'id_rw';
     protected $returnType    = 'object';
-    protected $allowedFields = ['nama', 'slug', 'is_aktif'];
+    protected $allowedFields = ['nama', 'slug', 'subdomain', 'is_aktif'];
 
     /** @return list<object> */
     public function aktif(): array
     {
         return $this->where('is_aktif', 1)->orderBy('nama')->findAll();
     }
+
+    public function bySubdomain(string $subdomain): ?object
+    {
+        return $this->where('subdomain', $subdomain)->where('is_aktif', 1)->first();
+    }
 }
+

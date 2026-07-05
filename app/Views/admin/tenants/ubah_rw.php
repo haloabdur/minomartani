@@ -9,6 +9,11 @@
                             <input type="text" id="nama" name="nama" class="form-control" placeholder="Contoh: RW 06" value="<?= esc($rw->nama) ?>" required autofocus>
                         </div>
                         <div class="form-group">
+                            <label for="subdomain">Subdomain <span class="text-danger">*</span></label>
+                            <input type="text" id="subdomain" name="subdomain" class="form-control" placeholder="Contoh: rw06" value="<?= esc($rw->subdomain ?? '') ?>" required pattern="[a-z0-9-]+">
+                            <small class="form-text text-muted">Contoh: rw06 &rarr; rw06.minomartani.com</small>
+                        </div>
+                        <div class="form-group">
                             <label for="is_aktif">Status</label>
                             <select id="is_aktif" name="is_aktif" class="form-control">
                                 <option value="1" <?= (int)$rw->is_aktif === 1 ? 'selected' : '' ?>>Aktif</option>

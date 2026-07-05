@@ -23,11 +23,25 @@ class TenantFilter implements FilterInterface
             return; // Shield's session filter handles this case
         }
 
-        $user    = auth()->user();
-        $session = session();
-        $path    = implode('/', $request->getUri()->getSegments());
+        $user       = auth()->user();
+        $session    = session();
+        $path       = implode('/', $request->getUri()->getSegments());
+        $hostTenant = resolve_tenant_by_host(request_host($request));
 
         if ($user->inGroup('superadmin')) {
+            // Superadmin can use any tenant's subdomain (auto-scoped) or the
+            // central domain (existing session-dropdown behavior).
+            if ($hostTenant !== null && $hostTenant['type'] === 'rt') {
+                $session->set('tenant_rt_id', (int) $hostTenant['rt']->id_rt);
+                return;
+            }
+
+            if ($hostTenant !== null && $hostTenant['type'] === 'rw') {
+                $session->set('tenant_rw_id', (int) $hostTenant['rw']->id_rw);
+                return;
+            }
+
+            // Central/apex/unmatched host: existing dropdown behaviour, unchanged.
             if ($session->get('tenant_rt_id') === null) {
                 $first = model(RtModel::class)->aktif()[0] ?? null;
                 if ($first !== null) {
@@ -36,6 +50,18 @@ class TenantFilter implements FilterInterface
             }
 
             return;
+        }
+
+        // Cross-subdomain isolation: an authenticated RT/RW admin whose
+        // id_rt/id_rw does not match the tenant resolved from THIS host is
+        // rejected, even with otherwise-valid credentials for their own
+        // tenant. Applies uniformly to RT and RW accounts.
+        if ($hostTenant !== null && ! $this->hostMatchesUser($hostTenant, $user)) {
+            auth()->logout();
+            helper('kbw');
+            setFlashData('error', 'Akun Anda tidak terdaftar untuk subdomain ini. Silakan masuk melalui subdomain RT/RW Anda sendiri.');
+
+            return redirect()->to('login');
         }
 
         if ($user->inGroup('rw')) {
@@ -71,5 +97,14 @@ class TenantFilter implements FilterInterface
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
+    }
+
+    private function hostMatchesUser(array $hostTenant, $user): bool
+    {
+        if ($hostTenant['type'] === 'rt') {
+            return ! empty($user->id_rt) && (int) $user->id_rt === (int) $hostTenant['rt']->id_rt;
+        }
+
+        return ! empty($user->id_rw) && (int) $user->id_rw === (int) $hostTenant['rw']->id_rw;
     }
 }

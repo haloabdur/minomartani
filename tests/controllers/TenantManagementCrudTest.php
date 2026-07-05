@@ -44,6 +44,7 @@ final class TenantManagementCrudTest extends CIUnitTestCase
             ->withMethod('post')
             ->setGlobal('post', [
                 'nama' => 'RW 09 Test',
+                'subdomain' => 'rw09-test',
             ]);
 
         $result = $this->withRequest($request)
@@ -55,6 +56,7 @@ final class TenantManagementCrudTest extends CIUnitTestCase
         $rw = $db->table('rw')->where('slug', 'rw-09-test')->get()->getRow();
         $this->assertNotNull($rw);
         $this->assertSame('RW 09 Test', $rw->nama);
+        $this->assertSame('rw09-test', $rw->subdomain);
 
         // Create RT under that RW
         \Config\Services::resetSingle('request');
@@ -63,6 +65,7 @@ final class TenantManagementCrudTest extends CIUnitTestCase
             ->setGlobal('post', [
                 'nama' => 'RT 99 Test',
                 'id_rw' => $rw->id_rw,
+                'subdomain' => 'rt99-test',
                 'is_aktif' => 1,
             ]);
 
@@ -75,7 +78,103 @@ final class TenantManagementCrudTest extends CIUnitTestCase
         $rt = $db->table('rt')->where('slug', 'rt-99-test')->get()->getRow();
         $this->assertNotNull($rt);
         $this->assertSame('RT 99 Test', $rt->nama);
+        $this->assertSame('rt99-test', $rt->subdomain);
         $this->assertSame((int)$rw->id_rw, (int)$rt->id_rw);
+    }
+
+    public function testStoreRtRequiresSubdomain(): void
+    {
+        $this->loginSuperadmin('super_crud_nosub@example.com');
+
+        $db = Database::connect();
+        $idRw = $db->table('rw')->get()->getRow()->id_rw;
+
+        \Config\Services::resetSingle('request');
+        $request = service('request')
+            ->withMethod('post')
+            ->setGlobal('post', [
+                'nama' => 'RT NoSub Test',
+                'id_rw' => $idRw,
+            ]);
+
+        $result = $this->withRequest($request)
+            ->controller(\App\Controllers\Admin\Tenants::class)
+            ->execute('storeRt');
+
+        $this->assertTrue($result->isRedirect());
+        $this->assertNull($db->table('rt')->where('slug', 'rt-nosub-test')->get()->getRow());
+    }
+
+    public function testStoreRtRejectsReservedSubdomain(): void
+    {
+        $this->loginSuperadmin('super_crud_reserved@example.com');
+
+        $db = Database::connect();
+        $idRw = $db->table('rw')->get()->getRow()->id_rw;
+
+        \Config\Services::resetSingle('request');
+        $request = service('request')
+            ->withMethod('post')
+            ->setGlobal('post', [
+                'nama' => 'RT Reserved Test',
+                'id_rw' => $idRw,
+                'subdomain' => 'admin',
+            ]);
+
+        $result = $this->withRequest($request)
+            ->controller(\App\Controllers\Admin\Tenants::class)
+            ->execute('storeRt');
+
+        $this->assertTrue($result->isRedirect());
+        $this->assertNull($db->table('rt')->where('slug', 'rt-reserved-test')->get()->getRow());
+    }
+
+    public function testStoreRtRejectsDuplicateSubdomainAcrossRtAndRw(): void
+    {
+        $this->loginSuperadmin('super_crud_dup@example.com');
+
+        $db = Database::connect();
+        $idRw = $db->table('rw')->get()->getRow()->id_rw;
+
+        // Seed an RW that already owns the target subdomain
+        if ($db->table('rw')->where('subdomain', 'shared-dup-test')->countAllResults() === 0) {
+            $db->table('rw')->insert([
+                'nama' => 'RW Dup Test',
+                'slug' => 'rw-dup-test',
+                'subdomain' => 'shared-dup-test',
+                'is_aktif' => 1,
+            ]);
+        }
+
+        \Config\Services::resetSingle('request');
+        $request = service('request')
+            ->withMethod('post')
+            ->setGlobal('post', [
+                'nama' => 'RT Dup Test',
+                'id_rw' => $idRw,
+                'subdomain' => 'shared-dup-test',
+            ]);
+
+        $result = $this->withRequest($request)
+            ->controller(\App\Controllers\Admin\Tenants::class)
+            ->execute('storeRt');
+
+        $this->assertTrue($result->isRedirect());
+        $this->assertNull($db->table('rt')->where('slug', 'rt-dup-test')->get()->getRow());
+    }
+
+    private function loginSuperadmin(string $email): void
+    {
+        $userModel = model(UserModel::class);
+        $superadmin = new User([
+            'username' => str_replace(['@', '.'], '_', $email),
+            'email'    => $email,
+            'password' => 'secret123',
+        ]);
+        $userModel->save($superadmin);
+        $superadmin = $userModel->findById($userModel->getInsertID());
+        $superadmin->addGroup('superadmin');
+        auth()->login($superadmin);
     }
 
     public function testRegularAdminAccessRedirects(): void

@@ -23,7 +23,7 @@ final class TenancyMigrationsTest extends CIUnitTestCase
         $db     = Database::connect();
         $fields = array_map(static fn ($f) => $f->name, $db->getFieldData('rw'));
 
-        foreach (['id_rw', 'nama', 'slug', 'is_aktif', 'created_at'] as $expected) {
+        foreach (['id_rw', 'nama', 'slug', 'subdomain', 'is_aktif', 'created_at'] as $expected) {
             $this->assertContains($expected, $fields, "rw.{$expected} is missing");
         }
     }
@@ -33,7 +33,7 @@ final class TenancyMigrationsTest extends CIUnitTestCase
         $db     = Database::connect();
         $fields = array_map(static fn ($f) => $f->name, $db->getFieldData('rt'));
 
-        foreach (['id_rt', 'id_rw', 'nama', 'slug', 'is_aktif', 'created_at'] as $expected) {
+        foreach (['id_rt', 'id_rw', 'nama', 'slug', 'subdomain', 'is_aktif', 'created_at'] as $expected) {
             $this->assertContains($expected, $fields, "rt.{$expected} is missing");
         }
     }
@@ -119,5 +119,40 @@ final class TenancyMigrationsTest extends CIUnitTestCase
 
         $this->assertSame(1, $db->table('rt')->where('slug', 'rt29')->countAllResults());
         $this->assertSame(1, $db->table('rw')->where('slug', 'rw-minomartani')->countAllResults());
+    }
+
+    public function testRtAndRwTablesHaveSubdomainColumn(): void
+    {
+        $db = Database::connect();
+        $db->resetDataCache();
+
+        $this->assertTrue($db->fieldExists('subdomain', 'rt'), 'rt.subdomain is missing');
+        $this->assertTrue($db->fieldExists('subdomain', 'rw'), 'rw.subdomain is missing');
+    }
+
+    public function testRt29IsBackfilledWithSubdomain(): void
+    {
+        $db = Database::connect();
+
+        $rt = $db->table('rt')->where('slug', 'rt29')->get()->getRow();
+        $this->assertSame('rt29', $rt->subdomain, 'RT 29 must be backfilled to subdomain=rt29 (its live production host)');
+    }
+
+    public function testSubdomainBackfillIsIdempotent(): void
+    {
+        $db = Database::connect();
+
+        // Simulate a manually-changed subdomain, then re-run the migration:
+        // it must NOT overwrite a value that's already set.
+        $db->table('rt')->where('slug', 'rt29')->update(['subdomain' => 'rt29-custom']);
+
+        $migration = new \App\Database\Migrations\AddSubdomainToTenantTables(Database::forge());
+        $migration->up();
+
+        $rt = $db->table('rt')->where('slug', 'rt29')->get()->getRow();
+        $this->assertSame('rt29-custom', $rt->subdomain, 're-running the migration must not clobber an existing subdomain value');
+
+        // Restore for other tests in this suite run
+        $db->table('rt')->where('slug', 'rt29')->update(['subdomain' => 'rt29']);
     }
 }

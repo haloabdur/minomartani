@@ -12,7 +12,15 @@
       "Bash(echo \"---exit $?---\")",
       "Bash(php \"C:/Users/dell/AppData/Local/Temp/claude/d--dev-rt29mino/d25e2b03-b1fa-483b-a55e-905764a08d3d/scratchpad/q.php\")",
       "Bash(php \"C:/Users/dell/AppData/Local/Temp/claude/d--dev-rt29mino/d25e2b03-b1fa-483b-a55e-905764a08d3d/scratchpad/upd.php\")",
-      "Bash(php -l \"d:/dev/rt29mino/app/Views/admin/rekap_warga.php\")"
+      "Bash(php -l \"d:/dev/rt29mino/app/Views/admin/rekap_warga.php\")",
+      "Bash(xargs -I{} echo {})",
+      "Bash(ls \"/c/laragon/www/rt29\" 2>/dev/null | head -5; echo \"---\"; find \"/c/laragon/www/rt29\" -iname \"*.sql\" 2>/dev/null | head -20)",
+      "Read(//c/laragon/www/rt29/**)",
+      "Read(//c/laragon/www/rt29/application/**)",
+      "Bash(grep -n \"sumber_air\" \"/c/laragon/www/rt29/application/models/Warga_model.php\" \"/c/laragon/www/rt29/application/controllers/admin/Warga.php\" 2>/dev/null)",
+      "Read(//c/laragon/www/rt29/application/models/**)",
+      "PowerShell(head -1)",
+      "Bash(xargs grep -l \"trait.*AuthenticationTesting\")"
     ]
   }
 }

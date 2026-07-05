@@ -8,6 +8,9 @@ use App\Models\RwModel;
 
 class Tenants extends BaseController
 {
+    private const RESERVED_SUBDOMAINS = ['www', 'admin', 'api', 'mail', 'ftp', 'localhost', 'static', 'assets', 'cdn'];
+    private const SUBDOMAIN_REGEX = '/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/';
+
     protected $rtModel;
     protected $rwModel;
 
@@ -15,6 +18,45 @@ class Tenants extends BaseController
     {
         $this->rtModel = new RtModel();
         $this->rwModel = new RwModel();
+    }
+
+    /**
+     * Validates and normalizes a submitted subdomain. Returns the
+     * normalized value on success, or null (with a flash error already
+     * set) on failure. Uniqueness is checked across BOTH rt and rw
+     * since subdomains share one DNS namespace even though each column
+     * only has a per-table unique index.
+     */
+    private function validateSubdomain(string $subdomain, string $excludeTable = '', $excludeId = null): ?string
+    {
+        $subdomain = strtolower(trim($subdomain));
+
+        if ($subdomain === '' || !preg_match(self::SUBDOMAIN_REGEX, $subdomain)) {
+            setFlashData('error', 'Subdomain wajib diisi dan hanya boleh berisi huruf kecil, angka, dan tanda hubung!');
+            return null;
+        }
+
+        if (in_array($subdomain, self::RESERVED_SUBDOMAINS, true)) {
+            setFlashData('error', 'Subdomain tersebut dicadangkan sistem, gunakan yang lain!');
+            return null;
+        }
+
+        $rtQuery = $this->rtModel->where('subdomain', $subdomain);
+        if ($excludeTable === 'rt' && $excludeId !== null) {
+            $rtQuery->where('id_rt !=', $excludeId);
+        }
+
+        $rwQuery = $this->rwModel->where('subdomain', $subdomain);
+        if ($excludeTable === 'rw' && $excludeId !== null) {
+            $rwQuery->where('id_rw !=', $excludeId);
+        }
+
+        if ($rtQuery->countAllResults() > 0 || $rwQuery->countAllResults() > 0) {
+            setFlashData('error', 'Subdomain sudah digunakan!');
+            return null;
+        }
+
+        return $subdomain;
     }
 
     public function initController(\CodeIgniter\HTTP\RequestInterface $request, \CodeIgniter\HTTP\ResponseInterface $response, \Psr\Log\LoggerInterface $logger)
@@ -53,12 +95,13 @@ class Tenants extends BaseController
 
         $validation = \Config\Services::validation();
         $validation->setRules([
-            'nama'  => 'required',
-            'id_rw' => 'required|numeric',
+            'nama'      => 'required',
+            'id_rw'     => 'required|numeric',
+            'subdomain' => 'required',
         ]);
 
         if (!$validation->run($this->request->getPost())) {
-            setFlashData('error', 'Nama RT dan RW wajib diisi dengan benar!');
+            setFlashData('error', 'Nama RT, RW, dan subdomain wajib diisi dengan benar!');
             return redirect()->to(back());
         }
 
@@ -71,11 +114,17 @@ class Tenants extends BaseController
             return redirect()->to(back());
         }
 
+        $subdomain = $this->validateSubdomain($this->request->getPost('subdomain'));
+        if ($subdomain === null) {
+            return redirect()->to(back());
+        }
+
         $data = [
-            'nama'     => $nama,
-            'slug'     => $slug,
-            'id_rw'    => (int) $this->request->getPost('id_rw'),
-            'is_aktif' => (int) ($this->request->getPost('is_aktif') ?? 1),
+            'nama'      => $nama,
+            'slug'      => $slug,
+            'subdomain' => $subdomain,
+            'id_rw'     => (int) $this->request->getPost('id_rw'),
+            'is_aktif'  => (int) ($this->request->getPost('is_aktif') ?? 1),
         ];
 
         $this->rtModel->insert($data);
@@ -110,8 +159,9 @@ class Tenants extends BaseController
 
         $validation = \Config\Services::validation();
         $validation->setRules([
-            'nama'  => 'required',
-            'id_rw' => 'required|numeric',
+            'nama'      => 'required',
+            'id_rw'     => 'required|numeric',
+            'subdomain' => 'required',
         ]);
 
         if (!$validation->run($this->request->getPost())) {
@@ -128,11 +178,17 @@ class Tenants extends BaseController
             return redirect()->to(back());
         }
 
+        $subdomain = $this->validateSubdomain($this->request->getPost('subdomain'), 'rt', $id);
+        if ($subdomain === null) {
+            return redirect()->to(back());
+        }
+
         $data = [
-            'nama'     => $nama,
-            'slug'     => $slug,
-            'id_rw'    => (int) $this->request->getPost('id_rw'),
-            'is_aktif' => (int) ($this->request->getPost('is_aktif') ?? 1),
+            'nama'      => $nama,
+            'slug'      => $slug,
+            'subdomain' => $subdomain,
+            'id_rw'     => (int) $this->request->getPost('id_rw'),
+            'is_aktif'  => (int) ($this->request->getPost('is_aktif') ?? 1),
         ];
 
         $this->rtModel->update($id, $data);
@@ -154,11 +210,12 @@ class Tenants extends BaseController
 
         $validation = \Config\Services::validation();
         $validation->setRules([
-            'nama' => 'required',
+            'nama'      => 'required',
+            'subdomain' => 'required',
         ]);
 
         if (!$validation->run($this->request->getPost())) {
-            setFlashData('error', 'Nama RW wajib diisi dengan benar!');
+            setFlashData('error', 'Nama RW dan subdomain wajib diisi dengan benar!');
             return redirect()->to(back());
         }
 
@@ -171,10 +228,16 @@ class Tenants extends BaseController
             return redirect()->to(back());
         }
 
+        $subdomain = $this->validateSubdomain($this->request->getPost('subdomain'));
+        if ($subdomain === null) {
+            return redirect()->to(back());
+        }
+
         $data = [
-            'nama'     => $nama,
-            'slug'     => $slug,
-            'is_aktif' => (int) ($this->request->getPost('is_aktif') ?? 1),
+            'nama'      => $nama,
+            'slug'      => $slug,
+            'subdomain' => $subdomain,
+            'is_aktif'  => (int) ($this->request->getPost('is_aktif') ?? 1),
         ];
 
         $this->rwModel->insert($data);
@@ -208,7 +271,8 @@ class Tenants extends BaseController
 
         $validation = \Config\Services::validation();
         $validation->setRules([
-            'nama' => 'required',
+            'nama'      => 'required',
+            'subdomain' => 'required',
         ]);
 
         if (!$validation->run($this->request->getPost())) {
@@ -225,10 +289,16 @@ class Tenants extends BaseController
             return redirect()->to(back());
         }
 
+        $subdomain = $this->validateSubdomain($this->request->getPost('subdomain'), 'rw', $id);
+        if ($subdomain === null) {
+            return redirect()->to(back());
+        }
+
         $data = [
-            'nama'     => $nama,
-            'slug'     => $slug,
-            'is_aktif' => (int) ($this->request->getPost('is_aktif') ?? 1),
+            'nama'      => $nama,
+            'slug'      => $slug,
+            'subdomain' => $subdomain,
+            'is_aktif'  => (int) ($this->request->getPost('is_aktif') ?? 1),
         ];
 
         $this->rwModel->update($id, $data);
