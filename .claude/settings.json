@@ -20,7 +20,10 @@
       "Bash(grep -n \"sumber_air\" \"/c/laragon/www/rt29/application/models/Warga_model.php\" \"/c/laragon/www/rt29/application/controllers/admin/Warga.php\" 2>/dev/null)",
       "Read(//c/laragon/www/rt29/application/models/**)",
       "PowerShell(head -1)",
-      "Bash(xargs grep -l \"trait.*AuthenticationTesting\")"
+      "Bash(xargs grep -l \"trait.*AuthenticationTesting\")",
+      "Bash(php -l app/Controllers/Admin/Logs.php)",
+      "Bash(php -l app/Views/admin/logs.php)",
+      "Bash(php -l app/Views/layouts/sidebar_menu.php)"
     ]
   }
 }

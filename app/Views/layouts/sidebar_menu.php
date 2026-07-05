@@ -118,6 +118,14 @@
                 </p>
             </a>
         </li>
+        <li class="nav-item">
+            <a href="<?= base_url('admin/logs') ?>" class="nav-link">
+                <i class="nav-icon fas fa-bug"></i>
+                <p>
+                    Log Error
+                </p>
+            </a>
+        </li>
         <?php endif ?>
 
     </ul>

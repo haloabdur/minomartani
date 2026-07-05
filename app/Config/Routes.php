@@ -114,6 +114,12 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->post('check-migrations', 'Admin\DbSync::checkMigrations');
     });
 
+    // CI error log viewer (Superadmin only)
+    $routes->group('logs', ['filter' => 'group:superadmin'], function ($routes) {
+        $routes->get('/', 'Admin\Logs::index');
+        $routes->post('delete', 'Admin\Logs::delete');
+    });
+
     // RW rekap - read-only, rw group (and superadmin)
     $routes->group('rekap', ['filter' => 'group:rw,superadmin'], function ($routes) {
         $routes->get('/', 'Admin\Rekap::index');
