@@ -24,31 +24,52 @@ class Alamat extends BaseController
 
     public function add()
     {
+        if (!auth()->user()->inGroup('superadmin')) {
+            setFlashData('error', 'Akses ditolak! Fitur ini khusus untuk superadmin.');
+            return redirect()->to('admin/alamat');
+        }
         $this->global['pageTitle'] = 'Tambah Alamat';
-        return $this->loadViews('admin/tambah_alamat', $this->global);
+        $data['rws'] = model(\App\Models\RwModel::class)->aktif();
+        $data['rts'] = model(\App\Models\RtModel::class)->aktif();
+        return $this->loadViews('admin/tambah_alamat', $this->global, $data);
     }
 
     public function store()
     {
+        if (!auth()->user()->inGroup('superadmin')) {
+            setFlashData('error', 'Akses ditolak! Fitur ini khusus untuk superadmin.');
+            return redirect()->to('admin/alamat');
+        }
         if (empty($this->request->getPost())) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
-        $cek = $this->alamatModel->cek_alamat($this->request->getPost('jalan'), $this->request->getPost('nomor'));
+        $idRt = (int) $this->request->getPost('id_rt');
+
+        $cek = $this->alamatModel->cek_alamat(
+            $this->request->getPost('jalan'),
+            $this->request->getPost('nomor'),
+            $idRt
+        );
 
         if ($cek) {
             setFlashData('error', 'Alamat telah digunakan!');
             return redirect()->to(back());
         }
 
+        $rt = model(\App\Models\RtModel::class)->find($idRt);
+        if ($rt === null || (int)$rt->is_aktif !== 1) {
+            setFlashData('error', 'RT tidak valid atau tidak aktif!');
+            return redirect()->to(back());
+        }
+
         $kode = str_replace(" ", "", $this->request->getPost('jalan') . $this->request->getPost('nomor'));
+        $alamatString = $this->request->getPost('jalan') . '/' . $this->request->getPost('nomor');
 
         $data = [
-            'jalan'      => $this->request->getPost('jalan'),
-            'nomor'      => $this->request->getPost('nomor'),
-            'kode_rumah' => $kode,
-            'qrcode'     => $kode,
-            'id_rt'      => current_rt_id(),
+            'alamat' => $alamatString,
+            'qrcode' => $kode,
+            'id_rt'  => $idRt,
         ];
 
         $this->alamatModel->insert($data);

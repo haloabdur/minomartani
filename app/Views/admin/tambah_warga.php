@@ -42,7 +42,7 @@
 											<div class="form-group">
 												<label>Alamat Bandeng <span class="text-danger">*</span></label>
 												<select class="form-control select2 w-100" name="id_alamat" required="">
-													<option value="">-Pilih Alamat Bandeng-</option>
+													<option value="">-Pilih Alamat-</option>
 													<?php foreach ($alamats as $alamat): ?>
 														<option value="<?php echo $alamat->id_alamat ?>"><?php echo $alamat->alamat ?></option>
 													<?php endforeach ?>
@@ -212,7 +212,7 @@
 														</button>
 													</div>
 												</div>
-												<p class="text-muted small mt-1">Apabila <strong>Ayah</strong> adalah warga RT 29 maka masukkan nomor ID. Contoh : 1</p>
+												<p class="text-muted small mt-1">Apabila <strong>Ayah</strong> adalah warga RT maka masukkan nomor ID. Contoh : 1</p>
 											</div>
 										</div>
 										<div class="col-md-6">
@@ -226,7 +226,7 @@
 														</button>
 													</div>
 												</div>
-												<p class="text-muted small mt-1">Apabila <strong>Ibu</strong> adalah warga RT 29 maka masukkan nomor ID. Contoh : 2</p>
+												<p class="text-muted small mt-1">Apabila <strong>Ibu</strong> adalah warga RT maka masukkan nomor ID. Contoh : 2</p>
 											</div>
 										</div>
 									</div>

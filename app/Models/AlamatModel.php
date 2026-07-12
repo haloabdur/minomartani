@@ -31,12 +31,12 @@ class AlamatModel extends Model
             ->get()->getRow();
     }
 
-    public function cek_alamat($alamat, $nomor)
+    public function cek_alamat($jalan, $nomor, $idRt = null)
     {
+        $idRt = $idRt ?? current_rt_id();
         return $this->db->table($this->table)
-            ->where('alamat', $alamat)
-            ->where('nomor', $nomor)
-            ->where('alamat.id_rt', current_rt_id())
+            ->where('alamat', $jalan . '/' . $nomor)
+            ->where('alamat.id_rt', $idRt)
             ->get()->getNumRows();
     }
 

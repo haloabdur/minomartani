@@ -1,7 +1,9 @@
 <div class="container-fluid">
-	<!-- <div class="row mb-3">
-		<div class="col"><a href="<?php // echo base_url('admin/alamat/add') ?>" class="btn btn-primary" >Tambah Alamat</a></div>
-	</div> -->
+	<?php if (auth()->user()->inGroup('superadmin')): ?>
+	<div class="row mb-3">
+		<div class="col"><a href="<?php echo base_url('admin/alamat/add') ?>" class="btn btn-primary" >Tambah Alamat</a></div>
+	</div>
+	<?php endif; ?>
 
 	<div class="row">
 		<div class="col-12">
