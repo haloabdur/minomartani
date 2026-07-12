@@ -23,7 +23,10 @@
       "Bash(xargs grep -l \"trait.*AuthenticationTesting\")",
       "Bash(php -l app/Controllers/Admin/Logs.php)",
       "Bash(php -l app/Views/admin/logs.php)",
-      "Bash(php -l app/Views/layouts/sidebar_menu.php)"
+      "Bash(php -l app/Views/layouts/sidebar_menu.php)",
+      "Bash(grep -v -E \"^\\(Autoload|App|Cache|Constants|ContentSecurityPolicy|Cookie|CORS|CURLRequest|Database|Email|Encryption|Events|Exceptions|Feature|Filters|ForeignCharacters|Format|Generators|Honeypot|Kint|Logger|Migrations|Modules|Optimize|Pager|Paths|Routes|Security|Session|Toolbar|UserAgents|Validation|View\\)\\\\.php$\")",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs"
     ]
   }
 }

@@ -140,6 +140,38 @@ final class SubdomainAdminIsolationTest extends CIUnitTestCase
         return $user;
     }
 
+    public function testSuperadminSwitchTenantRedirectsToSubdomain(): void
+    {
+        $superadmin = $this->createSuperadmin('super_switch_subdomain@test.local');
+
+        $db = Database::connect();
+        $db->table('rt')->where('id_rt', $this->rt28Id)->update(['subdomain' => 'rt28-test']);
+
+        $result = $this->actingAs($superadmin)
+            ->withSession()
+            ->withHeaders(['Host' => 'rt29.minomartani.com'])
+            ->get('admin/switch-tenant/' . $this->rt28Id);
+
+        $result->assertRedirectTo('http://rt28-test.minomartani.com/admin/dashboard');
+        $this->assertSame($this->rt28Id, session('tenant_rt_id'));
+    }
+
+    public function testSuperadminSwitchTenantToNoSubdomainRedirectsToCentralDomain(): void
+    {
+        $superadmin = $this->createSuperadmin('super_switch_no_subdomain@test.local');
+
+        $db = Database::connect();
+        $db->table('rt')->where('id_rt', $this->rt28Id)->update(['subdomain' => null]);
+
+        $result = $this->actingAs($superadmin)
+            ->withSession()
+            ->withHeaders(['Host' => 'rt29.minomartani.com'])
+            ->get('admin/switch-tenant/' . $this->rt28Id);
+
+        $result->assertRedirectTo('http://minomartani.com/admin/dashboard');
+        $this->assertSame($this->rt28Id, session('tenant_rt_id'));
+    }
+
     private function createSuperadmin(string $email): User
     {
         $userModel = model(UserModel::class);
@@ -155,3 +187,4 @@ final class SubdomainAdminIsolationTest extends CIUnitTestCase
         return $user;
     }
 }
+

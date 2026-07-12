@@ -56,6 +56,35 @@ class Dashboard extends BaseController
         if ($rt !== null && (int)$rt->is_aktif === 1) {
             session()->set('tenant_rt_id', $idRt);
             setFlashData('success', 'Berhasil beralih ke ' . $rt->nama);
+
+            helper('subdomain');
+            $rawHost = $this->request->getHeaderLine('Host');
+            if ($rawHost === '') {
+                $rawHost = (string) ($this->request->getServer('HTTP_HOST') ?? $this->request->getUri()->getHost());
+            }
+
+            $hostParts = explode(':', $rawHost, 2);
+            $hostname  = strtolower(trim($hostParts[0]));
+            $port      = isset($hostParts[1]) ? ':' . $hostParts[1] : '';
+
+            $currentSubdomain = subdomain_label($hostname);
+            if ($currentSubdomain !== null) {
+                $parts      = explode('.', $hostname);
+                $domainPart = implode('.', array_slice($parts, 1));
+
+                if (! empty($rt->subdomain)) {
+                    $newHost = $rt->subdomain . '.' . $domainPart . $port;
+                } else {
+                    $newHost = $domainPart . $port;
+                }
+
+                $scheme = $this->request->getUri()->getScheme();
+                if ($scheme === '') {
+                    $scheme = 'http';
+                }
+
+                return redirect()->to($scheme . '://' . $newHost . '/admin/dashboard');
+            }
         }
 
         return redirect()->to('admin/dashboard');
