@@ -73,8 +73,10 @@ class TenantFilter implements FilterInterface
 
             $session->set('tenant_rw_id', (int) $user->id_rw);
 
-            // RW accounts are read-only: rekap is their only surface.
-            if (strpos($path, 'admin/rekap') !== 0) {
+            // RW accounts are otherwise read-only: rekap (read-only) and
+            // kesehatan (read-write, cross-RT within their RW) are their
+            // only surfaces.
+            if (strpos($path, 'admin/rekap') !== 0 && strpos($path, 'admin/kesehatan') !== 0) {
                 return redirect()->to('admin/rekap');
             }
 

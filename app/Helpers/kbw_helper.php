@@ -98,6 +98,70 @@ if (!function_exists('umur')) {
 }
 
 /**
+ * Whether a kesehatan_catatan row has any actual health measurement
+ * filled in, vs. being a blank placeholder row created when a resident
+ * is added to a kegiatan's participant list but not yet measured.
+ */
+if (!function_exists('kesehatan_has_data')) {
+    function kesehatan_has_data(?object $row): bool
+    {
+        if ($row === null) {
+            return false;
+        }
+        foreach (['tensi_sistol', 'tensi_diastol', 'berat_badan', 'tinggi_badan', 'lingkar_perut', 'gula_darah', 'kolesterol', 'asam_urat', 'catatan'] as $field) {
+            if ($row->{$field} !== null && $row->{$field} !== '') {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+/**
+ * A kesehatan_catatan row's filled-in measurements as separate labeled
+ * parts (e.g. ["TD 120/80", "BB 65kg", "GD 110 (puasa)"]), for showing
+ * recorded data inline under a participant's name without expanding the
+ * form. Callers render each part as its own badge so the separation is
+ * visually clear on one line.
+ *
+ * @return string[]
+ */
+if (!function_exists('kesehatan_summary_parts')) {
+    function kesehatan_summary_parts(?object $row): array
+    {
+        if ($row === null) {
+            return [];
+        }
+
+        $parts = [];
+
+        if ($row->tensi_sistol !== null && $row->tensi_diastol !== null) {
+            $parts[] = 'TD ' . $row->tensi_sistol . '/' . $row->tensi_diastol;
+        }
+        if ($row->berat_badan !== null) {
+            $parts[] = 'BB ' . $row->berat_badan . 'kg';
+        }
+        if ($row->tinggi_badan !== null) {
+            $parts[] = 'TB ' . $row->tinggi_badan . 'cm';
+        }
+        if ($row->lingkar_perut !== null) {
+            $parts[] = 'LP ' . $row->lingkar_perut . 'cm';
+        }
+        if ($row->gula_darah !== null) {
+            $parts[] = 'GD ' . $row->gula_darah . ($row->gula_darah_ket ? ' (' . $row->gula_darah_ket . ')' : '');
+        }
+        if ($row->kolesterol !== null) {
+            $parts[] = 'Kol ' . $row->kolesterol;
+        }
+        if ($row->asam_urat !== null) {
+            $parts[] = 'AU ' . $row->asam_urat;
+        }
+
+        return $parts;
+    }
+}
+
+/**
  * Get asset URL
  */
 if (!function_exists('assets')) {

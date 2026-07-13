@@ -12,7 +12,7 @@
             </a>
         </li>
 
-        <li class="nav-item treeview-menu">
+        <!-- <li class="nav-item treeview-menu">
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-money-check-alt"></i>
                 <p>
@@ -28,7 +28,7 @@
                     </a>
                 </li>
             </ul>
-        </li>
+        </li> -->
 
         <li class="nav-header">INFORMASI</li>
 
@@ -41,14 +41,14 @@
             </a>
         </li>
 
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a href="<?= base_url('admin/inventaris') ?>" class="nav-link">
                 <i class="nav-icon fas fa-boxes"></i>
                 <p>
                     Inventaris RT
                 </p>
             </a>
-        </li>
+        </li> -->
 
         <li class="nav-header">MASTER DATA</li>
         <li class="nav-item">
@@ -96,6 +96,17 @@
                 <i class="nav-icon fas fa-chart-bar"></i>
                 <p>
                     Rekap RW
+                </p>
+            </a>
+        </li>
+        <?php endif ?>
+
+        <?php if (auth()->user() && (auth()->user()->inGroup('admin') || auth()->user()->inGroup('rw') || auth()->user()->inGroup('superadmin'))): ?>
+        <li class="nav-item">
+            <a href="<?= base_url('admin/kesehatan') ?>" class="nav-link">
+                <i class="nav-icon fas fa-heartbeat"></i>
+                <p>
+                    Kesehatan Lansia
                 </p>
             </a>
         </li>

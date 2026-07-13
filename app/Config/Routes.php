@@ -126,6 +126,20 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->get('warga/(:num)', 'Admin\Rekap::warga/$1');
         $routes->get('warga/(:num)/export', 'Admin\Rekap::export/$1');
     });
+
+    // Kesehatan Lansia - RT admin (RT sendiri) dan RW (lintas RT dalam RW-nya)
+    $routes->group('kesehatan', ['filter' => 'group:admin,rw,superadmin'], function ($routes) {
+        $routes->get('/', 'Admin\Kesehatan::index');
+        $routes->get('add', 'Admin\Kesehatan::add');
+        $routes->post('store', 'Admin\Kesehatan::store');
+        $routes->get('kegiatan/(:num)', 'Admin\Kesehatan::kegiatan/$1');
+        $routes->get('kegiatan/(:num)/edit', 'Admin\Kesehatan::editKegiatan/$1');
+        $routes->post('kegiatan/(:num)/update', 'Admin\Kesehatan::updateKegiatan/$1');
+        $routes->post('kegiatan/(:num)/simpan', 'Admin\Kesehatan::simpanCatatan/$1');
+        $routes->post('kegiatan/(:num)/tambah-peserta', 'Admin\Kesehatan::tambahPeserta/$1');
+        $routes->get('kegiatan/(:num)/catatan/(:num)/hapus', 'Admin\Kesehatan::hapusCatatan/$1/$2');
+        $routes->get('warga/(:num)', 'Admin\Kesehatan::warga/$1');
+    });
 });
 
 // Slug-prefixed front-end routes (optional tenant routing)

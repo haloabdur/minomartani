@@ -59,7 +59,7 @@ class AuthGroups extends ShieldAuthGroups
         ],
         'rw' => [
             'title'       => 'Pengurus RW',
-            'description' => 'Read-only recap access over the RTs in their RW.',
+            'description' => 'Read-only recap over the RTs in their RW, plus read-write access to the Kesehatan Lansia module across those RTs.',
         ],
         'beta' => [
             'title'       => 'Beta User',

@@ -124,6 +124,95 @@ class WargaModel extends Model
         return $this->db->table('status_penduduk')->get()->getResult();
     }
 
+    /** Age threshold (years) used to classify a resident as lansia. */
+    public const LANSIA_MIN_AGE = 60;
+
+    /**
+     * Lansia (age >= LANSIA_MIN_AGE) across a set of RTs, for the
+     * kesehatan kegiatan participant picker's default (auto-filtered)
+     * list. Callers must already have authorized access to every id.
+     *
+     * @param int[] $idRts
+     */
+    public function lansiaByRtIds(array $idRts): array
+    {
+        if (empty($idRts)) {
+            return [];
+        }
+
+        return $this->db->table($this->table)
+            ->select('id_warga, nama_warga, tanggal_lahir, jenis_kelamin, warga.id_rt, rt.nama nama_rt')
+            ->join('rt', 'rt.id_rt = warga.id_rt')
+            ->where('status_warga', 1)
+            ->whereIn('warga.id_rt', $idRts)
+            ->where('TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) >=', self::LANSIA_MIN_AGE)
+            ->orderBy('nama_warga')
+            ->get()->getResult();
+    }
+
+    /**
+     * Every active resident across a set of RTs, for the "tambah peserta
+     * lain" modal's full datatable (client-side search/filter, no
+     * age restriction). Callers must already have authorized access to
+     * every id.
+     *
+     * @param int[] $idRts
+     */
+    public function allByRtIds(array $idRts): array
+    {
+        if (empty($idRts)) {
+            return [];
+        }
+
+        return $this->db->table($this->table)
+            ->select('id_warga, nama_warga, nik, tanggal_lahir, jenis_kelamin, warga.id_rt, rt.nama nama_rt')
+            ->join('rt', 'rt.id_rt = warga.id_rt')
+            ->where('status_warga', 1)
+            ->whereIn('warga.id_rt', $idRts)
+            ->orderBy('nama_warga')
+            ->get()->getResult();
+    }
+
+    /**
+     * Specific residents by id, e.g. participants manually added to a
+     * kegiatan who fall outside the lansia auto-filter. Callers must
+     * already have authorized access to every id.
+     *
+     * @param int[] $ids
+     */
+    public function byIds(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        return $this->db->table($this->table)
+            ->select('id_warga, nama_warga, tanggal_lahir, jenis_kelamin, warga.id_rt, rt.nama nama_rt')
+            ->join('rt', 'rt.id_rt = warga.id_rt')
+            ->whereIn('id_warga', $ids)
+            ->orderBy('nama_warga')
+            ->get()->getResult();
+    }
+
+    /**
+     * A single resident by id, scoped to a set of authorized RTs.
+     * Returns an object (unlike the base Model's array return type) to
+     * match every other custom query method on this model.
+     *
+     * @param int[] $idRts
+     */
+    public function oneByRtIds(int $idWarga, array $idRts): ?object
+    {
+        if (empty($idRts)) {
+            return null;
+        }
+
+        return $this->db->table($this->table)
+            ->where('id_warga', $idWarga)
+            ->whereIn('warga.id_rt', $idRts)
+            ->get()->getRow();
+    }
+
     public const EXPORT_COLUMNS = [
         'nama_warga'      => 'Nama Lengkap',
         'nik'             => 'NIK',
@@ -205,7 +294,7 @@ class WargaModel extends Model
                     $builder->where('TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) >=', 26);
                     $builder->where('TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) <=', 59);
                 } else if ($value === 'lansia') {
-                    $builder->where('TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) >=', 60);
+                    $builder->where('TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) >=', self::LANSIA_MIN_AGE);
                 }
             } else if ($type === 'education') {
                 if ($value === 'BELUM_SEKOLAH') {
