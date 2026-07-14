@@ -104,7 +104,16 @@ class TenantFilter implements FilterInterface
     private function hostMatchesUser(array $hostTenant, $user): bool
     {
         if ($hostTenant['type'] === 'rt') {
-            return ! empty($user->id_rt) && (int) $user->id_rt === (int) $hostTenant['rt']->id_rt;
+            if (! empty($user->id_rt) && (int) $user->id_rt === (int) $hostTenant['rt']->id_rt) {
+                return true;
+            }
+
+            // RW accounts have no id_rt: they're allowed on any RT
+            // subdomain belonging to their own RW (read-only role there,
+            // enforced below), not just their RW's own subdomain.
+            return $user->inGroup('rw')
+                && ! empty($user->id_rw)
+                && (int) $user->id_rw === (int) $hostTenant['rt']->id_rw;
         }
 
         return ! empty($user->id_rw) && (int) $user->id_rw === (int) $hostTenant['rw']->id_rw;
