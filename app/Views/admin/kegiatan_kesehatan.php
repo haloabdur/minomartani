@@ -1,3 +1,13 @@
+<?php
+	$totalPeserta = count($peserta);
+	$sudahDicatat = 0;
+	foreach ($peserta as $p) {
+		if (kesehatan_has_data($catatan[$p->id_warga] ?? null)) {
+			$sudahDicatat++;
+		}
+	}
+	$belumDicatat = $totalPeserta - $sudahDicatat;
+?>
 <div class="container-fluid">
 	<div class="row mb-3">
 		<div class="col">
@@ -15,6 +25,25 @@
 							<i class="far fa-edit"></i> Ubah Kegiatan
 						</a>
 						<a href="<?= base_url('admin/kesehatan') ?>" class="btn btn-sm btn-light">Kembali</a>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-auto d-flex">
+			<div class="card card-outline card-info mb-0">
+				<div class="card-body d-flex align-items-center py-2 px-3">
+					<div class="text-center px-3">
+						<div class="h4 mb-0 font-weight-bold"><?= $totalPeserta ?></div>
+						<div class="text-muted small">Total Peserta</div>
+					</div>
+					<div class="text-center px-3 border-left">
+						<div class="h4 mb-0 font-weight-bold text-success"><?= $sudahDicatat ?></div>
+						<div class="text-muted small">Sudah Dicatat</div>
+					</div>
+					<div class="text-center px-3 border-left">
+						<div class="h4 mb-0 font-weight-bold text-secondary"><?= $belumDicatat ?></div>
+						<div class="text-muted small">Belum Dicatat</div>
 					</div>
 				</div>
 			</div>

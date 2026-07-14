@@ -63,13 +63,15 @@
           <?= csrf_field() ?>
 
           <div class="input-group mb-3">
-            <input type="email" class="form-control" name="email" inputmode="email" autocomplete="email" placeholder="Email" value="<?= old('email') ?>" required="">
+            <input type="text" class="form-control" id="loginIdentity" inputmode="text" autocomplete="username" placeholder="Email atau Username" value="<?= old('email') ?: old('username') ?>" required="" autofocus>
             <div class="input-group-append">
               <div class="input-group-text">
-                <span class="fas fa-envelope"></span>
+                <span class="fas fa-user"></span>
               </div>
             </div>
           </div>
+          <input type="hidden" name="email" id="loginEmail">
+          <input type="hidden" name="username" id="loginUsername">
           <div class="input-group mb-3">
             <input type="password" class="form-control" name="password" inputmode="text" autocomplete="current-password" placeholder="Password" required="">
             <div class="input-group-append">
@@ -131,6 +133,17 @@
     $('form').on('submit', function() {
       // Pastikan form valid (HTML5)
       if (this.checkValidity()) {
+        // Boleh isi email atau username di satu kolom yang sama - kirim
+        // ke field tersembunyi yang sesuai (dideteksi dari tanda "@").
+        var identity = $('#loginIdentity').val().trim();
+        if (identity.indexOf('@') !== -1) {
+          $('#loginEmail').val(identity);
+          $('#loginUsername').val('');
+        } else {
+          $('#loginEmail').val('');
+          $('#loginUsername').val(identity);
+        }
+
         $('#btnLogin').prop('disabled', true);
         $('#btnText').text('Memproses...');
         $('#btnSpinner').removeClass('d-none');
