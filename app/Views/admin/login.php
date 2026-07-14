@@ -73,10 +73,10 @@
           <input type="hidden" name="email" id="loginEmail">
           <input type="hidden" name="username" id="loginUsername">
           <div class="input-group mb-3">
-            <input type="password" class="form-control" name="password" inputmode="text" autocomplete="current-password" placeholder="Password" required="">
+            <input type="password" class="form-control" id="loginPassword" name="password" inputmode="text" autocomplete="current-password" placeholder="Password" required="">
             <div class="input-group-append">
-              <div class="input-group-text">
-                <span class="fas fa-lock"></span>
+              <div class="input-group-text" id="togglePassword" style="cursor: pointer;">
+                <span class="fas fa-eye"></span>
               </div>
             </div>
           </div>
@@ -128,6 +128,19 @@
 
   <script type="text/javascript">
     $('.toast').toast('show');
+
+    // Toggle tampil/sembunyi password
+    $('#togglePassword').on('click', function() {
+      var $input = $('#loginPassword');
+      var $icon = $(this).find('span');
+      if ($input.attr('type') === 'password') {
+        $input.attr('type', 'text');
+        $icon.removeClass('fa-eye').addClass('fa-eye-slash');
+      } else {
+        $input.attr('type', 'password');
+        $icon.removeClass('fa-eye-slash').addClass('fa-eye');
+      }
+    });
 
     // Animasi loading tombol Masuk
     $('form').on('submit', function() {
