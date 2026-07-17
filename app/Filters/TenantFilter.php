@@ -32,16 +32,26 @@ class TenantFilter implements FilterInterface
             // Superadmin can use any tenant's subdomain (auto-scoped) or the
             // central domain (existing session-dropdown behavior).
             if ($hostTenant !== null && $hostTenant['type'] === 'rt') {
+                $session->remove('tenant_rw_id');
                 $session->set('tenant_rt_id', (int) $hostTenant['rt']->id_rt);
                 return;
             }
 
             if ($hostTenant !== null && $hostTenant['type'] === 'rw') {
+                $session->remove('tenant_rt_id');
                 $session->set('tenant_rw_id', (int) $hostTenant['rw']->id_rw);
                 return;
             }
 
             // Central/apex/unmatched host: existing dropdown behaviour, unchanged.
+            // Always RT-scoped here (there's no RW equivalent of the tenant
+            // switch dropdown) - clear any tenant_rw_id left over from an
+            // earlier RW-subdomain visit in this same session, otherwise it
+            // silently outranks tenant_rt_id wherever code checks
+            // current_rw_id() first (e.g. Kesehatan::forCurrentScope()),
+            // making RT-scoped data look empty even though it exists.
+            $session->remove('tenant_rw_id');
+
             if ($session->get('tenant_rt_id') === null) {
                 $first = model(RtModel::class)->aktif()[0] ?? null;
                 if ($first !== null) {
@@ -71,6 +81,7 @@ class TenantFilter implements FilterInterface
                 return redirect()->to('login');
             }
 
+            $session->remove('tenant_rt_id');
             $session->set('tenant_rw_id', (int) $user->id_rw);
 
             // RW accounts are otherwise read-only: rekap (read-only) and
@@ -94,6 +105,7 @@ class TenantFilter implements FilterInterface
             return redirect()->to('login');
         }
 
+        $session->remove('tenant_rw_id');
         $session->set('tenant_rt_id', (int) $user->id_rt);
     }
 

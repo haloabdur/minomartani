@@ -51,7 +51,19 @@
 	</div>
 
 	<div class="row mb-3">
-		<div class="col">
+		<div class="col-md-6">
+			<div class="card card-outline card-success mb-0 h-100">
+				<div class="card-body d-flex align-items-center py-2">
+					<i class="fas fa-id-card fa-2x text-success mr-3"></i>
+					<div class="flex-grow-1">
+						<label for="inputScanRfid" class="mb-1 font-weight-bold">Scan e-KTP</label>
+						<input type="text" id="inputScanRfid" class="form-control" placeholder="Tempelkan e-KTP di scanner..." autocomplete="off">
+					</div>
+					<div id="scanRfidStatus" class="ml-3 text-muted text-nowrap"></div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6 d-flex align-items-center">
 			<button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalTambahPeserta">
 				<i class="fas fa-user-plus mr-1"></i> Tambah Peserta Lain (di luar lansia)
 			</button>
@@ -269,6 +281,55 @@
 	</div>
 </div>
 
+<div class="modal fade" id="modalDaftarRfid" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Kartu e-KTP Belum Dikenali</h5>
+				<button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+			</div>
+			<div class="modal-body">
+				<p class="text-muted">Kartu yang baru ditempel belum terhubung ke data warga manapun. Cari dan pilih warga pemilik kartu ini untuk mendaftarkannya (sekali saja) &mdash; scan berikutnya akan langsung otomatis.</p>
+				<div class="table-responsive">
+				<table class="table table-bordered table-striped" id="tabelDaftarRfid">
+					<thead>
+						<tr>
+							<th width="1">No.</th>
+							<th>Nama</th>
+							<th>NIK</th>
+							<?php if ($multiRt): ?><th>RT</th><?php endif; ?>
+							<th>Usia</th>
+							<th width="1">Aksi</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ($semuaWarga as $i => $w): ?>
+							<tr>
+								<td><?= $i + 1 ?></td>
+								<td><?= esc($w->nama_warga) ?></td>
+								<td><?= esc($w->nik) ?></td>
+								<?php if ($multiRt): ?><td><?= esc($w->nama_rt ?? '-') ?></td><?php endif; ?>
+								<td><?= (new DateTime($w->tanggal_lahir))->diff(new DateTime())->y ?> th</td>
+								<td>
+									<button type="button" class="btn btn-sm btn-primary btn-daftarkan-rfid" data-id-warga="<?= $w->id_warga ?>" data-nama="<?= esc($w->nama_warga) ?>">
+										<i class="fas fa-link mr-1"></i> Daftarkan
+									</button>
+								</td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<?php echo form_open('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/daftar-rfid', ['id' => 'formDaftarRfid', 'class' => 'd-none']) ?>
+	<input type="hidden" name="kode_rfid" id="daftarRfidKode">
+	<input type="hidden" name="id_warga" id="daftarRfidIdWarga">
+<?php echo form_close() ?>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 	var initialized = false;
@@ -285,22 +346,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	var urlRiwayat = '<?= base_url('admin/kesehatan/warga') ?>';
 	var urlHapus   = '<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/catatan') ?>';
+	var urlScan    = '<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/scan-rfid') ?>';
 
-	jQuery(document).on('click', '.btn-isi-data', function () {
-		var d = this.dataset;
-
+	function openIsiDataModal(d) {
 		jQuery('#modalIsiDataLabel').text('Isi Data Kesehatan - ' + d.nama);
 		jQuery('#modalIdWarga').val(d.idWarga);
-		jQuery('#modalTensiSistol').val(d.tensiSistol);
-		jQuery('#modalTensiDiastol').val(d.tensiDiastol);
-		jQuery('#modalBeratBadan').val(d.beratBadan);
-		jQuery('#modalTinggiBadan').val(d.tinggiBadan);
-		jQuery('#modalLingkarPerut').val(d.lingkarPerut);
-		jQuery('#modalGulaDarah').val(d.gulaDarah);
+		jQuery('#modalTensiSistol').val(d.tensiSistol || '');
+		jQuery('#modalTensiDiastol').val(d.tensiDiastol || '');
+		jQuery('#modalBeratBadan').val(d.beratBadan || '');
+		jQuery('#modalTinggiBadan').val(d.tinggiBadan || '');
+		jQuery('#modalLingkarPerut').val(d.lingkarPerut || '');
+		jQuery('#modalGulaDarah').val(d.gulaDarah || '');
 		jQuery('#modalGulaDarahKet').val(d.gulaDarahKet || '');
-		jQuery('#modalKolesterol').val(d.kolesterol);
-		jQuery('#modalAsamUrat').val(d.asamUrat);
-		jQuery('#modalCatatan').val(d.catatan);
+		jQuery('#modalKolesterol').val(d.kolesterol || '');
+		jQuery('#modalAsamUrat').val(d.asamUrat || '');
+		jQuery('#modalCatatan').val(d.catatan || '');
 		jQuery('#modalLinkRiwayat').attr('href', urlRiwayat + '/' + d.idWarga);
 
 		if (d.idCatatan) {
@@ -310,6 +370,94 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 
 		jQuery('#modalIsiData').modal('show');
+	}
+
+	jQuery(document).on('click', '.btn-isi-data', function () {
+		openIsiDataModal(this.dataset);
 	});
+
+	// --- Scan e-KTP (RFID) ---
+	var scanInput   = document.getElementById('inputScanRfid');
+	var scanStatus  = document.getElementById('scanRfidStatus');
+	var daftarRfidInitialized = false;
+
+	if (scanInput) {
+		scanInput.focus();
+
+		scanInput.addEventListener('keydown', function (e) {
+			if (e.key !== 'Enter') {
+				return;
+			}
+			e.preventDefault();
+
+			var kode = scanInput.value.trim();
+			scanInput.value = '';
+			if (kode === '') {
+				return;
+			}
+
+			scanStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mencari warga...';
+
+			fetch(urlScan + '?kode=' + encodeURIComponent(kode), {
+				headers: { 'X-Requested-With': 'XMLHttpRequest' }
+			})
+				.then(function (res) { return res.json(); })
+				.then(function (res) {
+					if (res.status === 'found') {
+						scanStatus.innerHTML = '<i class="fas fa-check-circle text-success"></i> ' + res.warga.nama;
+						openIsiDataModal({
+							idWarga:      res.warga.idWarga,
+							nama:         res.warga.nama,
+							idCatatan:    res.catatan.idCatatan,
+							tensiSistol:  res.catatan.tensiSistol,
+							tensiDiastol: res.catatan.tensiDiastol,
+							beratBadan:   res.catatan.beratBadan,
+							tinggiBadan:  res.catatan.tinggiBadan,
+							lingkarPerut: res.catatan.lingkarPerut,
+							gulaDarah:    res.catatan.gulaDarah,
+							gulaDarahKet: res.catatan.gulaDarahKet,
+							kolesterol:   res.catatan.kolesterol,
+							asamUrat:     res.catatan.asamUrat,
+							catatan:      res.catatan.catatan
+						});
+					} else if (res.status === 'not_found') {
+						scanStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-warning"></i> Kartu belum dikenali';
+						document.getElementById('daftarRfidKode').value = kode;
+						jQuery('#modalDaftarRfid').modal('show');
+					} else {
+						scanStatus.innerHTML = '<i class="fas fa-times-circle text-danger"></i> ' + (res.message || 'Gagal memproses kartu');
+					}
+				})
+				.catch(function () {
+					scanStatus.innerHTML = '<i class="fas fa-times-circle text-danger"></i> Gagal terhubung ke server';
+				});
+		});
+	}
+
+	jQuery('#modalDaftarRfid').on('shown.bs.modal', function () {
+		if (!daftarRfidInitialized) {
+			jQuery('#tabelDaftarRfid').DataTable({
+				language: { search: '_INPUT_', searchPlaceholder: 'Cari nama/NIK...' },
+			});
+			daftarRfidInitialized = true;
+		} else {
+			jQuery('#tabelDaftarRfid').DataTable().columns.adjust();
+		}
+	});
+
+	jQuery(document).on('click', '.btn-daftarkan-rfid', function () {
+		if (!confirm('Daftarkan kartu ini untuk ' + this.dataset.nama + '?')) {
+			return;
+		}
+		document.getElementById('daftarRfidIdWarga').value = this.dataset.idWarga;
+		document.getElementById('formDaftarRfid').submit();
+	});
+
+	<?php if ($autoOpenWarga !== null): ?>
+	var autoBtn = document.querySelector('.btn-isi-data[data-id-warga="<?= (int) $autoOpenWarga ?>"]');
+	if (autoBtn) {
+		autoBtn.click();
+	}
+	<?php endif; ?>
 });
 </script>

@@ -53,8 +53,15 @@ class KesehatanCatatanModel extends Model
             ->get()->getResult();
     }
 
-    /** Insert or update the one row for (id_kegiatan, id_warga). */
-    public function upsert(int $idKegiatan, int $idWarga, int $idRt, array $data): void
+    /**
+     * Insert or update the one row for (id_kegiatan, id_warga), and return
+     * the resulting row fresh from the DB - so callers that need to know
+     * what's actually recorded (e.g. the RFID scan endpoint, which must
+     * hand back any pre-existing measurements rather than blank ones)
+     * read the row this method itself just wrote, instead of running a
+     * second, separate query that could drift out of sync.
+     */
+    public function upsert(int $idKegiatan, int $idWarga, int $idRt, array $data): object
     {
         $existing = $this->db->table($this->table)
             ->where('id_kegiatan', $idKegiatan)
@@ -70,5 +77,10 @@ class KesehatanCatatanModel extends Model
         } else {
             $this->update($existing->id_catatan, $data);
         }
+
+        return $this->db->table($this->table)
+            ->where('id_kegiatan', $idKegiatan)
+            ->where('id_warga', $idWarga)
+            ->get()->getRow();
     }
 }

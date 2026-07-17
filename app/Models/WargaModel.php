@@ -14,6 +14,7 @@ class WargaModel extends Model
         'id_alamat',
         'alamat_lengkap',
         'nik',
+        'kode_rfid',
         'jenis_kelamin',
         'tempat_lahir',
         'tanggal_lahir',
@@ -360,5 +361,29 @@ class WargaModel extends Model
         return $this->db->table($this->table)
             ->where('warga.id_rt', current_rt_id())
             ->get()->getNumRows();
+    }
+
+    /**
+     * Resident matched by their enrolled RFID card UID (`kode_rfid`),
+     * scoped to authorized RTs, for the Kesehatan e-KTP scan feature.
+     * Card UIDs are opaque chip identifiers rather than the printed NIK
+     * (the NIK on an e-KTP chip is encrypted and only readable through a
+     * certified Dukcapil SDK this app doesn't have), so a scan only
+     * resolves to a warga once that resident has been enrolled - see
+     * Admin\Kesehatan::daftarRfid(). Callers must already have authorized
+     * access to every id in $idRts.
+     *
+     * @param int[] $idRts
+     */
+    public function oneByRfidAndRtIds(string $kodeRfid, array $idRts): ?object
+    {
+        if (empty($idRts) || $kodeRfid === '') {
+            return null;
+        }
+
+        return $this->db->table($this->table)
+            ->where('kode_rfid', $kodeRfid)
+            ->whereIn('warga.id_rt', $idRts)
+            ->get()->getRow();
     }
 }

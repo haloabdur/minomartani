@@ -26,7 +26,7 @@ Terakhir diperbarui: 2026-07-15.
 ## Tabel tenant/data
 
 ### `warga` — Data penduduk
-PK: `id_warga` (AI). Unique: `nik`. Index: `id_rt`. Engine/charset: InnoDB, `latin1`/`latin1_swedish_ci`.
+PK: `id_warga` (AI). Unique: `nik`, `kode_rfid`. Index: `id_rt`. Engine/charset: InnoDB, `latin1`/`latin1_swedish_ci`.
 
 | Kolom | Tipe | Nullable / Default |
 |---|---|---|
@@ -36,6 +36,7 @@ PK: `id_warga` (AI). Unique: `nik`. Index: `id_rt`. Engine/charset: InnoDB, `lat
 | `no_kk` | varchar(50) | NOT NULL |
 | `nama_warga` | varchar(255) | NOT NULL |
 | `nik` | varchar(50) | NOT NULL, UNIQUE |
+| `kode_rfid` | varchar(100) | NULL, UNIQUE — UID kartu e-KTP untuk fitur scan RFID di Kesehatan, ditambahkan via `2026-07-17-090000_AddKodeRfidToWarga.php`. Ini UID chip, bukan NIK asli (NIK di chip terenkripsi, butuh SDK resmi Dukcapil) — warga harus didaftarkan (dipilih manual) sekali sebelum scan berikutnya otomatis kebaca |
 | `jenis_kelamin` | char(5) | NULL — `L`/`P` |
 | `tempat_lahir` | varchar(50) | NOT NULL |
 | `tanggal_lahir` | date | NOT NULL |

@@ -7,6 +7,7 @@ use App\Models\KesehatanCatatanModel;
 use App\Models\KesehatanKegiatanModel;
 use App\Models\RtModel;
 use App\Models\WargaModel;
+use CodeIgniter\Database\Exceptions\DatabaseException;
 use CodeIgniter\Exceptions\PageNotFoundException;
 
 class Kesehatan extends BaseController
@@ -139,6 +140,9 @@ class Kesehatan extends BaseController
         $data['pesertaIds']  = array_map(static fn ($p) => (int) $p->id_warga, $peserta);
         $data['multiRt']     = count($idRts) > 1;
 
+        $isi = $this->request->getGet('isi');
+        $data['autoOpenWarga'] = ($isi !== null && ctype_digit((string) $isi)) ? (int) $isi : null;
+
         return $this->loadViews('admin/kegiatan_kesehatan', $this->global, $data);
     }
 
@@ -214,6 +218,115 @@ class Kesehatan extends BaseController
         return redirect()->to('admin/kesehatan/kegiatan/' . $idKegiatan);
     }
 
+    /**
+     * AJAX lookup: RFID scanner reads a card's chip UID and posts it here
+     * (GET, no CSRF - read-only) so the kegiatan screen can auto-fill the
+     * "Isi Data" form the instant an admin taps an e-KTP. Only resolves
+     * for residents already enrolled via daftarRfid() - the UID alone
+     * doesn't identify a resident until linked once.
+     */
+    public function scanRfid($idKegiatan)
+    {
+        $kegiatan = $this->kegiatanModel->detailForCurrentScope((int) $idKegiatan);
+        if ($kegiatan === null) {
+            return $this->response->setStatusCode(404)->setJSON(['status' => 'error', 'message' => 'Kegiatan tidak ditemukan.']);
+        }
+
+        $kode = $this->normalizeRfidCode((string) $this->request->getGet('kode'));
+        if ($kode === '') {
+            return $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'Kode kartu kosong.']);
+        }
+
+        $idRts = $this->authorizedRtIds($kegiatan);
+        $warga = $this->wargaModel->oneByRfidAndRtIds($kode, $idRts);
+
+        if ($warga === null) {
+            return $this->response->setJSON(['status' => 'not_found']);
+        }
+
+        // Ensure they show up as a participant (blank record if new) without
+        // touching any measurements already recorded for them this session.
+        // upsert() hands back the row it just wrote/found directly, so this
+        // always reflects whatever is actually in the DB for them - no
+        // separate re-query (and no risk of a cached GET response papering
+        // over already-recorded data).
+        $existing = $this->catatanModel->upsert((int) $idKegiatan, (int) $warga->id_warga, (int) $warga->id_rt, [
+            'id_user' => auth()->user()->id,
+        ]);
+
+        return $this->response->noCache()->setJSON([
+            'status' => 'found',
+            'warga'  => [
+                'idWarga' => (int) $warga->id_warga,
+                'nama'    => $warga->nama_warga,
+            ],
+            'catatan' => [
+                'idCatatan'    => $existing->id_catatan ?? null,
+                'tensiSistol'  => $existing->tensi_sistol ?? null,
+                'tensiDiastol' => $existing->tensi_diastol ?? null,
+                'beratBadan'   => $existing->berat_badan ?? null,
+                'tinggiBadan'  => $existing->tinggi_badan ?? null,
+                'lingkarPerut' => $existing->lingkar_perut ?? null,
+                'gulaDarah'    => $existing->gula_darah ?? null,
+                'gulaDarahKet' => $existing->gula_darah_ket ?? null,
+                'kolesterol'   => $existing->kolesterol ?? null,
+                'asamUrat'     => $existing->asam_urat ?? null,
+                'catatan'      => $existing->catatan ?? null,
+            ],
+        ]);
+    }
+
+    /**
+     * Enrolls a scanned card UID that didn't match anyone: admin picks the
+     * owning warga from a search list, and that pairing is saved so future
+     * scans of the same card resolve automatically via scanRfid(). Plain
+     * form POST + redirect (not AJAX), matching this app's convention.
+     */
+    public function daftarRfid($idKegiatan)
+    {
+        $kegiatan = $this->kegiatanModel->detailForCurrentScope((int) $idKegiatan);
+        if ($kegiatan === null) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        $kode    = $this->normalizeRfidCode((string) $this->request->getPost('kode_rfid'));
+        $idWarga = (int) $this->request->getPost('id_warga');
+
+        if ($kode === '' || $idWarga <= 0) {
+            setFlashData('error', 'Data kartu tidak lengkap, silakan scan ulang.');
+            return redirect()->to('admin/kesehatan/kegiatan/' . $idKegiatan);
+        }
+
+        $idRts = $this->authorizedRtIds($kegiatan);
+        $warga = $this->wargaModel->oneByRtIds($idWarga, $idRts);
+        if ($warga === null) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        $existingOwner = $this->wargaModel->oneByRfidAndRtIds($kode, $idRts);
+        if ($existingOwner !== null && (int) $existingOwner->id_warga !== $idWarga) {
+            setFlashData('error', 'Kartu ini sudah terdaftar untuk warga lain (' . esc($existingOwner->nama_warga) . ').');
+            return redirect()->to('admin/kesehatan/kegiatan/' . $idKegiatan);
+        }
+
+        try {
+            $this->wargaModel->update($idWarga, ['kode_rfid' => $kode]);
+        } catch (DatabaseException $e) {
+            // Unique constraint hit - card already linked to a resident
+            // outside this scope. Generic message: don't leak cross-tenant
+            // resident names.
+            setFlashData('error', 'Kartu ini sudah terdaftar untuk warga lain.');
+            return redirect()->to('admin/kesehatan/kegiatan/' . $idKegiatan);
+        }
+
+        $this->catatanModel->upsert((int) $idKegiatan, $idWarga, (int) $warga->id_rt, [
+            'id_user' => auth()->user()->id,
+        ]);
+
+        setFlashData('success', 'Kartu berhasil didaftarkan untuk ' . esc($warga->nama_warga) . '. Silakan isi data kesehatannya.');
+        return redirect()->to('admin/kesehatan/kegiatan/' . $idKegiatan . '?isi=' . $idWarga);
+    }
+
     public function warga($idWarga)
     {
         $idRts = $this->authorizedRtIdsForScope();
@@ -264,5 +377,11 @@ class Kesehatan extends BaseController
     {
         $value = trim((string) $value);
         return $value === '' ? null : $value;
+    }
+
+    /** Normalize a scanned RFID UID (trim + uppercase) so lookups aren't case-sensitive across reads of the same card. */
+    private function normalizeRfidCode(string $value): string
+    {
+        return strtoupper(trim($value));
     }
 }
