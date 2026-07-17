@@ -8,7 +8,7 @@ class SuratModel extends Model
 {
     protected $table         = 'surat';
     protected $primaryKey    = 'id_surat';
-    protected $allowedFields = ['no_surat', 'id_warga', 'id_alamat', 'maksut', 'perlu', 'lampiran', 'status_surat', 'id_rt'];
+    protected $allowedFields = ['id_warga', 'maksut', 'perlu', 'lampiran', 'status_surat', 'id_rt'];
 
     public function all()
     {

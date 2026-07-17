@@ -66,10 +66,13 @@ class Alamat extends BaseController
         $kode = str_replace(" ", "", $this->request->getPost('jalan') . $this->request->getPost('nomor'));
         $alamatString = $this->request->getPost('jalan') . '/' . $this->request->getPost('nomor');
 
+        $kodeRumah = trim((string) $this->request->getPost('kode_rumah'));
+
         $data = [
-            'alamat' => $alamatString,
-            'qrcode' => $kode,
-            'id_rt'  => $idRt,
+            'alamat'     => $alamatString,
+            'qrcode'     => $kode,
+            'kode_rumah' => $kodeRumah !== '' ? $kodeRumah : null,
+            'id_rt'      => $idRt,
         ];
 
         $this->alamatModel->insert($data);
@@ -91,8 +94,11 @@ class Alamat extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
+        $kodeRumah = trim((string) $this->request->getPost('kode_rumah'));
+
         $data = [
-            'alamat' => $this->request->getPost('alamat')
+            'alamat'     => $this->request->getPost('alamat'),
+            'kode_rumah' => $kodeRumah !== '' ? $kodeRumah : null,
         ];
 
         $this->alamatModel->update($id, $data);

@@ -61,6 +61,15 @@
 								</div>
 							</div>
 						</div>
+
+						<div class="row mt-3">
+							<div class="col-md-6">
+								<div class="form-group">
+									<label>PIN Layanan <small class="text-muted">(dipakai warga di alamat ini untuk mengajukan Surat Keterangan lewat form Layanan publik)</small></label>
+									<input type="text" name="kode_rumah" class="form-control" placeholder="Boleh dikosongkan, isi belakangan">
+								</div>
+							</div>
+						</div>
 					</div>
 					<!-- /.card-body -->
 

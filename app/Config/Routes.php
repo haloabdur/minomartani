@@ -69,13 +69,13 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->post('update/(:num)', 'Admin\Pekerjaan::update/$1');
     });
 
-    // Surat
+    // Surat - requests come in via the public Layanan form; admin only
+    // reviews and approves them here. The old manual add/edit routes
+    // were removed (they pointed at no_surat/id_alamat columns that
+    // don't exist in the surat table, and at admin/tambah_surat.php /
+    // admin/ubah_surat.php views that were never created).
     $routes->get('surat', 'Admin\Surat::index');
-    $routes->get('surat/add', 'Admin\Surat::add');
-    $routes->post('surat/store', 'Admin\Surat::store');
     $routes->get('surat/view/(:num)', 'Admin\Surat::view/$1');
-    $routes->get('surat/edit/(:num)', 'Admin\Surat::edit/$1');
-    $routes->post('surat/update/(:num)', 'Admin\Surat::update/$1');
     $routes->get('surat/setuju/(:num)', 'Admin\Surat::setuju/$1');
 
     // Users - highest blast-radius admin surface, restricted to the

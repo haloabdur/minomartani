@@ -35,6 +35,18 @@
 								?>
 							</div>
 						</div>
+
+						<div class="row mt-3">
+							<div class="col-md-6">
+								<div class="form-group">
+									<label>PIN Layanan <small class="text-muted">(dipakai warga di alamat ini untuk mengajukan Surat Keterangan lewat form Layanan publik)</small></label>
+									<input type="text" name="kode_rumah" class="form-control" placeholder="Belum diatur" value="<?php echo esc($alamat->kode_rumah ?? '') ?>">
+									<?php if (empty($alamat->kode_rumah)): ?>
+										<small class="text-danger">PIN belum diatur — warga di alamat ini belum bisa mengajukan surat lewat form Layanan publik.</small>
+									<?php endif; ?>
+								</div>
+							</div>
+						</div>
 					</div>
 					<!-- /.card-body -->
 

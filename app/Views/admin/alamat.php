@@ -17,6 +17,7 @@
 								<th>Alamat</th>
 								<th>Qr Code</th>
 								<th class="text-center">Status</th>
+								<th class="text-center">PIN Layanan</th>
 								<th>Action</th>
 							</tr>
 						</thead>
@@ -37,6 +38,7 @@
 									?>
 								</td>
 								<td class="text-center"><?php echo $alamat->jumlah > 0 ? '<label class="badge badge-pills badge-success">Terisi</label>' : '<label class="badge badge-pills badge-danger">Kosong</label>' ?></td>
+								<td class="text-center"><?php echo !empty($alamat->kode_rumah) ? '<label class="badge badge-pills badge-success">Sudah</label>' : '<label class="badge badge-pills badge-warning">Belum</label>' ?></td>
 								<td>
 									<a href="<?php echo base_url('admin/alamat/edit/'.$alamat->id_alamat) ?>">
 										<i class="far fa-edit"></i>

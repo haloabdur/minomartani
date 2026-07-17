@@ -1,8 +1,5 @@
 <div class="container-fluid">
-	<div class="row mb-3">
-		<div class="col"><a href="<?php echo base_url('admin/surat/add') ?>" class="btn btn-primary" >Tambah Surat</a></div>
-	</div>
-
+	<!-- Permohonan surat masuk lewat form Layanan publik; admin hanya meninjau & menyetujui di sini. -->
 	<div class="row">
 		<div class="col-12">
 			<div class="card">

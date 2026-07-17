@@ -13,7 +13,7 @@ class AlamatModel extends Model
     public function all()
     {
         return $this->db->table($this->table)
-            ->select('alamat.id_alamat, alamat.alamat, alamat.qrcode, COUNT(warga.id_warga) jumlah')
+            ->select('alamat.id_alamat, alamat.alamat, alamat.qrcode, alamat.kode_rumah, COUNT(warga.id_warga) jumlah')
             ->join('warga', 'warga.id_alamat = alamat.id_alamat AND warga.status_warga = 1', 'left')
             ->where('alamat.id_rt', current_rt_id())
             ->groupBy('alamat.id_alamat')

@@ -32,13 +32,20 @@ class Layanan extends BaseController
 
         $nik = $this->wargaModel->nik($this->request->getPost('nik'));
 
-        if (!empty($nik)) {
-            if ($this->request->getPost('pin') != $nik->kode_rumah) {
-                setFlashData('error', 'Data NIK atau PIN Anda salah!');
-                return redirect()->to(back());
-            }
-        } else {
+        if (empty($nik)) {
             setFlashData('error', 'Data NIK tidak terdaftar!');
+            return redirect()->to(back());
+        }
+
+        if (empty($nik->kode_rumah)) {
+            // Fail closed: this address has no PIN set yet in Admin > Alamat,
+            // so there's nothing valid to check the submitted PIN against.
+            setFlashData('error', 'PIN untuk alamat Anda belum diatur oleh RT. Silakan hubungi pengurus RT untuk mengatur PIN terlebih dahulu.');
+            return redirect()->to(back());
+        }
+
+        if ($this->request->getPost('pin') != $nik->kode_rumah) {
+            setFlashData('error', 'Data NIK atau PIN Anda salah!');
             return redirect()->to(back());
         }
 
