@@ -7,6 +7,16 @@
 		}
 	}
 	$belumDicatat = $totalPeserta - $sudahDicatat;
+
+	// Options for the "Filter RT" dropdown: unique RTs actually present
+	// among today's participants (only meaningful in the multi-RT/RW view).
+	$rtOptions = [];
+	foreach ($peserta as $p) {
+		if (!isset($rtOptions[$p->id_rt])) {
+			$rtOptions[$p->id_rt] = $p->nama_rt ?? ('RT ' . $p->id_rt);
+		}
+	}
+	asort($rtOptions);
 ?>
 <div class="container-fluid">
 	<div class="row mb-3">
@@ -74,8 +84,28 @@
 		<div class="col-12">
 			<div class="card">
 				<div class="card-body">
+					<div class="row mb-3">
+						<?php if ($multiRt): ?>
+						<div class="col-md-3 col-6 mb-2 mb-md-0">
+							<select id="filterRt" class="form-control form-control-sm">
+								<option value="">Semua RT</option>
+								<?php foreach ($rtOptions as $idRt => $namaRt): ?>
+									<option value="<?= $idRt ?>"><?= esc($namaRt) ?></option>
+								<?php endforeach; ?>
+							</select>
+						</div>
+						<?php endif; ?>
+						<div class="col-md-3 col-6">
+							<select id="filterStatus" class="form-control form-control-sm">
+								<option value="">Semua Status</option>
+								<option value="sudah">Sudah Dicatat</option>
+								<option value="ditambahkan">Ditambahkan, Belum Diisi</option>
+								<option value="belum">Belum Dicatat</option>
+							</select>
+						</div>
+					</div>
 					<div class="table-responsive">
-					<table class="table table-bordered table-striped datatable">
+					<table class="table table-bordered table-striped datatable" id="tabelPeserta">
 						<thead>
 							<tr>
 								<th width="1">No.</th>
@@ -99,8 +129,9 @@
 										$existing = $catatan[$p->id_warga] ?? null;
 										$hasData  = kesehatan_has_data($existing);
 										$usia = (new DateTime($p->tanggal_lahir))->diff(new DateTime())->y;
+										$statusKey = $hasData ? 'sudah' : ($existing !== null ? 'ditambahkan' : 'belum');
 									?>
-									<tr>
+									<tr data-id-rt="<?= (int) $p->id_rt ?>" data-status="<?= $statusKey ?>">
 										<td><?= $i + 1 ?></td>
 										<td>
 											<?= esc($p->nama_warga) ?>
@@ -332,6 +363,37 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+	// --- Filter RT / Status on the peserta table ---
+	// Registered once, scoped to #tabelPeserta only (via settings.nTable.id)
+	// so it doesn't affect the other DataTables on this page (tambah
+	// peserta / daftar rfid modals). Safe to register before the table is
+	// even initialized - it only runs on draw(), and footer.php's global
+	// $(".datatable").DataTable() init has always finished by the time a
+	// user can actually touch these dropdowns.
+	jQuery.fn.dataTable.ext.search.push(function (settings, searchData, dataIndex) {
+		if (settings.nTable.id !== 'tabelPeserta') {
+			return true;
+		}
+
+		var row          = jQuery(settings.aoData[dataIndex].nTr);
+		var filterRt      = jQuery('#filterRt').length ? jQuery('#filterRt').val() : '';
+		var filterStatus  = jQuery('#filterStatus').val() || '';
+
+		if (filterRt !== '' && String(row.data('idRt')) !== String(filterRt)) {
+			return false;
+		}
+
+		if (filterStatus !== '' && row.data('status') !== filterStatus) {
+			return false;
+		}
+
+		return true;
+	});
+
+	jQuery(document).on('change', '#filterRt, #filterStatus', function () {
+		jQuery('#tabelPeserta').DataTable().draw();
+	});
+
 	var initialized = false;
 	jQuery('#modalTambahPeserta').on('shown.bs.modal', function () {
 		if (!initialized) {

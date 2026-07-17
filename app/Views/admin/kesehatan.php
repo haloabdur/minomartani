@@ -17,6 +17,7 @@
 							<tr>
 								<th width="1">No.</th>
 								<th>Nama Kegiatan</th>
+								<th>Cakupan</th>
 								<th>Tanggal</th>
 								<th>Jumlah Peserta Tercatat</th>
 								<th>Aksi</th>
@@ -25,13 +26,20 @@
 						<tbody>
 							<?php if (empty($kegiatans)): ?>
 								<tr>
-									<td colspan="5" class="text-center text-muted py-4">Belum ada kegiatan kesehatan.</td>
+									<td colspan="6" class="text-center text-muted py-4">Belum ada kegiatan kesehatan.</td>
 								</tr>
 							<?php else: ?>
 								<?php foreach ($kegiatans as $i => $kegiatan): ?>
 									<tr>
 										<td><?= $i + 1 ?></td>
 										<td><?= esc($kegiatan->nama_kegiatan) ?></td>
+										<td>
+											<?php if ($kegiatan->id_rw !== null): ?>
+												<span class="badge badge-primary">RW <?= esc($kegiatan->nama_rw ?? '-') ?></span>
+											<?php else: ?>
+												<span class="badge badge-secondary">RT <?= esc($kegiatan->nama_rt ?? '-') ?></span>
+											<?php endif; ?>
+										</td>
 										<td><?= tanggal($kegiatan->tanggal_kegiatan) ?></td>
 										<td><span class="badge badge-info"><?= (int) $kegiatan->jumlah_peserta ?> orang</span></td>
 										<td>
