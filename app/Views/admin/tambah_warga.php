@@ -22,8 +22,8 @@
 									<div class="row">
 										<div class="col-md-6">
 											<div class="form-group">
-												<label>KK <span class="text-danger">*</span></label>
-												<input type="text" name="no_kk" class="form-control" placeholder="KK" required>
+												<label>KK <span class="text-muted">(opsional)</span></label>
+												<input type="text" name="no_kk" class="form-control" placeholder="KK">
 											</div>
 										</div>
 										<div class="col-md-6">
@@ -51,8 +51,8 @@
 										</div>
 										<div class="col-md-6">
 											<div class="form-group">
-												<label>Alamat Lengkap <span class="text-danger">*</span></label>
-												<input type="text" name="alamat_lengkap" class="form-control" placeholder="Alamat Lengkap" required>
+												<label>Alamat Lengkap <span class="text-muted">(opsional)</span></label>
+												<input type="text" name="alamat_lengkap" class="form-control" placeholder="Alamat Lengkap">
 											</div>
 										</div>
 										<div class="col-md-6">
@@ -107,8 +107,8 @@
 									<div class="row">
 										<div class="col-md-4">
 											<div class="form-group">
-												<label>Pendidikan <span class="text-danger">*</span></label>
-												<select class="form-control" name="pendidikan" required="">
+												<label>Pendidikan <span class="text-muted">(opsional)</span></label>
+												<select class="form-control" name="pendidikan">
 													<option value="">-Pilih-</option>
 													<option value="-">Belum Sekolah</option>
 													<option value="SD">SD</option>
@@ -125,8 +125,8 @@
 										</div>
 										<div class="col-md-4">
 											<div class="form-group">
-												<label>Pekerjaan <span class="text-danger">*</span></label>
-												<select class="form-control select2 w-100" name="id_pekerjaan" required="">
+												<label>Pekerjaan <span class="text-muted">(opsional)</span></label>
+												<select class="form-control select2 w-100" name="id_pekerjaan">
 													<option value="">-Pilih Pekerjaan-</option>
 													<?php foreach ($pekerjaans as $pekerjaan): ?>
 														<option value="<?php echo $pekerjaan->id_pekerjaan ?>"><?php echo $pekerjaan->nama_pekerjaan ?></option>
@@ -136,9 +136,10 @@
 										</div>
 										<div class="col-md-4">
 											<div class="form-group">
-												<label>Agama <span class="text-danger">*</span></label>
-												<select class="form-control" name="agama" required="">
-													<option value="islam">Islam</option>
+												<label>Agama <span class="text-muted">(opsional)</span></label>
+												<select class="form-control" name="agama">
+											<option value="">-Pilih-</option>
+											<option value="islam">Islam</option>
 													<option value="kristen">Kristen</option>
 													<option value="katholik">Katholik</option>
 													<option value="hindu">Hindu / Budha</option>
@@ -192,8 +193,8 @@
 										</div>
 										<div class="col-md-4">
 											<div class="form-group">
-												<label>Status Keluarga <span class="text-danger">*</span></label>
-												<select class="form-control" name="id_status_keluarga" required="">
+												<label>Status Keluarga <span class="text-muted">(opsional)</span></label>
+												<select class="form-control" name="id_status_keluarga">
 													<option value="">-Pilih Status Keluarga-</option>
 													<?php foreach ($status_keluargas as $status_keluarga): ?>
 														<option value="<?php echo $status_keluarga->id_status_keluarga ?>"><?php echo $status_keluarga->status ?></option>
@@ -265,8 +266,8 @@
 										</div>
 										<div class="col-md-6">
 											<div class="form-group">
-												<label>Status Penduduk <span class="text-danger">*</span></label>
-												<select class="form-control" name="id_status_penduduk" required="">
+												<label>Status Penduduk <span class="text-muted">(opsional)</span></label>
+												<select class="form-control" name="id_status_penduduk">
 													<?php foreach ($status_penduduks as $status_penduduk): ?>
 														<option value="<?php echo $status_penduduk->id_status_penduduk ?>"><?php echo $status_penduduk->status ?></option>
 													<?php endforeach ?>
@@ -275,8 +276,8 @@
 										</div>
 										<div class="col-md-6">
 											<div class="form-group">
-												<label>Status Warga <span class="text-danger">*</span></label>
-												<select class="form-control" name="status_warga" required="">
+												<label>Status Warga <span class="text-muted">(opsional)</span></label>
+												<select class="form-control" name="status_warga">
 													<option value="1">Aktif</option>
 													<option value="0">Tidak Aktif</option>
 												</select>

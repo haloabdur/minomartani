@@ -22,8 +22,9 @@
 									<div class="row">
 										<div class="col-md-6">
 											<div class="form-group">
-												<label>KK</label>
-												<input type="text" name="no_kk" class="form-control" placeholder="KK" value="<?php echo $warga->no_kk ?>" readonly required>
+												<label>KK <a href="#" class="ml-2 small text-primary" onclick="toggleKk(event)">Ubah KK</a></label>
+												<?php $kk_kosong = empty($warga->no_kk) || $warga->no_kk === '-'; ?>
+										<input type="text" name="no_kk" id="kk-field" class="form-control" placeholder="KK" value="<?php echo $warga->no_kk ?>" <?php echo $kk_kosong ? '' : 'readonly' ?>>
 											</div>
 										</div>
 										<div class="col-md-6">
@@ -52,8 +53,8 @@
 										</div>
 										<div class="col-md-6">
 											<div class="form-group">
-												<label>Alamat Lengkap</label>
-												<input type="text" name="alamat_lengkap" class="form-control" placeholder="Alamat Lengkap" value="<?php echo $warga->alamat_lengkap ?>" required>
+												<label>Alamat Lengkap <span class="text-muted">(opsional)</span></label>
+												<input type="text" name="alamat_lengkap" class="form-control" placeholder="Alamat Lengkap" value="<?php echo $warga->alamat_lengkap ?>">
 											</div>
 										</div>
 										<div class="col-md-6">
@@ -108,8 +109,8 @@
 									<div class="row">
 										<div class="col-md-4">
 											<div class="form-group">
-												<label>Pendidikan</label>
-												<select class="form-control" name="pendidikan" required="">
+												<label>Pendidikan <span class="text-muted">(opsional)</span></label>
+												<select class="form-control" name="pendidikan">
 													<option value="">-Pilih-</option>
 													<option <?php echo $warga->pendidikan == '-' ? 'selected' : '' ?> value="-">Belum Sekolah</option>
 													<option <?php echo $warga->pendidikan == 'SD' ? 'selected' : '' ?> value="SD">SD</option>
@@ -128,8 +129,8 @@
 										</div>
 										<div class="col-md-4">
 											<div class="form-group">
-												<label>Pekerjaan</label>
-												<select class="form-control select2 w-100" name="id_pekerjaan" required="">
+												<label>Pekerjaan <span class="text-muted">(opsional)</span></label>
+												<select class="form-control select2 w-100" name="id_pekerjaan">
 													<option value="">-Pilih Pekerjaan-</option>
 													<?php foreach ($pekerjaans as $pekerjaan): ?>
 														<option <?php echo $pekerjaan->id_pekerjaan == $warga->id_pekerjaan ? 'selected' : '' ?> value="<?php echo $pekerjaan->id_pekerjaan ?>"><?php echo $pekerjaan->nama_pekerjaan ?></option>
@@ -139,8 +140,9 @@
 										</div>
 										<div class="col-md-4">
 											<div class="form-group">
-												<label>Agama</label>
-												<select class="form-control" name="agama" required="">
+												<label>Agama <span class="text-muted">(opsional)</span></label>
+												<select class="form-control" name="agama">
+											<option value="" <?php echo empty($warga->agama) ? 'selected' : '' ?>>-Pilih-</option>
 													<option <?php echo $warga->agama == 'islam' ? 'selected' : '' ?> value="islam">Islam</option>
 													<option <?php echo $warga->agama == 'kristen' ? 'selected' : '' ?> value="kristen">Kristen</option>
 													<option <?php echo $warga->agama == 'katholik' ? 'selected' : '' ?> value="katholik">Katholik</option>
@@ -196,8 +198,8 @@
 										</div>
 										<div class="col-md-4">
 											<div class="form-group">
-												<label>Status Keluarga</label>
-												<select class="form-control" name="id_status_keluarga" required="">
+												<label>Status Keluarga <span class="text-muted">(opsional)</span></label>
+												<select class="form-control" name="id_status_keluarga">
 													<option value="">-Pilih Status Keluarga-</option>
 													<?php foreach ($status_keluargas as $status_keluarga): ?>
 														<option <?php echo $warga->id_status_keluarga == $status_keluarga->id_status_keluarga ? 'selected' : '' ?> value="<?php echo $status_keluarga->id_status_keluarga ?>"><?php echo $status_keluarga->status ?></option>
@@ -269,8 +271,8 @@
 										</div>
 										<div class="col-md-4">
 											<div class="form-group">
-												<label>Status Penduduk</label>
-												<select class="form-control" name="id_status_penduduk" required="">
+												<label>Status Penduduk <span class="text-muted">(opsional)</span></label>
+												<select class="form-control" name="id_status_penduduk">
 													<?php foreach ($status_penduduks as $status_penduduk): ?>
 														<option <?php echo $warga->id_status_penduduk == $status_penduduk->id_status_penduduk ? 'selected' : '' ?> value="<?php echo $status_penduduk->id_status_penduduk ?>"><?php echo $status_penduduk->status ?></option>
 													<?php endforeach ?>
@@ -280,7 +282,7 @@
 										<div class="col-md-4">
 											<div class="form-group">
 												<label>Status Hidup</label>
-												<select class="form-control" name="is_hidup" required="">
+												<select class="form-control" name="is_hidup">
 													<option <?php echo $warga->is_hidup == 1 ? 'selected' : '' ?> value="1">Hidup</option>
 													<option <?php echo $warga->is_hidup == 0 ? 'selected' : '' ?> value="0">Meninggal</option>
 												</select>
@@ -288,8 +290,8 @@
 										</div>
 										<div class="col-md-4">
 											<div class="form-group">
-												<label>Status Warga</label>
-												<select class="form-control" name="status_warga" required="">
+												<label>Status Warga <span class="text-muted">(opsional)</span></label>
+												<select class="form-control" name="status_warga">
 													<option <?php echo $warga->status_warga == 1 ? 'selected' : '' ?> value="1">Aktif</option>
 													<option <?php echo $warga->status_warga == 0 ? 'selected' : '' ?> value="0">Tidak Aktif</option>
 												</select>
@@ -369,6 +371,13 @@
 		var nikField = document.getElementById('nik-field');
 		nikField.readOnly = !nikField.readOnly;
 		if (!nikField.readOnly) nikField.focus();
+	}
+
+	function toggleKk(e) {
+		e.preventDefault();
+		var kkField = document.getElementById('kk-field');
+		kkField.readOnly = !kkField.readOnly;
+		if (!kkField.readOnly) kkField.focus();
 	}
 
 	let currentTargetInputId = '';
