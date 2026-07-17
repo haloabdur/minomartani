@@ -39,9 +39,9 @@ class WargaModel extends Model
     {
         return $this->db->table($this->table)
             ->select('*, status_keluarga.status status_keluarga, status_penduduk.status status_penduduk, status_penduduk.label label_penduduk')
-            ->join('alamat', 'alamat.id_alamat = warga.id_alamat')
-            ->join('status_keluarga', 'status_keluarga.id_status_keluarga = warga.id_status_keluarga')
-            ->join('status_penduduk', 'status_penduduk.id_status_penduduk = warga.id_status_penduduk')
+            ->join('alamat', 'alamat.id_alamat = warga.id_alamat', 'left')
+            ->join('status_keluarga', 'status_keluarga.id_status_keluarga = warga.id_status_keluarga', 'left')
+            ->join('status_penduduk', 'status_penduduk.id_status_penduduk = warga.id_status_penduduk', 'left')
             ->where('warga.id_rt', current_rt_id())
             ->orderBy('alamat.id_alamat, warga.no_kk, warga.id_status_keluarga')
             ->get()->getResult();
@@ -71,8 +71,8 @@ class WargaModel extends Model
     {
         return $this->db->table($this->table)
             ->select('*, status_keluarga.status status_keluarga')
-            ->join('status_keluarga', 'status_keluarga.id_status_keluarga = warga.id_status_keluarga')
-            ->join('alamat', 'alamat.id_alamat = warga.id_alamat')
+            ->join('status_keluarga', 'status_keluarga.id_status_keluarga = warga.id_status_keluarga', 'left')
+            ->join('alamat', 'alamat.id_alamat = warga.id_alamat', 'left')
             ->where('id_warga', $id)
             ->where('warga.id_rt', current_rt_id())
             ->get()->getRow();
@@ -108,7 +108,7 @@ class WargaModel extends Model
     public function nik($nik)
     {
         return $this->db->table($this->table)
-            ->join('alamat', 'alamat.id_alamat = warga.id_alamat')
+            ->join('alamat', 'alamat.id_alamat = warga.id_alamat', 'left')
             ->where('nik', $nik)
             ->where('warga.id_rt', current_rt_id())
             ->get()->getRow();
@@ -266,9 +266,9 @@ class WargaModel extends Model
     {
         $builder = $this->db->table($this->table)
             ->select('*, status_keluarga.status status_keluarga, status_penduduk.status status_penduduk, status_penduduk.label label_penduduk, pekerjaan.nama_pekerjaan nama_pekerjaan')
-            ->join('alamat', 'alamat.id_alamat = warga.id_alamat')
-            ->join('status_keluarga', 'status_keluarga.id_status_keluarga = warga.id_status_keluarga')
-            ->join('status_penduduk', 'status_penduduk.id_status_penduduk = warga.id_status_penduduk')
+            ->join('alamat', 'alamat.id_alamat = warga.id_alamat', 'left')
+            ->join('status_keluarga', 'status_keluarga.id_status_keluarga = warga.id_status_keluarga', 'left')
+            ->join('status_penduduk', 'status_penduduk.id_status_penduduk = warga.id_status_penduduk', 'left')
             ->join('pekerjaan', 'pekerjaan.id_pekerjaan = warga.id_pekerjaan', 'left')
             ->orderBy('alamat.id_alamat, warga.no_kk, warga.id_status_keluarga')
             ->where('status_warga', 1)
