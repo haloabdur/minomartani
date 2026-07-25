@@ -147,8 +147,21 @@
 												<?php if (!empty($existing->catatan)): ?>
 													<div class="text-muted small font-italic">&ldquo;<?= esc($existing->catatan) ?>&rdquo;</div>
 												<?php endif; ?>
+												<?php
+													$abnormal = array_filter(kesehatan_evaluate($existing, $p->jenis_kelamin ?? null), static fn ($f) => $f['level'] !== 'normal');
+												?>
+												<?php if (!empty($abnormal)): ?>
+													<div class="mt-1">
+														<?php foreach ($abnormal as $f): ?>
+															<span class="badge badge-<?= $f['level'] === 'danger' ? 'danger' : 'warning' ?>" title="<?= esc($f['note']) ?>">
+																<i class="fas fa-exclamation-triangle"></i> <?= esc($f['label']) ?>: <?= esc($f['note']) ?>
+															</span>
+														<?php endforeach; ?>
+													</div>
+												<?php else: ?>
+													<div class="text-success small mt-1"><i class="fas fa-check-circle"></i> Semua nilai dalam batas normal</div>
+												<?php endif; ?>
 											<?php endif; ?>
-											<!-- disini -->
 										</td>
 										<?php if ($multiRt): ?><td><?= esc($p->nama_rt ?? '-') ?></td><?php endif; ?>
 										<td><?= $usia ?> th</td>
