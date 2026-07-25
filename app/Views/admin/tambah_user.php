@@ -66,6 +66,57 @@
 							</div>
 						</div>
 						<small class="form-text text-muted">Pilih salah satu saja: RT untuk Admin RT, atau RW untuk Pengurus RW. Kosongkan keduanya untuk membuat sesama Superadmin.</small>
+
+						<div class="row mt-3">
+							<div class="col">
+								<div class="form-group">
+									<label>Hak Akses Menu <small class="text-muted">(khusus Admin RT)</small></label>
+									<div>
+										<?php foreach ($menuOptions as $key => $label): ?>
+											<div class="form-check form-check-inline">
+												<input class="form-check-input" type="checkbox" name="menu_akses[]" value="<?= esc($key) ?>" id="menu_<?= esc($key) ?>" <?= in_array($key, $userPermissions, true) ? 'checked' : '' ?>>
+												<label class="form-check-label" for="menu_<?= esc($key) ?>"><?= esc($label) ?></label>
+											</div>
+										<?php endforeach; ?>
+									</div>
+									<small class="form-text text-muted">Centang menu yang boleh diakses. Hapus centang untuk membatasi akses Admin RT ini hanya ke menu tertentu.</small>
+								</div>
+							</div>
+						</div>
+
+						<div class="row mt-3">
+							<div class="col">
+								<div class="form-group">
+									<label>Hak Akses Menu <small class="text-muted">(khusus Pengurus RW)</small></label>
+									<div>
+										<?php foreach ($rwMenuOptions as $key => $label): ?>
+											<div class="form-check form-check-inline">
+												<input class="form-check-input" type="checkbox" name="menu_akses[]" value="<?= esc($key) ?>" id="menu_<?= esc($key) ?>" <?= in_array($key, $userPermissions, true) ? 'checked' : '' ?>>
+												<label class="form-check-label" for="menu_<?= esc($key) ?>"><?= esc($label) ?></label>
+											</div>
+										<?php endforeach; ?>
+									</div>
+									<small class="form-text text-muted">Centang menu yang boleh diakses. Hapus centang untuk membatasi akses Pengurus RW ini hanya ke menu tertentu.</small>
+								</div>
+							</div>
+						</div>
+
+						<div class="row mt-3">
+							<div class="col">
+								<div class="form-group">
+									<label>Hak Akses Menu <small class="text-muted">(berlaku untuk Admin RT maupun Pengurus RW)</small></label>
+									<div>
+										<?php foreach ($sharedMenuOptions as $key => $label): ?>
+											<div class="form-check form-check-inline">
+												<input class="form-check-input" type="checkbox" name="menu_akses[]" value="<?= esc($key) ?>" id="menu_<?= esc($key) ?>" <?= in_array($key, $userPermissions, true) ? 'checked' : '' ?>>
+												<label class="form-check-label" for="menu_<?= esc($key) ?>"><?= esc($label) ?></label>
+											</div>
+										<?php endforeach; ?>
+									</div>
+									<small class="form-text text-muted">Centang menu yang boleh diakses, berlaku apa pun peran user ini nantinya.</small>
+								</div>
+							</div>
+						</div>
 					</div>
 					<!-- /.card-body -->
 

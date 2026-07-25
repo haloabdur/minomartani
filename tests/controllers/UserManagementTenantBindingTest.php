@@ -45,11 +45,12 @@ final class UserManagementTenantBindingTest extends CIUnitTestCase
         $request = service('request')
             ->withMethod('post')
             ->setGlobal('post', [
-                'username'  => 'bound_admin',
-                'email'     => 'bound_admin@example.com',
-                'password'  => 'secret1234',
-                'cpassword' => 'secret1234',
-                'id_rt'     => $this->rtId,
+                'username'   => 'bound_admin',
+                'email'      => 'bound_admin@example.com',
+                'password'   => 'secret1234',
+                'cpassword'  => 'secret1234',
+                'id_rt'      => $this->rtId,
+                'menu_akses' => ['menu.warga'],
             ]);
 
         $result = $this->controller(\App\Controllers\Admin\Users::class)
@@ -71,6 +72,34 @@ final class UserManagementTenantBindingTest extends CIUnitTestCase
         $this->assertNull($user->id_rw);
         $this->assertTrue($user->inGroup('admin'));
         $this->assertFalse($user->inGroup('superadmin'));
+        $this->assertTrue($user->can('menu.warga'), 'checked menu_akses[] should be synced as a permission');
+        $this->assertFalse($user->can('menu.alamat'), 'unchecked menus must not be granted');
+    }
+
+    public function testStoreAdminWithoutAnyMenuIsRejected(): void
+    {
+        $request = service('request')
+            ->withMethod('post')
+            ->setGlobal('post', [
+                'username'  => 'no_menu_admin',
+                'email'     => 'no_menu_admin@example.com',
+                'password'  => 'secret1234',
+                'cpassword' => 'secret1234',
+                'id_rt'     => $this->rtId,
+                // no menu_akses[] at all
+            ]);
+
+        $result = $this->controller(\App\Controllers\Admin\Users::class)
+            ->withRequest($request)
+            ->execute('store');
+
+        $this->assertTrue($result->isRedirect());
+
+        $userModel = model(UserModel::class);
+        $this->assertNull(
+            $userModel->findByCredentials(['email' => 'no_menu_admin@example.com']),
+            'an admin with zero assigned menus must not be created'
+        );
     }
 
     public function testUpdateUserChangesTenantAndGroup(): void
@@ -89,10 +118,11 @@ final class UserManagementTenantBindingTest extends CIUnitTestCase
         $request = service('request')
             ->withMethod('post')
             ->setGlobal('post', [
-                'username'  => 'bound_admin_up',
-                'password'  => '',
-                'id_rw'     => $this->rwId,
-                'id_rt'     => '',
+                'username'   => 'bound_admin_up',
+                'password'   => '',
+                'id_rw'      => $this->rwId,
+                'id_rt'      => '',
+                'menu_akses' => ['menu.kesehatan'],
             ]);
 
         $result = $this->controller(\App\Controllers\Admin\Users::class)
@@ -111,5 +141,35 @@ final class UserManagementTenantBindingTest extends CIUnitTestCase
         $this->assertSame($this->rwId, (int) $user->id_rw);
         $this->assertTrue($user->inGroup('rw'));
         $this->assertFalse($user->inGroup('admin'));
+        // Only 'menu.kesehatan' was posted: granted, but 'menu.rekap'
+        // must not be (no more automatic access to either for 'rw').
+        $this->assertTrue($user->can('menu.kesehatan'));
+        $this->assertFalse($user->can('menu.rekap'));
+    }
+
+    public function testStoreRwWithoutAnyMenuIsRejected(): void
+    {
+        $request = service('request')
+            ->withMethod('post')
+            ->setGlobal('post', [
+                'username'  => 'no_menu_rw',
+                'email'     => 'no_menu_rw@example.com',
+                'password'  => 'secret1234',
+                'cpassword' => 'secret1234',
+                'id_rw'     => $this->rwId,
+                // no menu_akses[] at all
+            ]);
+
+        $result = $this->controller(\App\Controllers\Admin\Users::class)
+            ->withRequest($request)
+            ->execute('store');
+
+        $this->assertTrue($result->isRedirect());
+
+        $userModel = model(UserModel::class);
+        $this->assertNull(
+            $userModel->findByCredentials(['email' => 'no_menu_rw@example.com']),
+            'an rw user with zero assigned menus must not be created'
+        );
     }
 }

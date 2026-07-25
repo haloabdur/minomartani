@@ -83,6 +83,11 @@ class AuthGroups extends ShieldAuthGroups
         'users.edit'          => 'Can edit existing non-admin users',
         'users.delete'        => 'Can delete existing non-admin users',
         'beta.access'         => 'Can access beta-level features',
+        'menu.warga'          => 'Can access the Warga menu',
+        'menu.alamat'         => 'Can access the Alamat menu',
+        'menu.berita'         => 'Can access the Berita menu',
+        'menu.kesehatan'      => 'Can access the Kesehatan Lansia menu',
+        'menu.rekap'          => 'Can access the Rekap RW menu',
     ];
 
     /**
@@ -98,6 +103,7 @@ class AuthGroups extends ShieldAuthGroups
             'admin.*',
             'users.*',
             'beta.*',
+            'menu.*',
         ],
         'admin' => [
             'admin.access',
@@ -105,6 +111,9 @@ class AuthGroups extends ShieldAuthGroups
             'users.edit',
             'users.delete',
             'beta.access',
+            // Deliberately no 'menu.*' here: which menus an 'admin' group
+            // user can see is assigned per-user (see Admin\Users menu
+            // access checkboxes), not granted to the whole group.
         ],
         'developer' => [
             'admin.access',
@@ -112,6 +121,7 @@ class AuthGroups extends ShieldAuthGroups
             'users.create',
             'users.edit',
             'beta.access',
+            'menu.*',
         ],
         'user' => [],
         'rw'   => [],

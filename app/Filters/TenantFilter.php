@@ -81,14 +81,33 @@ class TenantFilter implements FilterInterface
                 return redirect()->to('login');
             }
 
+            // Rekap RW and Kesehatan Lansia are both plain per-user
+            // permissions now (see Config\AuthGroups + Admin\Users), with
+            // no group-wide bypass. Admin\Users enforces "at least one
+            // menu assigned" through the UI, so this should only trip for
+            // an account that predates that check or was edited directly
+            // in the DB - same defense-in-depth as the empty id_rw check
+            // above, otherwise this account would bounce forever between
+            // default_admin_route() and the redirect below.
+            if (! $user->can('menu.rekap') && ! $user->can('menu.kesehatan')) {
+                auth()->logout();
+                helper('kbw');
+                setFlashData('error', 'Akun Anda belum memiliki akses menu apa pun. Hubungi superadmin.');
+
+                return redirect()->to('login');
+            }
+
             $session->remove('tenant_rt_id');
             $session->set('tenant_rw_id', (int) $user->id_rw);
 
             // RW accounts are otherwise read-only: rekap (read-only) and
             // kesehatan (read-write, cross-RT within their RW) are their
-            // only surfaces.
+            // only surfaces. Which of the two they land on by default -
+            // and get bounced back to from anywhere else - depends on
+            // which menu permission(s) they've been assigned (see
+            // Config\AuthGroups + Admin\Users).
             if (strpos($path, 'admin/rekap') !== 0 && strpos($path, 'admin/kesehatan') !== 0) {
-                return redirect()->to('admin/rekap');
+                return redirect()->to(default_admin_route());
             }
 
             return;
@@ -107,6 +126,17 @@ class TenantFilter implements FilterInterface
 
         $session->remove('tenant_rw_id');
         $session->set('tenant_rt_id', (int) $user->id_rt);
+
+        // Land 'admin'-group users straight on their first assigned menu
+        // rather than the (permission-free) Dashboard, same as 'rw'
+        // above. superadmin/developer are excluded earlier in this
+        // method and always keep landing on the dashboard.
+        if (in_array($path, ['admin', 'admin/dashboard'], true)) {
+            $target = default_admin_route();
+            if ($target !== 'admin/dashboard' && $target !== 'admin') {
+                return redirect()->to($target);
+            }
+        }
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)

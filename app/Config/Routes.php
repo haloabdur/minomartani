@@ -26,29 +26,35 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
     $routes->get('dashboard', 'Admin\Dashboard::index');
     $routes->get('switch-tenant/(:num)', 'Admin\Dashboard::switchTenant/$1');
 
-    // Warga
-    $routes->get('warga', 'Admin\Warga::index');
-    $routes->get('warga/add', 'Admin\Warga::add');
-    $routes->post('warga/store', 'Admin\Warga::store');
-    $routes->get('warga/view/(:num)', 'Admin\Warga::view/$1');
-    $routes->get('warga/edit/(:num)', 'Admin\Warga::edit/$1');
-    $routes->post('warga/update/(:num)', 'Admin\Warga::update/$1');
-    $routes->get('warga/export', 'Admin\Warga::export');
+    // Warga - per-user menu access, see Config\AuthGroups + Admin\Users
+    $routes->group('warga', ['filter' => 'menuaccess:warga'], function ($routes) {
+        $routes->get('/', 'Admin\Warga::index');
+        $routes->get('add', 'Admin\Warga::add');
+        $routes->post('store', 'Admin\Warga::store');
+        $routes->get('view/(:num)', 'Admin\Warga::view/$1');
+        $routes->get('edit/(:num)', 'Admin\Warga::edit/$1');
+        $routes->post('update/(:num)', 'Admin\Warga::update/$1');
+        $routes->get('export', 'Admin\Warga::export');
+    });
 
-    // Alamat
-    $routes->get('alamat', 'Admin\Alamat::index');
-    $routes->get('alamat/add', 'Admin\Alamat::add');
-    $routes->post('alamat/store', 'Admin\Alamat::store');
-    $routes->get('alamat/edit/(:num)', 'Admin\Alamat::edit/$1');
-    $routes->post('alamat/update/(:num)', 'Admin\Alamat::update/$1');
-    $routes->get('alamat/generate_qrcode/(:num)', 'Admin\Alamat::generate_qrcode/$1');
+    // Alamat - per-user menu access, see Config\AuthGroups + Admin\Users
+    $routes->group('alamat', ['filter' => 'menuaccess:alamat'], function ($routes) {
+        $routes->get('/', 'Admin\Alamat::index');
+        $routes->get('add', 'Admin\Alamat::add');
+        $routes->post('store', 'Admin\Alamat::store');
+        $routes->get('edit/(:num)', 'Admin\Alamat::edit/$1');
+        $routes->post('update/(:num)', 'Admin\Alamat::update/$1');
+        $routes->get('generate_qrcode/(:num)', 'Admin\Alamat::generate_qrcode/$1');
+    });
 
-    // Berita
-    $routes->get('berita', 'Admin\Berita::index');
-    $routes->get('berita/add', 'Admin\Berita::add');
-    $routes->post('berita/store', 'Admin\Berita::store');
-    $routes->get('berita/edit/(:num)', 'Admin\Berita::edit/$1');
-    $routes->post('berita/update/(:num)', 'Admin\Berita::update/$1');
+    // Berita - per-user menu access, see Config\AuthGroups + Admin\Users
+    $routes->group('berita', ['filter' => 'menuaccess:berita'], function ($routes) {
+        $routes->get('/', 'Admin\Berita::index');
+        $routes->get('add', 'Admin\Berita::add');
+        $routes->post('store', 'Admin\Berita::store');
+        $routes->get('edit/(:num)', 'Admin\Berita::edit/$1');
+        $routes->post('update/(:num)', 'Admin\Berita::update/$1');
+    });
 
     // Inventaris
     $routes->get('inventaris', 'Admin\Inventaris::index');
@@ -120,15 +126,19 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->post('delete', 'Admin\Logs::delete');
     });
 
-    // RW rekap - read-only, rw group (and superadmin)
-    $routes->group('rekap', ['filter' => 'group:rw,superadmin'], function ($routes) {
+    // RW rekap - read-only; per-user menu access for 'rw' (see
+    // Config\AuthGroups + Admin\Users), superadmin bypasses via the
+    // 'menu.*' matrix wildcard.
+    $routes->group('rekap', ['filter' => 'menuaccess:rekap'], function ($routes) {
         $routes->get('/', 'Admin\Rekap::index');
         $routes->get('warga/(:num)', 'Admin\Rekap::warga/$1');
         $routes->get('warga/(:num)/export', 'Admin\Rekap::export/$1');
     });
 
-    // Kesehatan Lansia - RT admin (RT sendiri) dan RW (lintas RT dalam RW-nya)
-    $routes->group('kesehatan', ['filter' => 'group:admin,rw,superadmin'], function ($routes) {
+    // Kesehatan Lansia - per-user menu access for both 'admin' and 'rw'
+    // (see Config\AuthGroups + Admin\Users), superadmin bypasses via the
+    // 'menu.*' matrix wildcard.
+    $routes->group('kesehatan', ['filter' => 'menuaccess:kesehatan'], function ($routes) {
         $routes->get('/', 'Admin\Kesehatan::index');
         $routes->get('add', 'Admin\Kesehatan::add');
         $routes->post('store', 'Admin\Kesehatan::store');

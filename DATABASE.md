@@ -328,6 +328,8 @@ PK: `id`. Index: `user_id`. FK: `user_id → users.id` (CASCADE).
 ### `auth_permissions_users`
 PK: `id`. FK: `user_id → users.id` (CASCADE).
 
+Per-user permission overrides on top of the group matrix (`app/Config/AuthGroups.php`). Used for the menu access feature: `menu.warga`/`menu.alamat`/`menu.berita` are exclusive to the `admin` group, `menu.rekap` is exclusive to `rw`, and `menu.kesehatan` is independently assignable to *either* group (superadmin can freely toggle it per user regardless of role) — the `admin`/`rw` groups themselves are granted none of these in the matrix, so access is entirely per-user via `Admin\Users`' checkboxes. None of these five is a group-wide bypass or automatic default; every account needs at least one explicitly assigned or `Admin\Users` refuses to save it. Pre-existing accounts were backfilled so nobody lost access on deploy: `2026-07-21-100000_BackfillAdminMenuPermissions.php` (all four admin menus for existing `admin` users), `2026-07-21-110000_BackfillRwMenuPermissions.php` (`menu.rekap` for existing `rw` users), `2026-07-22-090000_BackfillRwKesehatanPermission.php` (`menu.kesehatan` for existing `rw` users, since it used to be an unconditional bypass rather than a stored permission). `App\Helpers\menu_helper.php`'s `default_admin_route()` sends a user to their first assigned menu on login instead of a blanket dashboard (superadmin/developer, which hold a `menu.*` matrix wildcard, still land on `admin/dashboard`); `App\Filters\TenantFilter` logs out an `rw` account with neither `menu.rekap` nor `menu.kesehatan` (defense-in-depth against the same "zero menus" state `Admin\Users` is meant to prevent).
+
 | Kolom | Tipe |
 |---|---|
 | `id` | int(11) unsigned, PK AI |

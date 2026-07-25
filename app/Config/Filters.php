@@ -15,6 +15,7 @@ use CodeIgniter\Filters\SecureHeaders;
 use CodeIgniter\Shield\Filters\GroupFilter;
 use App\Filters\TurnstileFilter;
 use App\Filters\TenantFilter;
+use App\Filters\MenuAccessFilter;
 
 class Filters extends BaseFilters
 {
@@ -40,6 +41,7 @@ class Filters extends BaseFilters
         'group'         => GroupFilter::class,
         'turnstile'     => TurnstileFilter::class,
         'tenant'        => TenantFilter::class,
+        'menuaccess'    => MenuAccessFilter::class,
     ];
 
     /**

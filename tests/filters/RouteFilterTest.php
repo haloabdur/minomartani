@@ -61,8 +61,20 @@ final class RouteFilterTest extends CIUnitTestCase
         // Regular admin routes (warga, alamat, etc.) only require being
         // logged in (any Shield group) - group:admin is deliberately
         // scoped to the higher-blast-radius Users management surface.
+        // Fine-grained access is per-user via the 'menuaccess' filter
+        // instead (see testMenuGatedRoutesRequireMenuPermission).
         $this->assertNotFilter('admin/warga', 'before', 'group:admin');
         $this->assertFilter('admin/warga', 'before', 'session');
+    }
+
+    public function testMenuGatedRoutesRequireMenuPermission(): void
+    {
+        $this->assertFilter('admin/warga', 'before', 'menuaccess:warga');
+        $this->assertFilter('admin/alamat', 'before', 'menuaccess:alamat');
+        $this->assertFilter('admin/berita', 'before', 'menuaccess:berita');
+        // Kesehatan Lansia is a plain 'menu.kesehatan' permission for
+        // both 'admin' and 'rw' now - no group bypass argument.
+        $this->assertFilter('admin/kesehatan', 'before', 'menuaccess:kesehatan');
     }
 
     public function testSyncControllerAndRouteWereRemoved(): void
@@ -87,9 +99,12 @@ final class RouteFilterTest extends CIUnitTestCase
         $this->assertFilter('admin/warga/store', 'before', 'tenant');
     }
 
-    public function testRekapRoutesAllowRwAndSuperadminOnly(): void
+    public function testRekapRoutesRequireMenuPermission(): void
     {
-        $this->assertFilter('admin/rekap', 'before', 'group:rw,superadmin');
-        $this->assertFilter('admin/rekap/warga/([0-9]+)', 'before', 'group:rw,superadmin');
+        // rw must be individually granted 'menu.rekap' (Admin\Users menu
+        // access checkboxes); superadmin bypasses via the 'menu.*'
+        // matrix wildcard. See testMenuGatedRoutesRequireMenuPermission.
+        $this->assertFilter('admin/rekap', 'before', 'menuaccess:rekap');
+        $this->assertFilter('admin/rekap/warga/([0-9]+)', 'before', 'menuaccess:rekap');
     }
 }

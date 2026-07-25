@@ -88,6 +88,13 @@ final class SuperadminAddAlamatTest extends CIUnitTestCase
 
         $user = $userModel->findById($userId);
         $user->addGroup('admin');
+        // Menu access is per-user since the menu.* permission overhaul
+        // (see Config\AuthGroups); grant the full set so this fixture
+        // still represents an ordinarily-provisioned RT admin and these
+        // tests keep exercising the superadmin-only cross-tenant logic
+        // in Admin\Alamat rather than getting stopped earlier by the
+        // 'menuaccess:alamat' route filter.
+        $user->syncPermissions('menu.warga', 'menu.alamat', 'menu.berita', 'menu.kesehatan');
         return $user;
     }
 

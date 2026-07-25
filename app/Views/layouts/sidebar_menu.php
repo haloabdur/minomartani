@@ -32,6 +32,7 @@
 
         <li class="nav-header">INFORMASI</li>
 
+        <?php if (auth()->user()->can('menu.warga')): ?>
         <li class="nav-item">
             <a href="<?= base_url('admin/warga') ?>" class="nav-link">
                 <i class="nav-icon fas fa-book-reader"></i>
@@ -40,6 +41,7 @@
                 </p>
             </a>
         </li>
+        <?php endif ?>
 
         <!-- <li class="nav-item">
             <a href="<?= base_url('admin/inventaris') ?>" class="nav-link">
@@ -51,6 +53,7 @@
         </li> -->
 
         <li class="nav-header">MASTER DATA</li>
+        <?php if (auth()->user()->can('menu.berita')): ?>
         <li class="nav-item">
             <a href="<?= base_url('admin/berita') ?>" class="nav-link">
                 <i class="nav-icon fas fa-book"></i>
@@ -59,7 +62,9 @@
                 </p>
             </a>
         </li>
+        <?php endif ?>
 
+        <?php if (auth()->user()->can('menu.alamat')): ?>
         <li class="nav-item">
             <a href="<?= base_url('admin/alamat') ?>" class="nav-link">
                 <i class="nav-icon fas fa-address-book"></i>
@@ -68,6 +73,7 @@
                 </p>
             </a>
         </li>
+        <?php endif ?>
         <?php endif ?>
 
         <li class="nav-header">DATA RT/RW</li>
@@ -90,7 +96,7 @@
         </li>
         <?php endif ?>
 
-        <?php if (auth()->user() && (auth()->user()->inGroup('rw') || auth()->user()->inGroup('superadmin'))): ?>
+        <?php if (auth()->user() && auth()->user()->can('menu.rekap')): ?>
         <li class="nav-item">
             <a href="<?= base_url('admin/rekap') ?>" class="nav-link">
                 <i class="nav-icon fas fa-chart-bar"></i>
@@ -101,7 +107,7 @@
         </li>
         <?php endif ?>
 
-        <?php if (auth()->user() && (auth()->user()->inGroup('admin') || auth()->user()->inGroup('rw') || auth()->user()->inGroup('superadmin'))): ?>
+        <?php if (auth()->user() && auth()->user()->can('menu.kesehatan')): ?>
         <li class="nav-item">
             <a href="<?= base_url('admin/kesehatan') ?>" class="nav-link">
                 <i class="nav-icon fas fa-heartbeat"></i>
