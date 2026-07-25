@@ -27,9 +27,28 @@ class App extends BaseConfig
      * also accepts 'http://media.example.com/' and 'http://accounts.example.com/':
      *     ['media.example.com', 'accounts.example.com']
      *
+     * NOTE: CI4 can only override an array config property from .env when
+     * the default value already has matching indexes to override (see
+     * BaseConfig::initEnvValue()) - an empty array default like this one
+     * can NEVER be populated via .env (app.allowedHostnames.0 = ... is
+     * silently ignored). Every tenant subdomain (RT and RW alike) MUST be
+     * listed here directly and deployed, or CI4's SiteURI treats the Host
+     * header as invalid and falls back to app.baseURL's host for ALL
+     * generated URLs (site_url(), redirect()->to(), form_open()...) -
+     * visitors on other subdomains get silently bounced to the baseURL
+     * domain and can't log in there. New tenants added via admin/tenants
+     * need a new entry here too (not automatic).
+     *
      * @var list<string>
      */
-    public array $allowedHostnames = [];
+    public array $allowedHostnames = [
+        'rt29.minomartani.com',
+        'rt26.minomartani.com',
+        'rt27.minomartani.com',
+        'rt28.minomartani.com',
+        'rt30.minomartani.com',
+        'rw06.minomartani.com',
+    ];
 
     /**
      * --------------------------------------------------------------------------
