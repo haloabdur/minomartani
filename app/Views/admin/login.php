@@ -1,3 +1,17 @@
+<?php
+// Login runs before Shield's session filter establishes tenant_rt_id/
+// tenant_rw_id, so branding is resolved straight from the Host header
+// (same helper TenantFilter uses) rather than current_rt()/current_rw().
+$hostTenant   = resolve_tenant_by_host(request_host(request()));
+$tenantName   = 'RT 29 Minomartani';
+if ($hostTenant !== null) {
+  // rt.nama is just "RT 29"; rw.nama already includes "Minomartani"
+  // ("RW 06 Minomartani") - append the suffix only when it's missing so
+  // neither case ends up duplicated.
+  $baseName   = $hostTenant['type'] === 'rt' ? $hostTenant['rt']->nama : $hostTenant['rw']->nama;
+  $tenantName = str_contains($baseName, 'Minomartani') ? $baseName : $baseName . ' Minomartani';
+}
+?>
 <!DOCTYPE html>
 <html>
 
@@ -6,11 +20,11 @@
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="RT 29 - Minomartani Ngaglik Sleman">
+  <meta name="description" content="<?= esc($tenantName) ?> - Ngaglik Sleman">
   <meta name="keywords" content="HTML5, bootstrap, mobile, app, landing, ios, android, responsive">
   <meta name="theme-color" content="#1A75CF" />
   <link rel="icon" href="<?php echo base_url('public/home/') ?>assets/logo-sleman.jpg" type="image/x-icon">
-  <title>Admin - RT 29 Minomartani</title>
+  <title>Admin - <?= esc($tenantName) ?></title>
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="<?php echo base_url('public') ?>/plugins/fontawesome-free/css/all.min.css">
@@ -30,8 +44,14 @@
   <div class="login-box">
     <?php echo loadFlashData(); ?>
     <div class="login-logo">
-      <div class="row justify-content-center mb-4">
-        <a href="<?php echo base_url() ?>"><img src="<?php echo base_url('public/home/assets/img/logo-dark.png') ?>"></a>
+      <div class="row justify-content-center align-items-center mb-4">
+        <a href="<?php echo base_url() ?>" class="d-flex align-items-center text-decoration-none">
+          <img src="<?php echo base_url('public/home/assets/img/logo-only.png') ?>" style="height: 48px; width: auto;" alt="Logo">
+          <span class="ml-2 text-left">
+            <span class="d-block font-weight-bold" style="font-size: 1.1rem; color: #1A75CF;"><?= esc($tenantName) ?></span>
+            <span class="d-block text-muted" style="font-size: 0.8rem;">Kec. Ngaglik, Kab. Sleman, DIY</span>
+          </span>
+        </a>
       </div>
     </div>
     <!-- /.login-logo -->
