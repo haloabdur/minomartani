@@ -5,6 +5,7 @@ namespace App\Controllers\Admin;
 use App\Controllers\BaseController;
 use App\Models\KesehatanCatatanModel;
 use App\Models\KesehatanKegiatanModel;
+use App\Models\PekerjaanModel;
 use App\Models\RtModel;
 use App\Models\WargaModel;
 use CodeIgniter\Database\Exceptions\DatabaseException;
@@ -16,13 +17,15 @@ class Kesehatan extends BaseController
     protected $catatanModel;
     protected $wargaModel;
     protected $rtModel;
+    protected $pekerjaanModel;
 
     public function __construct()
     {
-        $this->kegiatanModel = new KesehatanKegiatanModel();
-        $this->catatanModel  = new KesehatanCatatanModel();
-        $this->wargaModel    = new WargaModel();
-        $this->rtModel       = new RtModel();
+        $this->kegiatanModel  = new KesehatanKegiatanModel();
+        $this->catatanModel   = new KesehatanCatatanModel();
+        $this->wargaModel     = new WargaModel();
+        $this->rtModel        = new RtModel();
+        $this->pekerjaanModel = new PekerjaanModel();
     }
 
     public function index()
@@ -139,6 +142,12 @@ class Kesehatan extends BaseController
         $data['semuaWarga']  = $this->wargaModel->allByRtIds($idRts);
         $data['pesertaIds']  = array_map(static fn ($p) => (int) $p->id_warga, $peserta);
         $data['multiRt']     = count($idRts) > 1;
+        // Every RT the caller may add a resident into, for the "tambah
+        // warga baru" picker. Not derived from $peserta (like $rtOptions
+        // below is, for the filter dropdown) because an RT with zero
+        // lansia participants today would otherwise be impossible to
+        // pick when adding its first one.
+        $data['rtPilihan']   = $this->rtModel->whereIn('id_rt', $idRts)->orderBy('nama')->findAll();
 
         $isi = $this->request->getGet('isi');
         $data['autoOpenWarga'] = ($isi !== null && ctype_digit((string) $isi)) ? (int) $isi : null;
@@ -168,6 +177,55 @@ class Kesehatan extends BaseController
 
         setFlashData('success', esc($warga->nama_warga) . ' ditambahkan ke kegiatan.');
         return redirect()->to('admin/kesehatan/kegiatan/' . $idKegiatan);
+    }
+
+    /**
+     * Quick-add a resident who isn't in `warga` at all yet (e.g. found
+     * during posyandu but missing from the DB) with just a name, so
+     * they can still get a kesehatan_catatan row for this kegiatan.
+     * Everything else the schema requires but this form doesn't ask for
+     * (nik, no_kk, tempat_lahir) gets a placeholder - see
+     * WargaModel::createMinimal(). The admin can fill in full bio data
+     * later via the regular "Ubah Warga" screen.
+     */
+    public function tambahWargaBaru($idKegiatan)
+    {
+        $kegiatan = $this->kegiatanModel->detailForCurrentScope((int) $idKegiatan);
+        if ($kegiatan === null) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        $nama = trim((string) $this->request->getPost('nama_warga'));
+        if ($nama === '') {
+            setFlashData('error', 'Nama wajib diisi.');
+            return redirect()->to('admin/kesehatan/kegiatan/' . $idKegiatan);
+        }
+
+        $usia = $this->request->getPost('usia');
+        if (!ctype_digit((string) $usia)) {
+            setFlashData('error', 'Perkiraan usia wajib diisi (boleh perkiraan).');
+            return redirect()->to('admin/kesehatan/kegiatan/' . $idKegiatan);
+        }
+
+        $idRts = $this->authorizedRtIds($kegiatan);
+        $idRt  = (int) $this->request->getPost('id_rt');
+        if (!in_array($idRt, $idRts, true)) {
+            $idRt = $idRts[0];
+        }
+
+        $jenisKelamin = $this->request->getPost('jenis_kelamin');
+        $jenisKelamin = in_array($jenisKelamin, ['L', 'P'], true) ? $jenisKelamin : null;
+
+        $tanggalLahir = (new \DateTime())->modify('-' . (int) $usia . ' years')->format('Y-m-d');
+
+        $idWarga = $this->wargaModel->createMinimal($nama, $jenisKelamin, $tanggalLahir, $this->pekerjaanModel->defaultId(), $idRt);
+
+        $this->catatanModel->upsert((int) $idKegiatan, $idWarga, $idRt, [
+            'id_user' => auth()->user()->id,
+        ]);
+
+        setFlashData('success', esc($nama) . ' ditambahkan sebagai warga baru. Lengkapi data lengkapnya nanti lewat menu Warga.');
+        return redirect()->to('admin/kesehatan/kegiatan/' . $idKegiatan . '?isi=' . $idWarga);
     }
 
     public function simpanCatatan($idKegiatan)

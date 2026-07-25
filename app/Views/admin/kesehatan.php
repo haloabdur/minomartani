@@ -35,9 +35,9 @@
 										<td><?= esc($kegiatan->nama_kegiatan) ?></td>
 										<td>
 											<?php if ($kegiatan->id_rw !== null): ?>
-												<span class="badge badge-primary">RW <?= esc($kegiatan->nama_rw ?? '-') ?></span>
+												<span class="badge badge-primary"><?= esc($kegiatan->nama_rw ?? '-') ?></span>
 											<?php else: ?>
-												<span class="badge badge-secondary">RT <?= esc($kegiatan->nama_rt ?? '-') ?></span>
+												<span class="badge badge-secondary"><?= esc($kegiatan->nama_rt ?? '-') ?></span>
 											<?php endif; ?>
 										</td>
 										<td><?= tanggal($kegiatan->tanggal_kegiatan) ?></td>

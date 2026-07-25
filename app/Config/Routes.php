@@ -147,6 +147,7 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->post('kegiatan/(:num)/update', 'Admin\Kesehatan::updateKegiatan/$1');
         $routes->post('kegiatan/(:num)/simpan', 'Admin\Kesehatan::simpanCatatan/$1');
         $routes->post('kegiatan/(:num)/tambah-peserta', 'Admin\Kesehatan::tambahPeserta/$1');
+        $routes->post('kegiatan/(:num)/tambah-warga-baru', 'Admin\Kesehatan::tambahWargaBaru/$1');
         $routes->get('kegiatan/(:num)/catatan/(:num)/hapus', 'Admin\Kesehatan::hapusCatatan/$1/$2');
         $routes->get('kegiatan/(:num)/scan-rfid', 'Admin\Kesehatan::scanRfid/$1');
         $routes->post('kegiatan/(:num)/daftar-rfid', 'Admin\Kesehatan::daftarRfid/$1');

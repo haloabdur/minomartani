@@ -74,8 +74,11 @@
 			</div>
 		</div>
 		<div class="col-md-6 d-flex align-items-center">
-			<button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modalTambahPeserta">
+			<button type="button" class="btn btn-secondary mr-2" data-toggle="modal" data-target="#modalTambahPeserta">
 				<i class="fas fa-user-plus mr-1"></i> Tambah Peserta Lain (di luar lansia)
+			</button>
+			<button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#modalTambahWargaBaru">
+				<i class="fas fa-user-plus mr-1"></i> Warga Belum Terdaftar
 			</button>
 		</div>
 	</div>
@@ -145,6 +148,7 @@
 													<div class="text-muted small font-italic">&ldquo;<?= esc($existing->catatan) ?>&rdquo;</div>
 												<?php endif; ?>
 											<?php endif; ?>
+											<!-- disini -->
 										</td>
 										<?php if ($multiRt): ?><td><?= esc($p->nama_rt ?? '-') ?></td><?php endif; ?>
 										<td><?= $usia ?> th</td>
@@ -308,6 +312,53 @@
 				</table>
 				</div>
 			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="modalTambahWargaBaru" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Tambah Warga Belum Terdaftar</h5>
+				<button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+			</div>
+			<?php echo form_open('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/tambah-warga-baru') ?>
+				<div class="modal-body">
+					<p class="text-muted small">Untuk warga yang datang periksa tapi belum ada di data warga. Data lengkapnya (NIK, alamat, dll) bisa dilengkapi belakangan lewat menu Warga.</p>
+					<div class="form-group">
+						<label>Nama Lengkap</label>
+						<input type="text" name="nama_warga" class="form-control" required autocomplete="off">
+					</div>
+					<div class="form-row">
+						<div class="col-6 form-group">
+							<label>Perkiraan Usia (tahun)</label>
+							<input type="number" name="usia" min="0" max="120" class="form-control" required>
+						</div>
+						<div class="col-6 form-group">
+							<label>Jenis Kelamin</label>
+							<select name="jenis_kelamin" class="form-control">
+								<option value="">-</option>
+								<option value="L">Laki-laki</option>
+								<option value="P">Perempuan</option>
+							</select>
+						</div>
+					</div>
+					<?php if ($multiRt): ?>
+						<div class="form-group">
+							<label>RT</label>
+							<select name="id_rt" class="form-control" required>
+								<?php foreach ($rtPilihan as $rt): ?>
+									<option value="<?= $rt->id_rt ?>"><?= esc($rt->nama) ?></option>
+								<?php endforeach; ?>
+							</select>
+						</div>
+					<?php endif; ?>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary">Tambahkan &amp; Isi Data</button>
+				</div>
+			<?php echo form_close() ?>
 		</div>
 	</div>
 </div>

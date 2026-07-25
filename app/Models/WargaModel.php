@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use CodeIgniter\Database\Exceptions\DatabaseException;
 use CodeIgniter\Model;
 
 class WargaModel extends Model
@@ -385,5 +386,42 @@ class WargaModel extends Model
             ->where('kode_rfid', $kodeRfid)
             ->whereIn('warga.id_rt', $idRts)
             ->get()->getRow();
+    }
+
+    /**
+     * Insert a resident from just a name (+ optional gender/approx.
+     * birth year), for the Kesehatan "tambah warga baru" flow - someone
+     * shows up to a posyandu/checkup with no existing warga row and no
+     * full bio data on hand, but still needs a record to attach that
+     * session's measurements to. NOT NULL columns with no real value
+     * (no_kk, tempat_lahir) get the '-' placeholder already used
+     * elsewhere in this app (Admin\Warga::store(), the RT26-30 bulk
+     * import) for the same "unknown" case. nik is NOT NULL and UNIQUE,
+     * so '-' can't be reused for every quick-add - a random placeholder
+     * is generated instead, with a few retries on the (astronomically
+     * unlikely) chance of a collision.
+     */
+    public function createMinimal(string $namaWarga, ?string $jenisKelamin, string $tanggalLahir, int $idPekerjaan, int $idRt): int
+    {
+        for ($attempt = 1; $attempt <= 5; $attempt++) {
+            try {
+                $this->insert([
+                    'nama_warga'    => $namaWarga,
+                    'no_kk'         => '-',
+                    'nik'           => 'TMP-' . bin2hex(random_bytes(6)),
+                    'jenis_kelamin' => $jenisKelamin ?: null,
+                    'tempat_lahir'  => '-',
+                    'tanggal_lahir' => $tanggalLahir,
+                    'id_pekerjaan'  => $idPekerjaan,
+                    'id_rt'         => $idRt,
+                ]);
+
+                return (int) $this->insertID();
+            } catch (DatabaseException $e) {
+                if ($attempt === 5) {
+                    throw $e;
+                }
+            }
+        }
     }
 }
