@@ -7,6 +7,7 @@ use App\Models\KesehatanCatatanModel;
 use App\Models\KesehatanKegiatanModel;
 use App\Models\PekerjaanModel;
 use App\Models\RtModel;
+use App\Models\RwModel;
 use App\Models\WargaModel;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 use CodeIgniter\Exceptions\PageNotFoundException;
@@ -17,7 +18,16 @@ class Kesehatan extends BaseController
     protected $catatanModel;
     protected $wargaModel;
     protected $rtModel;
+    protected $rwModel;
     protected $pekerjaanModel;
+
+    /**
+     * Kelurahan shown on the printed/exported rekap header. Not a DB
+     * column anywhere (schema has no kelurahan table) - this app is
+     * built specifically for RT/RW units inside Kelurahan Minomartani
+     * (see CLAUDE.md), so it's a fixed label rather than per-tenant data.
+     */
+    private const KALURAHAN = 'Minomartani';
 
     public function __construct()
     {
@@ -25,6 +35,7 @@ class Kesehatan extends BaseController
         $this->catatanModel   = new KesehatanCatatanModel();
         $this->wargaModel     = new WargaModel();
         $this->rtModel        = new RtModel();
+        $this->rwModel        = new RwModel();
         $this->pekerjaanModel = new PekerjaanModel();
     }
 
@@ -122,18 +133,7 @@ class Kesehatan extends BaseController
 
         $catatan = $this->catatanModel->byKegiatan((int) $id);
 
-        // Default participant list: auto-filtered lansia, plus anyone
-        // manually added via the "tambah peserta lain" modal (they have a
-        // kesehatan_catatan row - possibly still blank - but aren't lansia,
-        // so lansiaByRtIds() alone wouldn't surface them on reload).
-        $peserta   = $this->wargaModel->lansiaByRtIds($idRts);
-        $lansiaIds = array_map(static fn ($w) => (int) $w->id_warga, $peserta);
-        $manualIds = array_diff(array_map('intval', array_keys($catatan)), $lansiaIds);
-
-        if (!empty($manualIds)) {
-            $peserta = array_merge($peserta, $this->wargaModel->byIds(array_values($manualIds)));
-            usort($peserta, static fn ($a, $b) => strcmp($a->nama_warga, $b->nama_warga));
-        }
+        $peserta = $this->pesertaForKegiatan($idRts, $catatan);
 
         $this->global['pageTitle'] = 'Kegiatan: ' . $kegiatan->nama_kegiatan;
         $data['kegiatan']    = $kegiatan;
@@ -153,6 +153,208 @@ class Kesehatan extends BaseController
         $data['autoOpenWarga'] = ($isi !== null && ctype_digit((string) $isi)) ? (int) $isi : null;
 
         return $this->loadViews('admin/kegiatan_kesehatan', $this->global, $data);
+    }
+
+    /**
+     * Excel (HTML-table) export of the posyandu/posbindu lansia rekap for
+     * this kegiatan: header info block, participants grouped by RT, and
+     * the BB/TB/LP/TD/GDS/AU/KOL result columns - the same print-ready
+     * layout as exportPdf(). Pass `?rt=<id_rt>` to export just one RT;
+     * omitted (or an RT outside the caller's scope) exports every RT the
+     * caller may see ("gabungan").
+     */
+    public function exportExcel($idKegiatan)
+    {
+        $kegiatan = $this->kegiatanModel->detailForCurrentScope((int) $idKegiatan);
+        if ($kegiatan === null) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        $idRts       = $this->authorizedRtIds($kegiatan);
+        $targetRtIds = $this->scopeRtIds($idRts);
+        $catatan     = $this->catatanModel->byKegiatan((int) $idKegiatan);
+
+        return view('admin/export_kesehatan', $this->buildRekap($kegiatan, $idRts, $targetRtIds, $catatan));
+    }
+
+    /**
+     * Print-friendly (browser "save as PDF") version of the same rekap as
+     * exportExcel() - same grouping, same `?rt=` scoping.
+     */
+    public function exportPdf($idKegiatan)
+    {
+        $kegiatan = $this->kegiatanModel->detailForCurrentScope((int) $idKegiatan);
+        if ($kegiatan === null) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        $idRts       = $this->authorizedRtIds($kegiatan);
+        $targetRtIds = $this->scopeRtIds($idRts);
+        $catatan     = $this->catatanModel->byKegiatan((int) $idKegiatan);
+
+        return view('admin/cetak_rekap_kesehatan', $this->buildRekap($kegiatan, $idRts, $targetRtIds, $catatan));
+    }
+
+    /**
+     * RT id(s) an export actually covers: the single RT named by `?rt=`
+     * when it's one the caller is authorized for, otherwise every
+     * authorized RT ("gabungan"). Shared by exportExcel() and exportPdf()
+     * so a bookmarked/shared export URL behaves identically in both
+     * formats.
+     *
+     * @param int[] $authorizedRtIds
+     * @return int[]
+     */
+    private function scopeRtIds(array $authorizedRtIds): array
+    {
+        $rtParam = $this->request->getGet('rt');
+        if ($rtParam !== null && ctype_digit((string) $rtParam)) {
+            $idRt = (int) $rtParam;
+            if (in_array($idRt, $authorizedRtIds, true)) {
+                return [$idRt];
+            }
+        }
+
+        return $authorizedRtIds;
+    }
+
+    /**
+     * Shared payload for the Excel and PDF rekap exports: participants who
+     * actually have a kesehatan_catatan row for this kegiatan (i.e. were
+     * measured or at least added - not the full lansia roster, unlike the
+     * on-screen data-entry table), grouped by RT and sorted by name within
+     * each group.
+     *
+     * @param int[]               $authorizedRtIds every RT the caller may see, for the RT picker
+     * @param int[]               $targetRtIds     RT(s) actually included in this export
+     * @param array<int, object>  $catatan         keyed by id_warga, from KesehatanCatatanModel::byKegiatan()
+     * @return array{
+     *     kegiatan: object, kalurahan: string, scopeLabel: string, signLabel: string,
+     *     groups: array<int, array{rt: object, items: object[]}>, totalPeserta: int,
+     *     multiRt: bool, rtOptions: array<int, string>, currentRt: ?int,
+     *     auDiperiksa: bool, kolDiperiksa: bool
+     * }
+     */
+    private function buildRekap(object $kegiatan, array $authorizedRtIds, array $targetRtIds, array $catatan): array
+    {
+        // Every candidate (auto lansia + manually added) across the target
+        // RTs, narrowed to those actually recorded for *this* kegiatan -
+        // the recap is a results sheet, not the full resident roster.
+        $peserta = array_filter(
+            $this->pesertaForKegiatan($targetRtIds, $catatan),
+            static fn ($p) => isset($catatan[(int) $p->id_warga])
+        );
+
+        $rtRows = $this->rtModel->whereIn('id_rt', $targetRtIds)->orderBy('nama')->findAll();
+
+        $groups = [];
+        $total  = 0;
+        foreach ($rtRows as $rt) {
+            $items = array_values(array_filter($peserta, static fn ($p) => (int) $p->id_rt === (int) $rt->id_rt));
+            if (empty($items)) {
+                continue;
+            }
+            usort($items, static fn ($a, $b) => strcasecmp($a->nama_warga, $b->nama_warga));
+            $groups[] = ['rt' => $rt, 'items' => $items];
+            $total += count($items);
+        }
+
+        // Every RT belongs to exactly one RW; read it off whichever RT row
+        // is on hand rather than requiring kegiatan->id_rw (RT-owned
+        // kegiatan leave that column null).
+        $rw = !empty($rtRows) ? $this->rwModel->find((int) $rtRows[0]->id_rw) : null;
+
+        $rtOptions = [];
+        foreach ($this->rtModel->whereIn('id_rt', $authorizedRtIds)->orderBy('nama')->findAll() as $rt) {
+            $rtOptions[(int) $rt->id_rt] = $rt->nama;
+        }
+
+        if (count($targetRtIds) === 1) {
+            $namaRt     = $rtOptions[(int) $targetRtIds[0]] ?? '-';
+            $scopeLabel = ($rw->nama ?? '-') . ' / ' . $namaRt;
+            $signLabel  = 'Ketua ' . $namaRt . ',';
+        } else {
+            $scopeLabel = ($rw->nama ?? '-') . ' (Gabungan ' . implode(', ', array_map(static fn ($rt) => $rt->nama, $rtRows)) . ')';
+            $signLabel  = 'Ketua ' . ($rw->nama ?? 'RW') . ',';
+        }
+
+        return [
+            'kegiatan'     => $kegiatan,
+            'kalurahan'    => self::KALURAHAN,
+            'scopeLabel'   => $scopeLabel,
+            'signLabel'    => $signLabel,
+            'groups'       => $groups,
+            'catatan'      => $catatan,
+            'totalPeserta' => $total,
+            'multiRt'      => count($targetRtIds) > 1,
+            'rtOptions'    => $rtOptions,
+            'currentRt'    => count($targetRtIds) === 1 ? (int) $targetRtIds[0] : null,
+            'auDiperiksa'  => $this->anyFieldFilled($peserta, $catatan, 'asam_urat'),
+            'kolDiperiksa' => $this->anyFieldFilled($peserta, $catatan, 'kolesterol'),
+        ];
+    }
+
+    /** Whether any participant in $peserta has a non-null $field recorded, so the rekap can note "tidak diperiksa" instead of a wall of dashes when a measurement wasn't taken this session. */
+    private function anyFieldFilled(array $peserta, array $catatan, string $field): bool
+    {
+        foreach ($peserta as $p) {
+            $row = $catatan[(int) $p->id_warga] ?? null;
+            if ($row !== null && $row->{$field} !== null && $row->{$field} !== '') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Simple print-friendly (browser "save as PDF") record sheet for one participant. */
+    public function cetakPdf($idKegiatan, $idWarga)
+    {
+        $kegiatan = $this->kegiatanModel->detailForCurrentScope((int) $idKegiatan);
+        if ($kegiatan === null) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        $idRts = $this->authorizedRtIds($kegiatan);
+        $warga = $this->wargaModel->oneByRtIds((int) $idWarga, $idRts);
+        if ($warga === null) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        $catatan = $this->catatanModel->byKegiatan((int) $idKegiatan);
+        $rt      = $this->rtModel->find((int) $warga->id_rt);
+
+        $data['kegiatan'] = $kegiatan;
+        $data['warga']    = $warga;
+        $data['namaRt']   = $rt->nama ?? '-';
+        $data['catatan']  = $catatan[(int) $idWarga] ?? null;
+        $data['usia']     = (new \DateTime($warga->tanggal_lahir))->diff(new \DateTime())->y;
+
+        return view('admin/cetak_kesehatan', $data);
+    }
+
+    /**
+     * Participant list for a kegiatan: auto-filtered lansia, plus anyone
+     * manually added via the "tambah peserta lain" modal. Shared by
+     * kegiatan() and exportExcel() so the export always matches what's
+     * shown on screen.
+     *
+     * @param int[]              $idRts
+     * @param array<int, object> $catatan keyed by id_warga, from KesehatanCatatanModel::byKegiatan()
+     * @return object[]
+     */
+    private function pesertaForKegiatan(array $idRts, array $catatan): array
+    {
+        $peserta   = $this->wargaModel->lansiaByRtIds($idRts);
+        $lansiaIds = array_map(static fn ($w) => (int) $w->id_warga, $peserta);
+        $manualIds = array_diff(array_map('intval', array_keys($catatan)), $lansiaIds);
+
+        if (!empty($manualIds)) {
+            $peserta = array_merge($peserta, $this->wargaModel->byIds(array_values($manualIds)));
+            usort($peserta, static fn ($a, $b) => strcmp($a->nama_warga, $b->nama_warga));
+        }
+
+        return $peserta;
     }
 
     /** Add a resident to the kegiatan's participant list with a blank record, so they show up for data entry. */

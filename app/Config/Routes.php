@@ -143,6 +143,9 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->get('add', 'Admin\Kesehatan::add');
         $routes->post('store', 'Admin\Kesehatan::store');
         $routes->get('kegiatan/(:num)', 'Admin\Kesehatan::kegiatan/$1');
+        $routes->get('kegiatan/(:num)/export', 'Admin\Kesehatan::exportExcel/$1');
+        $routes->get('kegiatan/(:num)/export/pdf', 'Admin\Kesehatan::exportPdf/$1');
+        $routes->get('kegiatan/(:num)/cetak/(:num)', 'Admin\Kesehatan::cetakPdf/$1/$2');
         $routes->get('kegiatan/(:num)/edit', 'Admin\Kesehatan::editKegiatan/$1');
         $routes->post('kegiatan/(:num)/update', 'Admin\Kesehatan::updateKegiatan/$1');
         $routes->post('kegiatan/(:num)/simpan', 'Admin\Kesehatan::simpanCatatan/$1');

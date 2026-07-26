@@ -85,6 +85,23 @@ if (!function_exists('tanggal')) {
 }
 
 /**
+ * Format date as "26 Juli 2026" (Indonesian long form), for printed/
+ * exported documents (rekap headers, letters) where tanggal()'s
+ * numeric d-m-Y is too terse.
+ */
+if (!function_exists('tanggal_indo')) {
+    function tanggal_indo($date)
+    {
+        if (empty($date)) {
+            return '-';
+        }
+        $ts = strtotime($date);
+
+        return date('j', $ts) . ' ' . bulan_indo((int) date('n', $ts)) . ' ' . date('Y', $ts);
+    }
+}
+
+/**
  * Calculate age from birthdate
  */
 if (!function_exists('umur')) {
@@ -114,6 +131,58 @@ if (!function_exists('kesehatan_has_data')) {
             }
         }
         return false;
+    }
+}
+
+/**
+ * A single numeric measurement (berat_badan, tinggi_badan, ...) for
+ * display on a printed/exported rekap: trims a trailing ".00" so
+ * whole-number results ("65") don't print as "65.00", but keeps real
+ * decimals ("65.5"). Returns '-' for null/empty, matching the blank-cell
+ * convention used across the rekap exports.
+ */
+if (!function_exists('kesehatan_num_text')) {
+    function kesehatan_num_text($value): string
+    {
+        if ($value === null || $value === '') {
+            return '-';
+        }
+        $num = (float) $value;
+
+        return rtrim(rtrim(number_format($num, 2, '.', ''), '0'), '.') ?: '0';
+    }
+}
+
+/**
+ * "155/83" tekanan darah text for a kesehatan_catatan row, or '-' when
+ * either half is missing.
+ */
+if (!function_exists('kesehatan_td_text')) {
+    function kesehatan_td_text(?object $row): string
+    {
+        if ($row === null || $row->tensi_sistol === null || $row->tensi_diastol === null) {
+            return '-';
+        }
+
+        return kesehatan_num_text($row->tensi_sistol) . '/' . kesehatan_num_text($row->tensi_diastol);
+    }
+}
+
+/**
+ * Gula darah text with a (P)uasa/(S)ewaktu suffix, since a single rekap
+ * (especially the RW-wide "gabungan" export) commonly mixes both test
+ * types across participants - the plain number alone would be
+ * ambiguous/misleading next to the GDS column header.
+ */
+if (!function_exists('kesehatan_gds_text')) {
+    function kesehatan_gds_text(?object $row): string
+    {
+        if ($row === null || $row->gula_darah === null || $row->gula_darah === '') {
+            return '-';
+        }
+        $suffix = $row->gula_darah_ket === 'puasa' ? ' (P)' : ($row->gula_darah_ket === 'sewaktu' ? ' (S)' : '');
+
+        return kesehatan_num_text($row->gula_darah) . $suffix;
     }
 }
 

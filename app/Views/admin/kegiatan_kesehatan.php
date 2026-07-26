@@ -31,6 +31,38 @@
 						<?php endif; ?>
 					</div>
 					<div>
+						<?php
+							$urlExportExcel = base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/export');
+							$urlExportPdf   = base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/export/pdf');
+						?>
+						<div class="dropdown d-inline-block">
+							<button type="button" class="btn btn-sm btn-outline-success dropdown-toggle" data-toggle="dropdown">
+								<i class="fas fa-file-download"></i> Export Rekap
+							</button>
+							<div class="dropdown-menu dropdown-menu-right" style="min-width:260px">
+								<h6 class="dropdown-header"><?= $multiRt ? 'Gabungan (semua RT)' : 'Rekap' ?></h6>
+								<div class="dropdown-item d-flex justify-content-between align-items-center">
+									<span><?= $multiRt ? 'Rekap Gabungan' : esc($kegiatan->nama_kegiatan) ?></span>
+									<span>
+										<a href="<?= $urlExportExcel ?>" class="text-success mr-2" title="Download Excel"><i class="fas fa-file-excel"></i></a>
+										<a href="<?= $urlExportPdf ?>" target="_blank" class="text-danger" title="Cetak/simpan PDF"><i class="fas fa-file-pdf"></i></a>
+									</span>
+								</div>
+								<?php if ($multiRt): ?>
+									<div class="dropdown-divider"></div>
+									<h6 class="dropdown-header">Per RT</h6>
+									<?php foreach ($rtOptions as $idRt => $namaRt): ?>
+										<div class="dropdown-item d-flex justify-content-between align-items-center">
+											<span><?= esc($namaRt) ?></span>
+											<span>
+												<a href="<?= $urlExportExcel . '?rt=' . $idRt ?>" class="text-success mr-2" title="Excel - <?= esc($namaRt) ?>"><i class="fas fa-file-excel"></i></a>
+												<a href="<?= $urlExportPdf . '?rt=' . $idRt ?>" target="_blank" class="text-danger" title="PDF - <?= esc($namaRt) ?>"><i class="fas fa-file-pdf"></i></a>
+											</span>
+										</div>
+									<?php endforeach; ?>
+								<?php endif; ?>
+							</div>
+						</div>
 						<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/edit') ?>" class="btn btn-sm btn-outline-secondary">
 							<i class="far fa-edit"></i> Ubah Kegiatan
 						</a>
@@ -191,6 +223,9 @@
 												data-catatan="<?= esc($existing->catatan ?? '') ?>">
 												<i class="fas fa-notes-medical"></i> Isi Data
 											</button>
+											<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/cetak/' . $p->id_warga) ?>" target="_blank" class="btn btn-sm btn-outline-danger" title="Cetak/download PDF catatan kesehatan">
+												<i class="fas fa-file-pdf"></i>
+											</a>
 										</td>
 									</tr>
 								<?php endforeach; ?>

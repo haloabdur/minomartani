@@ -143,7 +143,7 @@ class WargaModel extends Model
         }
 
         return $this->db->table($this->table)
-            ->select('id_warga, nama_warga, tanggal_lahir, jenis_kelamin, warga.id_rt, rt.nama nama_rt')
+            ->select('id_warga, nama_warga, nik, tanggal_lahir, alamat_lengkap, jenis_kelamin, warga.id_rt, rt.nama nama_rt')
             ->join('rt', 'rt.id_rt = warga.id_rt')
             ->where('status_warga', 1)
             ->whereIn('warga.id_rt', $idRts)
@@ -189,7 +189,7 @@ class WargaModel extends Model
         }
 
         return $this->db->table($this->table)
-            ->select('id_warga, nama_warga, tanggal_lahir, jenis_kelamin, warga.id_rt, rt.nama nama_rt')
+            ->select('id_warga, nama_warga, nik, tanggal_lahir, alamat_lengkap, jenis_kelamin, warga.id_rt, rt.nama nama_rt')
             ->join('rt', 'rt.id_rt = warga.id_rt')
             ->whereIn('id_warga', $ids)
             ->orderBy('nama_warga')
