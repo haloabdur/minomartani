@@ -403,6 +403,18 @@ class Kesehatan extends BaseController
      * kegiatan() and exportExcel() so the export always matches what's
      * shown on screen.
      *
+     * $catatan is byKegiatan()'s result, which is NOT scoped to $idRts (it
+     * covers every RT recorded in this kegiatan, since a gabungan event
+     * has participants from multiple RTs) - so the "manually added" half
+     * must re-check each candidate's own kesehatan_catatan.id_rt against
+     * $idRts before including them. Without that check, a narrowed RT
+     * caller would have every OTHER RT's already-recorded participants
+     * merged back in (they're never in that RT's own lansiaByRtIds() list,
+     * so they'd look "manually added" from that RT's perspective) and
+     * WargaModel::byIds() itself applies no RT filter at all - this was a
+     * real cross-tenant data leak on any gabungan kegiatan with recorded
+     * data, not just a theoretical one.
+     *
      * @param int[]              $idRts
      * @param array<int, object> $catatan keyed by id_warga, from KesehatanCatatanModel::byKegiatan()
      * @return object[]
@@ -411,10 +423,17 @@ class Kesehatan extends BaseController
     {
         $peserta   = $this->wargaModel->lansiaByRtIds($idRts);
         $lansiaIds = array_map(static fn ($w) => (int) $w->id_warga, $peserta);
-        $manualIds = array_diff(array_map('intval', array_keys($catatan)), $lansiaIds);
+
+        $manualIds = [];
+        foreach ($catatan as $idWarga => $row) {
+            $idWarga = (int) $idWarga;
+            if (!in_array($idWarga, $lansiaIds, true) && in_array((int) $row->id_rt, $idRts, true)) {
+                $manualIds[] = $idWarga;
+            }
+        }
 
         if (!empty($manualIds)) {
-            $peserta = array_merge($peserta, $this->wargaModel->byIds(array_values($manualIds)));
+            $peserta = array_merge($peserta, $this->wargaModel->byIds($manualIds));
             usort($peserta, static fn ($a, $b) => strcmp($a->nama_warga, $b->nama_warga));
         }
 
