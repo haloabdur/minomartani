@@ -223,12 +223,13 @@
 								<th>Usia</th>
 								<th>Status</th>
 								<th width="1">Aksi</th>
+								<th width="1">Cetak</th>
 							</tr>
 						</thead>
 						<tbody>
 							<?php if (empty($peserta)): ?>
 								<tr>
-									<td colspan="<?= $multiRt ? 6 : 5 ?>" class="text-center text-muted py-4">
+									<td colspan="<?= $multiRt ? 7 : 6 ?>" class="text-center text-muted py-4">
 										Tidak ada warga lansia (60+ tahun) yang terdaftar di scope ini. Gunakan tombol "Tambah Peserta Lain" untuk mencatat warga lain.
 									</td>
 								</tr>
@@ -299,8 +300,13 @@
 													<i class="fas fa-notes-medical"></i> Isi Data
 												</button>
 											<?php endif; ?>
+										</td>
+										<td class="text-nowrap">
 											<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/cetak/' . $p->id_warga) ?>" target="_blank" class="btn btn-sm btn-outline-danger" title="Cetak/download PDF catatan kesehatan">
 												<i class="fas fa-file-pdf"></i>
+											</a>
+											<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/gambar/' . $p->id_warga) ?>" target="_blank" class="btn btn-sm btn-outline-success" title="Cetak gambar (untuk WA)">
+												<i class="fas fa-image"></i>
 											</a>
 										</td>
 									</tr>
