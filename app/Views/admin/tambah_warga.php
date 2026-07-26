@@ -57,8 +57,8 @@
 										</div>
 										<div class="col-md-6">
 											<div class="form-group">
-												<label>Tempat Lahir <span class="text-danger">*</span></label>
-												<input type="text" name="tempat_lahir" class="form-control" placeholder="Tempat Lahir" required>
+												<label>Tempat Lahir <span class="text-muted">(opsional)</span></label>
+												<input type="text" name="tempat_lahir" class="form-control" placeholder="Tempat Lahir">
 											</div>
 										</div>
 										<div class="col-md-6">
@@ -176,8 +176,8 @@
 									<div class="row">
 										<div class="col-md-4">
 											<div class="form-group">
-												<label>Status Kawin <span class="text-danger">*</span></label>
-												<select class="form-control" name="status_kawin" required="">
+												<label>Status Kawin <span class="text-muted">(opsional)</span></label>
+												<select class="form-control" name="status_kawin">
 													<option value="0">Belum Kawin</option>
 													<option value="1">Kawin</option>
 													<option value="2">Cerai Hidup</option>
