@@ -53,7 +53,7 @@
 							<div class="text-muted small mt-1"><?= esc($kegiatan->catatan) ?></div>
 						<?php endif; ?>
 					</div>
-					<div>
+					<div style="align-items:center; margin-left: auto">
 						<?php
 							$urlExportExcel = base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/export');
 							$urlExportPdf   = base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/export/pdf');
@@ -177,7 +177,7 @@
 					<div id="scanRfidStatus" class="mr-3 mb-2 text-muted text-nowrap"></div>
 					<div class="ml-md-auto mb-2 d-flex flex-wrap">
 						<button type="button" class="btn btn-secondary mr-2 mb-1" data-toggle="modal" data-target="#modalTambahPeserta">
-							<i class="fas fa-user-plus mr-1"></i> Tambah Peserta Lain (di luar lansia)
+							<i class="fas fa-user-plus mr-1"></i> Tambah Peserta
 						</button>
 						<button type="button" class="btn btn-outline-secondary mb-1" data-toggle="modal" data-target="#modalTambahWargaBaru">
 							<i class="fas fa-user-plus mr-1"></i> Warga Belum Terdaftar
