@@ -38,7 +38,7 @@
 	<div class="row mb-3">
 		<div class="col-12">
 			<div class="card card-outline card-primary mb-0">
-				<div class="card-body d-flex flex-wrap justify-content-between align-items-center">
+				<div class="card-body d-flex flex-wrap justify-content-between align-items-start">
 					<div>
 						<h4 class="mb-1">
 							<?= esc($kegiatan->nama_kegiatan) ?>
@@ -166,25 +166,25 @@
 
 	<?php if (!$readOnly): ?>
 	<div class="row mb-3">
-		<div class="col-md-6">
-			<div class="card card-outline card-success mb-0 h-100">
-				<div class="card-body d-flex align-items-center py-2">
-					<i class="fas fa-id-card fa-2x text-success mr-3"></i>
-					<div class="flex-grow-1">
+		<div class="col-12">
+			<div class="card card-outline card-success mb-0">
+				<div class="card-body d-flex flex-wrap align-items-center">
+					<i class="fas fa-id-card fa-2x text-success mr-3 mb-2"></i>
+					<div class="mr-3 mb-2" style="min-width:240px;flex:1 1 240px">
 						<label for="inputScanRfid" class="mb-1 font-weight-bold">Scan e-KTP</label>
 						<input type="text" id="inputScanRfid" class="form-control" placeholder="Tempelkan e-KTP di scanner..." autocomplete="off">
 					</div>
-					<div id="scanRfidStatus" class="ml-3 text-muted text-nowrap"></div>
+					<div id="scanRfidStatus" class="mr-3 mb-2 text-muted text-nowrap"></div>
+					<div class="ml-md-auto mb-2 d-flex flex-wrap">
+						<button type="button" class="btn btn-secondary mr-2 mb-1" data-toggle="modal" data-target="#modalTambahPeserta">
+							<i class="fas fa-user-plus mr-1"></i> Tambah Peserta Lain (di luar lansia)
+						</button>
+						<button type="button" class="btn btn-outline-secondary mb-1" data-toggle="modal" data-target="#modalTambahWargaBaru">
+							<i class="fas fa-user-plus mr-1"></i> Warga Belum Terdaftar
+						</button>
+					</div>
 				</div>
 			</div>
-		</div>
-		<div class="col-md-6 d-flex align-items-center">
-			<button type="button" class="btn btn-secondary mr-2" data-toggle="modal" data-target="#modalTambahPeserta">
-				<i class="fas fa-user-plus mr-1"></i> Tambah Peserta Lain (di luar lansia)
-			</button>
-			<button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#modalTambahWargaBaru">
-				<i class="fas fa-user-plus mr-1"></i> Warga Belum Terdaftar
-			</button>
 		</div>
 	</div>
 	<?php endif; ?>
