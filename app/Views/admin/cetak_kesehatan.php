@@ -1,5 +1,12 @@
 <?php
 $abnormal = array_filter(kesehatan_evaluate($catatan, $warga->jenis_kelamin ?? null), static fn ($f) => $f['level'] !== 'normal');
+
+// Suggested filename for the browser's "Save as PDF" dialog: nama_rt_timestamp.
+// Browsers derive the default save filename from document.title, sanitized to
+// remove characters that aren't valid in a filename.
+$printFilename = preg_replace('/_+/', '_', preg_replace('/[^A-Za-z0-9]+/', '_', $warga->nama_warga . '_' . $namaRt)) . '_' . date('YmdHis');
+$printFilename = trim($printFilename, '_');
+
 $rows = [
     'Tekanan Darah'  => ($catatan && $catatan->tensi_sistol !== null && $catatan->tensi_diastol !== null) ? $catatan->tensi_sistol . '/' . $catatan->tensi_diastol . ' mmHg' : '-',
     'Berat Badan'    => ($catatan && $catatan->berat_badan !== null) ? $catatan->berat_badan . ' kg' : '-',
@@ -14,7 +21,7 @@ $rows = [
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Catatan Kesehatan - <?= esc($warga->nama_warga) ?></title>
+    <title><?= esc($printFilename) ?></title>
     <style>
         @page { size: A4; margin: 2cm; }
         body { font-family: Arial, Helvetica, sans-serif; color: #222; font-size: 14px; }

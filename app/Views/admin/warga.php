@@ -280,7 +280,7 @@ foreach ($wargas as $w) {
 											?>
 										</td>
 										<td>
-											<?php echo 'Jl. ' . $warga->alamat; ?><br>
+											<?php echo $warga->alamat; ?><br>
 											<span class="text-muted small"><?php echo ucwords($warga->alamat_lengkap) ?></span>
 										</td>
 										<td class="text-center">
