@@ -1,8 +1,12 @@
+<?php
+$filenameScope = $currentRt !== null ? ($rtOptions[$currentRt] ?? 'RT') : 'Gabungan';
+$exportTitle    = 'Rekap_Kesehatan_' . preg_replace('/[^A-Za-z0-9_-]+/', '_', $kegiatan->nama_kegiatan) . '_' . preg_replace('/[^A-Za-z0-9_-]+/', '_', $filenameScope) . '_' . date('dmY-His');
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Rekap Kesehatan - <?= esc($kegiatan->nama_kegiatan) ?></title>
+    <title><?= esc($exportTitle) ?></title>
     <style>
         @page { size: A4 landscape; margin: 1cm; }
         body { font-family: Arial, Helvetica, sans-serif; color: #111; font-size: 11px; }
@@ -17,7 +21,6 @@
         table.rekap th { background: #d9d9d9; font-size: 10px; text-align: center; }
         table.rekap td { font-size: 10px; }
         table.rekap td.center { text-align: center; }
-        tr.rt-header td { background: #f2f2f2; font-weight: bold; font-style: italic; }
         .legend { display: flex; justify-content: space-between; margin-top: 6px; font-size: 10px; }
         .legend .col { width: 48%; }
         .legend p { margin: 2px 0; }
@@ -67,28 +70,26 @@
                     <th rowspan="2">KETERANGAN</th>
                 </tr>
                 <tr>
-                    <th>BB<br>(kg)</th>
-                    <th>TB<br>(cm)</th>
-                    <th>LP<br>(cm)</th>
-                    <th>TD<br>(mmHg)</th>
-                    <th>GDS<br>(mg/dL)</th>
-                    <th>AU<br>(mg/dL)</th>
-                    <th>KOL<br>(mg/dL)</th>
+                    <th>BB</th>
+                    <th>TB</th>
+                    <th>LP</th>
+                    <th>TD</th>
+                    <th>GDS</th>
+                    <th>AU</th>
+                    <th>KOL</th>
                 </tr>
             </thead>
             <tbody>
+                <?php $no = 0; ?>
                 <?php foreach ($groups as $group) : ?>
-                    <?php if ($multiRt) : ?>
-                        <tr class="rt-header"><td colspan="13"><?= esc($group['rt']->nama) ?> &mdash; <?= count($group['items']) ?> peserta</td></tr>
-                    <?php endif; ?>
-                    <?php foreach ($group['items'] as $i => $p) : ?>
-                        <?php $c = $catatan[(int) $p->id_warga] ?? null; ?>
+                    <?php foreach ($group['items'] as $p) : ?>
+                        <?php $no++; $c = $catatan[(int) $p->id_warga] ?? null; ?>
                         <tr>
-                            <td class="center"><?= $i + 1 ?></td>
-                            <td><?= esc($p->nama_warga) ?></td>
+                            <td class="center"><?= $no ?></td>
+                            <td><?= esc(kesehatan_nama_text($p->nama_warga, $p->jenis_kelamin ?? null)) ?></td>
                             <td class="center"><?= esc($p->nik) ?></td>
                             <td class="center"><?= esc(tanggal($p->tanggal_lahir)) ?></td>
-                            <td><?= esc($p->alamat_lengkap ?: '-') ?></td>
+                            <td><?= esc($p->alamat_lengkap ? ucwords(strtolower($p->alamat_lengkap)) : '-') ?></td>
                             <td class="center"><?= esc(kesehatan_num_text($c->berat_badan ?? null)) ?></td>
                             <td class="center"><?= esc(kesehatan_num_text($c->tinggi_badan ?? null)) ?></td>
                             <td class="center"><?= esc(kesehatan_num_text($c->lingkar_perut ?? null)) ?></td>

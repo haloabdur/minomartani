@@ -14,13 +14,12 @@ ob_end_clean();
         <title><?= esc($kegiatan->nama_kegiatan) ?></title>
         <style>
             table { border-collapse: collapse; }
-            th, td { border: 1px solid #000; padding: 4px 6px; font-family: Arial, sans-serif; font-size: 11px; }
+            th, td { border: 1px solid #ccc; padding: 4px 6px; font-family: Arial, sans-serif; font-size: 11px; }
             th { background: #d9d9d9; font-weight: bold; text-align: center; }
             .judul { font-size: 16px; font-weight: bold; text-align: center; }
             .subjudul { font-size: 12px; font-weight: bold; text-align: center; }
             .info-label { font-weight: bold; font-size: 11px; }
             .info-value { font-size: 11px; }
-            .rt-header { background: #f2f2f2; font-weight: bold; font-style: italic; text-align: left; }
             .center { text-align: center; }
             .keterangan-judul { font-weight: bold; font-size: 11px; }
         </style>
@@ -62,29 +61,25 @@ ob_end_clean();
                     <th rowspan="2">KETERANGAN</th>
                 </tr>
                 <tr>
-                    <th>BB (kg)</th>
-                    <th>TB (cm)</th>
-                    <th>LP (cm)</th>
-                    <th>TD (mmHg)</th>
-                    <th>GDS (mg/dL)</th>
-                    <th>AU (mg/dL)</th>
-                    <th>KOL (mg/dL)</th>
+                    <th>BB</th>
+                    <th>TB</th>
+                    <th>LP</th>
+                    <th>TD</th>
+                    <th>GDS</th>
+                    <th>AU</th>
+                    <th>KOL</th>
                 </tr>
 
+                <?php $no = 0; ?>
                 <?php foreach ($groups as $group) : ?>
-                    <?php if ($multiRt) : ?>
+                    <?php foreach ($group['items'] as $p) : ?>
+                        <?php $no++; $c = $catatan[(int) $p->id_warga] ?? null; ?>
                         <tr>
-                            <td colspan="13" class="rt-header"><?= esc($group['rt']->nama) ?> &mdash; <?= count($group['items']) ?> peserta</td>
-                        </tr>
-                    <?php endif; ?>
-                    <?php foreach ($group['items'] as $i => $p) : ?>
-                        <?php $c = $catatan[(int) $p->id_warga] ?? null; ?>
-                        <tr>
-                            <td class="center"><?= $i + 1 ?></td>
-                            <td><?= esc($p->nama_warga) ?></td>
+                            <td class="center"><?= $no ?></td>
+                            <td><?= esc(kesehatan_nama_text($p->nama_warga, $p->jenis_kelamin ?? null)) ?></td>
                             <td class="center" style="mso-number-format:'\@';"><?= esc($p->nik) ?></td>
                             <td class="center"><?= esc(tanggal($p->tanggal_lahir)) ?></td>
-                            <td><?= esc($p->alamat_lengkap ?: '-') ?></td>
+                            <td><?= esc($p->alamat_lengkap ? ucwords(strtolower($p->alamat_lengkap)) : '-') ?></td>
                             <td class="center"><?= esc(kesehatan_num_text($c->berat_badan ?? null)) ?></td>
                             <td class="center"><?= esc(kesehatan_num_text($c->tinggi_badan ?? null)) ?></td>
                             <td class="center"><?= esc(kesehatan_num_text($c->lingkar_perut ?? null)) ?></td>

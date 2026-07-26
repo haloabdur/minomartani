@@ -154,6 +154,21 @@ if (!function_exists('kesehatan_num_text')) {
 }
 
 /**
+ * Display-ready participant name for a rekap: "Bp. "/"Ibu " gender prefix
+ * (from jenis_kelamin 'L'/'P') plus title case, since names are stored as
+ * typed (often all-caps) in the warga table.
+ */
+if (!function_exists('kesehatan_nama_text')) {
+    function kesehatan_nama_text(?string $nama, ?string $jenisKelamin): string
+    {
+        $nama   = ucwords(strtolower(trim((string) $nama)));
+        $prefix = $jenisKelamin === 'L' ? 'Bp. ' : ($jenisKelamin === 'P' ? 'Ibu ' : '');
+
+        return $prefix . $nama;
+    }
+}
+
+/**
  * "155/83" tekanan darah text for a kesehatan_catatan row, or '-' when
  * either half is missing.
  */
