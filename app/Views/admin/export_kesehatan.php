@@ -35,19 +35,15 @@ ob_end_clean();
 
                 <tr>
                     <td class="info-label">NAMA KEGIATAN</td><td colspan="4" class="info-value"><?= esc($kegiatan->nama_kegiatan) ?></td>
-                    <td class="info-label">TANGGAL PELAKSANAAN</td><td colspan="6" class="info-value"><?= esc(tanggal_indo($kegiatan->tanggal_kegiatan)) ?></td>
                 </tr>
                 <tr>
                     <td class="info-label">RW / RT</td><td colspan="4" class="info-value"><?= esc($scopeLabel) ?></td>
-                    <td class="info-label">JUMLAH PESERTA</td><td colspan="6" class="info-value"><?= (int) $totalPeserta ?> orang</td>
                 </tr>
                 <tr>
-                    <td class="info-label">KATEGORI</td><td colspan="4" class="info-value"><?= esc(ucfirst($kegiatan->kategori)) ?></td>
-                    <td class="info-label">DICETAK TANGGAL</td><td colspan="6" class="info-value"><?= esc(tanggal_indo(date('Y-m-d'))) ?></td>
+                    <td class="info-label">TANGGAL PELAKSANAAN</td><td colspan="4" class="info-value"><?= esc(tanggal_indo($kegiatan->tanggal_kegiatan)) ?></td>
                 </tr>
                 <tr>
                     <td class="info-label">KALURAHAN</td><td colspan="4" class="info-value"><?= esc($kalurahan) ?></td>
-                    <td colspan="7">&nbsp;</td>
                 </tr>
                 <tr><td colspan="13">&nbsp;</td></tr>
 
