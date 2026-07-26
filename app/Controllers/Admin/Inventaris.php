@@ -87,6 +87,13 @@ class Inventaris extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
+        // InventarisModel::update() is the base Model method - it only
+        // filters by primary key, not id_rt. detail() is tenant-scoped,
+        // so a mismatched or nonexistent id resolves to null/empty here.
+        if (empty($this->inventarisModel->detail($id))) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
         $validation = \Config\Services::validation();
         $validation->setRules([
             'nama_barang' => 'required',

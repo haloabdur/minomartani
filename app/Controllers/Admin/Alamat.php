@@ -94,6 +94,13 @@ class Alamat extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
+        // AlamatModel::update() is the base Model method - it only
+        // filters by primary key, not id_rt. detail() is tenant-scoped,
+        // so a mismatched or nonexistent id resolves to null here.
+        if ($this->alamatModel->detail($id) === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
         $kodeRumah = trim((string) $this->request->getPost('kode_rumah'));
 
         $data = [
@@ -109,6 +116,9 @@ class Alamat extends BaseController
     public function generate_qrcode($id)
     {
         $alamat = $this->alamatModel->detail($id);
+        if ($alamat === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
         $kode   = "mino_" . $alamat->id_alamat;
 
         $data = [

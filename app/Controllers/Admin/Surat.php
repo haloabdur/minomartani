@@ -39,6 +39,13 @@ class Surat extends BaseController
 
     public function setuju($id)
     {
+        // SuratModel::update() is the base Model method - it only
+        // filters by primary key, not id_rt. detail() is tenant-scoped,
+        // so a mismatched or nonexistent id resolves to null here.
+        if ($this->suratModel->detail($id) === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
         $data = [
             'status_surat' => 1
         ];

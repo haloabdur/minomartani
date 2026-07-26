@@ -43,7 +43,14 @@ class Cookie extends BaseConfig
      * Cookie Domain
      * --------------------------------------------------------------------------
      *
-     * Set to `.your-domain.com` for site-wide cookies.
+     * Set to `.your-domain.com` for site-wide cookies. Left empty by
+     * default (host-only cookie) so local dev on `localhost` is
+     * unaffected. Production MUST override via `.env` (`cookie.domain`)
+     * to the wildcard tenant domain (see .env.production.example) -
+     * otherwise the session cookie set on one RT's subdomain isn't sent
+     * on another, and Admin\Dashboard::switchTenant()'s cross-subdomain
+     * redirect (required by TenantFilter's per-host auto-scoping for
+     * superadmin) silently logs the superadmin out mid-switch.
      */
     public string $domain = '';
 

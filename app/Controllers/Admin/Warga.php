@@ -112,6 +112,15 @@ class Warga extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
+        // WargaModel::update() is the base Model method - it only filters
+        // by primary key, not id_rt. Without this check, any RT admin who
+        // guesses another RT's id_warga could overwrite that resident's
+        // data cross-tenant. detail() is tenant-scoped, so a mismatched
+        // or nonexistent id resolves to null here.
+        if ($this->wargaModel->detail($id) === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
         $data = [
             'nama_warga'        => $this->request->getPost('nama_warga'),
             'id_alamat'         => $this->request->getPost('id_alamat'),

@@ -140,7 +140,7 @@ final class SubdomainAdminIsolationTest extends CIUnitTestCase
         return $user;
     }
 
-    public function testSuperadminSwitchTenantStaysOnCurrentHostWithSubdomain(): void
+    public function testSuperadminSwitchTenantRedirectsToSubdomain(): void
     {
         $superadmin = $this->createSuperadmin('super_switch_subdomain@test.local');
 
@@ -152,14 +152,11 @@ final class SubdomainAdminIsolationTest extends CIUnitTestCase
             ->withHeaders(['Host' => 'rt29.minomartani.com'])
             ->get('admin/switch-tenant/' . $this->rt28Id);
 
-        // Session cookies are host-only (Config\Cookie::$domain), so
-        // switching tenants must never redirect across hosts - that would
-        // drop the superadmin's session and force a re-login.
-        $result->assertRedirectTo('admin/dashboard');
+        $result->assertRedirectTo('http://rt28-test.minomartani.com/admin/dashboard');
         $this->assertSame($this->rt28Id, session('tenant_rt_id'));
     }
 
-    public function testSuperadminSwitchTenantStaysOnCurrentHostWithoutSubdomain(): void
+    public function testSuperadminSwitchTenantToNoSubdomainRedirectsToCentralDomain(): void
     {
         $superadmin = $this->createSuperadmin('super_switch_no_subdomain@test.local');
 
@@ -171,7 +168,7 @@ final class SubdomainAdminIsolationTest extends CIUnitTestCase
             ->withHeaders(['Host' => 'rt29.minomartani.com'])
             ->get('admin/switch-tenant/' . $this->rt28Id);
 
-        $result->assertRedirectTo('admin/dashboard');
+        $result->assertRedirectTo('http://minomartani.com/admin/dashboard');
         $this->assertSame($this->rt28Id, session('tenant_rt_id'));
     }
 

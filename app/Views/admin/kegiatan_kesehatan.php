@@ -251,6 +251,18 @@
 					<input type="hidden" name="id_warga" id="modalIdWarga" value="">
 					<div class="form-row">
 						<div class="col-md-2 form-group">
+							<label>Berat Badan (BB)</label>
+							<input type="number" step="0.1" name="berat_badan" id="modalBeratBadan" class="form-control" placeholder="kg">
+						</div>
+						<div class="col-md-3 form-group">
+							<label>Tinggi Badan (TB)</label>
+							<input type="number" step="0.1" name="tinggi_badan" id="modalTinggiBadan" class="form-control" placeholder="cm">
+						</div>
+						<div class="col-md-3 form-group">
+							<label>Lingkar Perut (LP)</label>
+							<input type="number" step="0.1" name="lingkar_perut" id="modalLingkarPerut" class="form-control" placeholder="cm">
+						</div>
+						<div class="col-md-2 form-group">
 							<label>Tensi Sistol</label>
 							<input type="number" name="tensi_sistol" id="modalTensiSistol" class="form-control" placeholder="mmHg">
 						</div>
@@ -258,38 +270,26 @@
 							<label>Tensi Diastol</label>
 							<input type="number" name="tensi_diastol" id="modalTensiDiastol" class="form-control" placeholder="mmHg">
 						</div>
-						<div class="col-md-2 form-group">
-							<label>Berat Badan</label>
-							<input type="number" step="0.1" name="berat_badan" id="modalBeratBadan" class="form-control" placeholder="kg">
-						</div>
-						<div class="col-md-3 form-group">
-							<label>Tinggi Badan</label>
-							<input type="number" step="0.1" name="tinggi_badan" id="modalTinggiBadan" class="form-control" placeholder="cm">
-						</div>
-						<div class="col-md-3 form-group">
-							<label>Lingkar Perut</label>
-							<input type="number" step="0.1" name="lingkar_perut" id="modalLingkarPerut" class="form-control" placeholder="cm">
-						</div>
 					</div>
 					<div class="form-row">
 						<div class="col-md-2 form-group">
-							<label>Gula Darah</label>
+							<label>Gula Darah (GD)</label>
 							<input type="number" step="0.1" name="gula_darah" id="modalGulaDarah" class="form-control" placeholder="mg/dL">
 						</div>
 						<div class="col-md-3 form-group">
 							<label>Keterangan Gula Darah</label>
 							<select name="gula_darah_ket" id="modalGulaDarahKet" class="form-control">
 								<option value="">-</option>
+								<option value="sewaktu" selected>Sewaktu</option>
 								<option value="puasa">Puasa</option>
-								<option value="sewaktu">Sewaktu</option>
 							</select>
 						</div>
 						<div class="col-md-2 form-group">
-							<label>Kolesterol</label>
+							<label>Kolesterol (KOL)</label>
 							<input type="number" step="0.1" name="kolesterol" id="modalKolesterol" class="form-control" placeholder="mg/dL">
 						</div>
 						<div class="col-md-2 form-group">
-							<label>Asam Urat</label>
+							<label>Asam Urat (AU)</label>
 							<input type="number" step="0.1" name="asam_urat" id="modalAsamUrat" class="form-control" placeholder="mg/dL">
 						</div>
 						<div class="col-md-3 form-group">

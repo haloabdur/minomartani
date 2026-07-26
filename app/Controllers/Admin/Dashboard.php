@@ -56,12 +56,42 @@ class Dashboard extends BaseController
         if ($rt !== null && (int)$rt->is_aktif === 1) {
             session()->set('tenant_rt_id', $idRt);
             setFlashData('success', 'Berhasil beralih ke ' . $rt->nama);
+
+            // Must physically move hosts, not just set the session: on a
+            // tenant-matched subdomain, TenantFilter forces tenant_rt_id
+            // back to that host's own RT on every request (auto-scoping,
+            // see TenantFilter::before()), which would silently undo this
+            // switch on the very next page load if we stayed put.
+            helper('subdomain');
+            $rawHost = $this->request->getHeaderLine('Host');
+            if ($rawHost === '') {
+                $rawHost = (string) ($this->request->getServer('HTTP_HOST') ?? $this->request->getUri()->getHost());
+            }
+
+            $hostParts = explode(':', $rawHost, 2);
+            $hostname  = strtolower(trim($hostParts[0]));
+            $port      = isset($hostParts[1]) ? ':' . $hostParts[1] : '';
+
+            $currentSubdomain = subdomain_label($hostname);
+            if ($currentSubdomain !== null) {
+                $parts      = explode('.', $hostname);
+                $domainPart = implode('.', array_slice($parts, 1));
+
+                if (! empty($rt->subdomain)) {
+                    $newHost = $rt->subdomain . '.' . $domainPart . $port;
+                } else {
+                    $newHost = $domainPart . $port;
+                }
+
+                $scheme = $this->request->getUri()->getScheme();
+                if ($scheme === '') {
+                    $scheme = 'http';
+                }
+
+                return redirect()->to($scheme . '://' . $newHost . '/admin/dashboard');
+            }
         }
 
-        // Stay on the current host: session cookies are host-only (see
-        // Config\Cookie::$domain), so redirecting across subdomains would
-        // drop the superadmin's session and force a re-login. The tenant
-        // dropdown itself reflects the active RT regardless of host.
         return redirect()->to('admin/dashboard');
     }
 }

@@ -74,6 +74,13 @@ class Berita extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
+        // BeritaModel::update() is the base Model method - it only
+        // filters by primary key, not id_rt. detail() is tenant-scoped,
+        // so a mismatched or nonexistent id resolves to null here.
+        if ($this->beritaModel->detail($id) === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
         $data = [
             'judul'     => $this->request->getPost('judul'),
             'slug'      => url_title($this->request->getPost('judul'), '-', true),
