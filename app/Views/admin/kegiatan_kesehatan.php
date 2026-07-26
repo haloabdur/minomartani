@@ -24,7 +24,14 @@
 			<div class="card card-outline card-primary">
 				<div class="card-body d-flex flex-wrap justify-content-between align-items-center">
 					<div>
-						<h4 class="mb-1"><?= esc($kegiatan->nama_kegiatan) ?></h4>
+						<h4 class="mb-1">
+							<?= esc($kegiatan->nama_kegiatan) ?>
+							<?php if ($readOnly): ?>
+								<span class="badge badge-secondary" title="Kegiatan gabungan RW - RT hanya bisa melihat &amp; mencetak">
+									<i class="fas fa-lock"></i> Baca saja (Kegiatan RW)
+								</span>
+							<?php endif; ?>
+						</h4>
 						<span class="text-muted"><?= tanggal($kegiatan->tanggal_kegiatan) ?></span>
 						<?php if (!empty($kegiatan->catatan)): ?>
 							<div class="text-muted small mt-1"><?= esc($kegiatan->catatan) ?></div>
@@ -63,9 +70,11 @@
 								<?php endif; ?>
 							</div>
 						</div>
-						<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/edit') ?>" class="btn btn-sm btn-outline-secondary">
-							<i class="far fa-edit"></i> Ubah Kegiatan
-						</a>
+						<?php if (!$readOnly): ?>
+							<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/edit') ?>" class="btn btn-sm btn-outline-secondary">
+								<i class="far fa-edit"></i> Ubah Kegiatan
+							</a>
+						<?php endif; ?>
 						<a href="<?= base_url('admin/kesehatan') ?>" class="btn btn-sm btn-light">Kembali</a>
 					</div>
 				</div>
@@ -92,6 +101,7 @@
 		</div>
 	</div>
 
+	<?php if (!$readOnly): ?>
 	<div class="row mb-3">
 		<div class="col-md-6">
 			<div class="card card-outline card-success mb-0 h-100">
@@ -114,6 +124,7 @@
 			</button>
 		</div>
 	</div>
+	<?php endif; ?>
 
 	<div class="row">
 		<div class="col-12">
@@ -207,22 +218,24 @@
 											<?php endif; ?>
 										</td>
 										<td>
-											<button type="button" class="btn btn-sm btn-outline-primary btn-isi-data"
-												data-id-warga="<?= $p->id_warga ?>"
-												data-nama="<?= esc($p->nama_warga) ?>"
-												data-id-catatan="<?= esc($existing->id_catatan ?? '') ?>"
-												data-tensi-sistol="<?= esc($existing->tensi_sistol ?? '') ?>"
-												data-tensi-diastol="<?= esc($existing->tensi_diastol ?? '') ?>"
-												data-berat-badan="<?= esc($existing->berat_badan ?? '') ?>"
-												data-tinggi-badan="<?= esc($existing->tinggi_badan ?? '') ?>"
-												data-lingkar-perut="<?= esc($existing->lingkar_perut ?? '') ?>"
-												data-gula-darah="<?= esc($existing->gula_darah ?? '') ?>"
-												data-gula-darah-ket="<?= esc($existing->gula_darah_ket ?? '') ?>"
-												data-kolesterol="<?= esc($existing->kolesterol ?? '') ?>"
-												data-asam-urat="<?= esc($existing->asam_urat ?? '') ?>"
-												data-catatan="<?= esc($existing->catatan ?? '') ?>">
-												<i class="fas fa-notes-medical"></i> Isi Data
-											</button>
+											<?php if (!$readOnly): ?>
+												<button type="button" class="btn btn-sm btn-outline-primary btn-isi-data"
+													data-id-warga="<?= $p->id_warga ?>"
+													data-nama="<?= esc($p->nama_warga) ?>"
+													data-id-catatan="<?= esc($existing->id_catatan ?? '') ?>"
+													data-tensi-sistol="<?= esc($existing->tensi_sistol ?? '') ?>"
+													data-tensi-diastol="<?= esc($existing->tensi_diastol ?? '') ?>"
+													data-berat-badan="<?= esc($existing->berat_badan ?? '') ?>"
+													data-tinggi-badan="<?= esc($existing->tinggi_badan ?? '') ?>"
+													data-lingkar-perut="<?= esc($existing->lingkar_perut ?? '') ?>"
+													data-gula-darah="<?= esc($existing->gula_darah ?? '') ?>"
+													data-gula-darah-ket="<?= esc($existing->gula_darah_ket ?? '') ?>"
+													data-kolesterol="<?= esc($existing->kolesterol ?? '') ?>"
+													data-asam-urat="<?= esc($existing->asam_urat ?? '') ?>"
+													data-catatan="<?= esc($existing->catatan ?? '') ?>">
+													<i class="fas fa-notes-medical"></i> Isi Data
+												</button>
+											<?php endif; ?>
 											<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/cetak/' . $p->id_warga) ?>" target="_blank" class="btn btn-sm btn-outline-danger" title="Cetak/download PDF catatan kesehatan">
 												<i class="fas fa-file-pdf"></i>
 											</a>

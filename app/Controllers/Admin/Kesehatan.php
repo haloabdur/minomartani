@@ -92,6 +92,11 @@ class Kesehatan extends BaseController
             throw PageNotFoundException::forPageNotFound();
         }
 
+        if ($this->isReadOnlyForCaller($kegiatan)) {
+            setFlashData('error', 'Kegiatan gabungan RW hanya bisa diubah oleh RW, RT hanya bisa melihat.');
+            return redirect()->to('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan);
+        }
+
         $this->global['pageTitle'] = 'Ubah Kegiatan';
         $data['kegiatan'] = $kegiatan;
         return $this->loadViews('admin/ubah_kegiatan', $this->global, $data);
@@ -102,6 +107,11 @@ class Kesehatan extends BaseController
         $kegiatan = $this->kegiatanModel->detailForCurrentScope((int) $id);
         if ($kegiatan === null) {
             throw PageNotFoundException::forPageNotFound();
+        }
+
+        if ($this->isReadOnlyForCaller($kegiatan)) {
+            setFlashData('error', 'Kegiatan gabungan RW hanya bisa diubah oleh RW, RT hanya bisa melihat.');
+            return redirect()->to('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan);
         }
 
         $namaKegiatan    = trim((string) $this->request->getPost('nama_kegiatan'));
@@ -142,6 +152,7 @@ class Kesehatan extends BaseController
         $data['semuaWarga']  = $this->wargaModel->allByRtIds($idRts);
         $data['pesertaIds']  = array_map(static fn ($p) => (int) $p->id_warga, $peserta);
         $data['multiRt']     = count($idRts) > 1;
+        $data['readOnly']    = $this->isReadOnlyForCaller($kegiatan);
         // Every RT the caller may add a resident into, for the "tambah
         // warga baru" picker. Not derived from $peserta (like $rtOptions
         // below is, for the filter dropdown) because an RT with zero
@@ -334,6 +345,37 @@ class Kesehatan extends BaseController
     }
 
     /**
+     * Simple image ("kartu") version of the same single-participant record
+     * as cetakPdf() - rendered client-side to a PNG via html2canvas so it
+     * can be downloaded or copy/pasted straight into WhatsApp, instead of
+     * a full print-formatted PDF page.
+     */
+    public function cetakGambar($idKegiatan, $idWarga)
+    {
+        $kegiatan = $this->kegiatanModel->detailForCurrentScope((int) $idKegiatan);
+        if ($kegiatan === null) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        $idRts = $this->authorizedRtIds($kegiatan);
+        $warga = $this->wargaModel->oneByRtIds((int) $idWarga, $idRts);
+        if ($warga === null) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        $catatan = $this->catatanModel->byKegiatan((int) $idKegiatan);
+        $rt      = $this->rtModel->find((int) $warga->id_rt);
+
+        $data['kegiatan'] = $kegiatan;
+        $data['warga']    = $warga;
+        $data['namaRt']   = $rt->nama ?? '-';
+        $data['catatan']  = $catatan[(int) $idWarga] ?? null;
+        $data['usia']     = (new \DateTime($warga->tanggal_lahir))->diff(new \DateTime())->y;
+
+        return view('admin/cetak_kesehatan_gambar', $data);
+    }
+
+    /**
      * Participant list for a kegiatan: auto-filtered lansia, plus anyone
      * manually added via the "tambah peserta lain" modal. Shared by
      * kegiatan() and exportExcel() so the export always matches what's
@@ -363,6 +405,11 @@ class Kesehatan extends BaseController
         $kegiatan = $this->kegiatanModel->detailForCurrentScope((int) $idKegiatan);
         if ($kegiatan === null) {
             throw PageNotFoundException::forPageNotFound();
+        }
+
+        if ($this->isReadOnlyForCaller($kegiatan)) {
+            setFlashData('error', 'Kegiatan gabungan RW bersifat baca-saja untuk RT.');
+            return redirect()->to('admin/kesehatan/kegiatan/' . $idKegiatan);
         }
 
         $idWarga = (int) $this->request->getPost('id_warga');
@@ -395,6 +442,11 @@ class Kesehatan extends BaseController
         $kegiatan = $this->kegiatanModel->detailForCurrentScope((int) $idKegiatan);
         if ($kegiatan === null) {
             throw PageNotFoundException::forPageNotFound();
+        }
+
+        if ($this->isReadOnlyForCaller($kegiatan)) {
+            setFlashData('error', 'Kegiatan gabungan RW bersifat baca-saja untuk RT.');
+            return redirect()->to('admin/kesehatan/kegiatan/' . $idKegiatan);
         }
 
         $nama = trim((string) $this->request->getPost('nama_warga'));
@@ -437,6 +489,11 @@ class Kesehatan extends BaseController
             throw PageNotFoundException::forPageNotFound();
         }
 
+        if ($this->isReadOnlyForCaller($kegiatan)) {
+            setFlashData('error', 'Kegiatan gabungan RW bersifat baca-saja untuk RT.');
+            return redirect()->to('admin/kesehatan/kegiatan/' . $idKegiatan);
+        }
+
         $idWarga = (int) $this->request->getPost('id_warga');
         $idRts   = $this->authorizedRtIds($kegiatan);
 
@@ -472,6 +529,11 @@ class Kesehatan extends BaseController
             throw PageNotFoundException::forPageNotFound();
         }
 
+        if ($this->isReadOnlyForCaller($kegiatan)) {
+            setFlashData('error', 'Kegiatan gabungan RW bersifat baca-saja untuk RT.');
+            return redirect()->to('admin/kesehatan/kegiatan/' . $idKegiatan);
+        }
+
         $this->catatanModel->where('id_catatan', $idCatatan)->where('id_kegiatan', $idKegiatan)->delete();
 
         setFlashData('success', 'Catatan berhasil dihapus.');
@@ -490,6 +552,10 @@ class Kesehatan extends BaseController
         $kegiatan = $this->kegiatanModel->detailForCurrentScope((int) $idKegiatan);
         if ($kegiatan === null) {
             return $this->response->setStatusCode(404)->setJSON(['status' => 'error', 'message' => 'Kegiatan tidak ditemukan.']);
+        }
+
+        if ($this->isReadOnlyForCaller($kegiatan)) {
+            return $this->response->setStatusCode(403)->setJSON(['status' => 'error', 'message' => 'Kegiatan gabungan RW bersifat baca-saja untuk RT.']);
         }
 
         $kode = $this->normalizeRfidCode((string) $this->request->getGet('kode'));
@@ -547,6 +613,11 @@ class Kesehatan extends BaseController
         $kegiatan = $this->kegiatanModel->detailForCurrentScope((int) $idKegiatan);
         if ($kegiatan === null) {
             throw PageNotFoundException::forPageNotFound();
+        }
+
+        if ($this->isReadOnlyForCaller($kegiatan)) {
+            setFlashData('error', 'Kegiatan gabungan RW bersifat baca-saja untuk RT.');
+            return redirect()->to('admin/kesehatan/kegiatan/' . $idKegiatan);
         }
 
         $kode    = $this->normalizeRfidCode((string) $this->request->getPost('kode_rfid'));
@@ -613,6 +684,17 @@ class Kesehatan extends BaseController
      *
      * @return int[]
      */
+    /**
+     * True when the kegiatan is RW-owned but the caller is only RT-scoped
+     * (plain RT admin, not an 'rw' account) - RT participation in a joint
+     * RW event is view/print-only, editing the kegiatan and recording
+     * measurements is reserved for the RW.
+     */
+    private function isReadOnlyForCaller(object $kegiatan): bool
+    {
+        return $kegiatan->id_rw !== null && current_rw_id() === null;
+    }
+
     private function authorizedRtIds(object $kegiatan): array
     {
         $fullScope = $kegiatan->id_rw !== null

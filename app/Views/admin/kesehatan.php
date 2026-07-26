@@ -46,10 +46,12 @@
 											<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan) ?>">
 												<i class="fas fa-clipboard-list"></i> Catat Peserta
 											</a>
-											&nbsp;|&nbsp;
-											<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/edit') ?>">
-												<i class="far fa-edit"></i> Ubah
-											</a>
+											<?php if ($kegiatan->id_rw === null || current_rw_id() !== null): ?>
+												&nbsp;|&nbsp;
+												<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/edit') ?>">
+													<i class="far fa-edit"></i> Ubah
+												</a>
+											<?php endif; ?>
 										</td>
 									</tr>
 								<?php endforeach; ?>

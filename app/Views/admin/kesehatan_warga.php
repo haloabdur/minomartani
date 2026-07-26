@@ -63,9 +63,24 @@
 									<th>Kolesterol</th>
 									<th>Asam Urat</th>
 									<th>Catatan</th>
+									<th>Aksi</th>
 								</tr>
 							</thead>
 							<tbody>
+								<?php
+								// A row exists here once a resident is added as a kegiatan
+								// participant (see KesehatanCatatanModel::upsert()), even
+								// before any measurement is actually recorded - the
+								// cetak actions only make sense once real data is filled in.
+								$hasRecord = static function ($r) {
+									foreach (['tensi_sistol', 'tensi_diastol', 'berat_badan', 'tinggi_badan', 'lingkar_perut', 'gula_darah', 'kolesterol', 'asam_urat', 'catatan'] as $f) {
+										if ($r->{$f} !== null && $r->{$f} !== '') {
+											return true;
+										}
+									}
+									return false;
+								};
+								?>
 								<?php foreach (array_reverse($riwayat) as $r): ?>
 									<tr>
 										<td><?= esc($r->nama_kegiatan) ?></td>
@@ -78,6 +93,14 @@
 										<td><?= $r->kolesterol !== null ? esc($r->kolesterol) : '-' ?></td>
 										<td><?= $r->asam_urat !== null ? esc($r->asam_urat) : '-' ?></td>
 										<td><?= esc($r->catatan ?? '-') ?></td>
+										<td class="text-center text-nowrap">
+											<?php if ($hasRecord($r)): ?>
+												<a href="<?= base_url('admin/kesehatan/kegiatan/' . $r->id_kegiatan . '/cetak/' . $r->id_warga) ?>" target="_blank" class="text-danger" title="Cetak PDF"><i class="fas fa-file-pdf"></i></a>
+												<a href="<?= base_url('admin/kesehatan/kegiatan/' . $r->id_kegiatan . '/gambar/' . $r->id_warga) ?>" target="_blank" class="text-success ml-2" title="Cetak Gambar (untuk WA)"><i class="fas fa-image"></i></a>
+											<?php else: ?>
+												<span class="text-muted">-</span>
+											<?php endif; ?>
+										</td>
 									</tr>
 								<?php endforeach; ?>
 							</tbody>
