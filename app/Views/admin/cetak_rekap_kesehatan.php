@@ -8,7 +8,9 @@ $exportTitle    = 'Rekap_Kesehatan_' . preg_replace('/[^A-Za-z0-9_-]+/', '_', $k
     <meta charset="utf-8">
     <title><?= esc($exportTitle) ?></title>
     <style>
-        @page { size: A4 landscape; margin: 1cm; }
+        /* Fixed print layout: A4 landscape with margins trimmed to the printer-safe
+           minimum so the 13-column table is never clipped left/right. */
+        @page { size: A4 landscape; margin: 0.5cm 0.4cm; }
         body { font-family: Arial, Helvetica, sans-serif; color: #111; font-size: 11px; }
         h1 { font-size: 16px; margin: 0; text-align: center; }
         h2 { font-size: 12px; margin: 2px 0 14px; text-align: center; font-weight: bold; color: #333; }
@@ -16,9 +18,9 @@ $exportTitle    = 'Rekap_Kesehatan_' . preg_replace('/[^A-Za-z0-9_-]+/', '_', $k
         .info table { border-collapse: collapse; }
         .info td { padding: 1px 4px; font-size: 11px; vertical-align: top; }
         .info td.label { font-weight: bold; white-space: nowrap; }
-        table.rekap { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
-        table.rekap th, table.rekap td { border: 1px solid #333; padding: 3px 5px; }
-        table.rekap th { background: #d9d9d9; font-size: 10px; text-align: center; }
+        table.rekap { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 14px; }
+        table.rekap th, table.rekap td { border: 1px solid #000; padding: 3px 5px; overflow-wrap: break-word; }
+        table.rekap th { font-size: 10px; text-align: center; }
         table.rekap td { font-size: 10px; }
         table.rekap td.center { text-align: center; }
         .legend { display: flex; justify-content: space-between; margin-top: 6px; font-size: 10px; }
@@ -53,6 +55,21 @@ $exportTitle    = 'Rekap_Kesehatan_' . preg_replace('/[^A-Za-z0-9_-]+/', '_', $k
         </div>
 
         <table class="rekap">
+            <colgroup>
+                <col style="width:4.05%">
+                <col style="width:19.54%">
+                <col style="width:11.44%">
+                <col style="width:7.49%">
+                <col style="width:15.29%">
+                <col style="width:5.16%">
+                <col style="width:5.16%">
+                <col style="width:5.16%">
+                <col style="width:5.16%">
+                <col style="width:5.16%">
+                <col style="width:5.16%">
+                <col style="width:5.16%">
+                <col style="width:6.07%">
+            </colgroup>
             <thead>
                 <tr>
                     <th rowspan="2">NO</th>

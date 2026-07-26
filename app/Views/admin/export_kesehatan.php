@@ -13,9 +13,19 @@ ob_end_clean();
     <head>
         <title><?= esc($kegiatan->nama_kegiatan) ?></title>
         <style>
-            table { border-collapse: collapse; }
-            th, td { border: 1px solid #ccc; padding: 4px 6px; font-family: Arial, sans-serif; font-size: 11px; }
-            th { background: #d9d9d9; font-weight: bold; text-align: center; }
+            /* Fixed print layout: A4 landscape, minimal margins so the 13-column
+               table never gets clipped left/right when printed from Excel. */
+            @page Section1 {
+                size: 29.7cm 21cm;
+                mso-page-orientation: landscape;
+                margin: .5cm .4cm .5cm .4cm;
+                mso-header-margin: .2cm;
+                mso-footer-margin: .2cm;
+            }
+            div.Section1 { page: Section1; }
+            table { border-collapse: collapse; table-layout: fixed; }
+            th, td { border: 1px solid #000; padding: 3px 5px; font-family: Arial, sans-serif; font-size: 11px; overflow-wrap: break-word; }
+            th { font-weight: bold; text-align: center; }
             .judul { font-size: 16px; font-weight: bold; text-align: center; }
             .subjudul { font-size: 12px; font-weight: bold; text-align: center; }
             .info-label { font-weight: bold; font-size: 11px; }
@@ -28,7 +38,23 @@ ob_end_clean();
         <?php if (empty($groups)) : ?>
             <h2>Belum ada data kesehatan yang tercatat untuk kegiatan ini.</h2>
         <?php else : ?>
+        <div class="Section1">
             <table cellspacing="0">
+                <colgroup>
+                    <col style="width:4.05%">
+                    <col style="width:19.54%">
+                    <col style="width:11.44%">
+                    <col style="width:7.49%">
+                    <col style="width:15.29%">
+                    <col style="width:5.16%">
+                    <col style="width:5.16%">
+                    <col style="width:5.16%">
+                    <col style="width:5.16%">
+                    <col style="width:5.16%">
+                    <col style="width:5.16%">
+                    <col style="width:5.16%">
+                    <col style="width:6.07%">
+                </colgroup>
                 <tr><td colspan="13" class="judul">REKAPAN PELAKSANAAN POSBINDU / POSYANDU LANSIA</td></tr>
                 <tr><td colspan="13" class="subjudul"><?= esc(mb_strtoupper($scopeLabel)) ?> KALURAHAN <?= esc(mb_strtoupper($kalurahan)) ?></td></tr>
                 <tr><td colspan="13">&nbsp;</td></tr>
@@ -120,6 +146,7 @@ ob_end_clean();
                     <td style="border:none;">( ___________________________ )</td>
                 </tr>
             </table>
+        </div>
         <?php endif; ?>
     </body>
 </html>
