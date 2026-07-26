@@ -36,8 +36,8 @@
 ?>
 <div class="container-fluid">
 	<div class="row mb-3">
-		<div class="col">
-			<div class="card card-outline card-primary">
+		<div class="col-12">
+			<div class="card card-outline card-primary mb-0">
 				<div class="card-body d-flex flex-wrap justify-content-between align-items-center">
 					<div>
 						<h4 class="mb-1">
@@ -96,7 +96,9 @@
 				</div>
 			</div>
 		</div>
+	</div>
 
+	<div class="row mb-3">
 		<?php if (isset($totalPesertaRw)): ?>
 			<div class="col-auto d-flex">
 				<div class="card card-outline card-secondary mb-0">
