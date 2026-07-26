@@ -75,7 +75,7 @@ class Warga extends BaseController
             'ibu'               => $this->request->getPost('ibu'),
             'no_hp'             => $this->request->getPost('no_hp'),
             'email'             => $this->request->getPost('email'),
-            'status_warga'      => $this->request->getPost('status_warga') ?: 1,
+            'status_warga'      => $this->request->getPost('status_warga') !== null && $this->request->getPost('status_warga') !== '' ? $this->request->getPost('status_warga') : 1,
             'id_status_penduduk' => $this->request->getPost('id_status_penduduk') ?: 1,
             'sumber_air'        => $this->request->getPost('sumber_air'),
             'id_rt'             => current_rt_id(),
@@ -130,8 +130,8 @@ class Warga extends BaseController
             'ibu'               => $this->request->getPost('ibu'),
             'no_hp'             => $this->request->getPost('no_hp'),
             'email'             => $this->request->getPost('email'),
-            'is_hidup'          => $this->request->getPost('is_hidup') ?: 1,
-            'status_warga'      => $this->request->getPost('status_warga') ?: 1,
+            'is_hidup'          => $this->request->getPost('is_hidup') !== null && $this->request->getPost('is_hidup') !== '' ? $this->request->getPost('is_hidup') : 1,
+            'status_warga'      => $this->request->getPost('status_warga') !== null && $this->request->getPost('status_warga') !== '' ? $this->request->getPost('status_warga') : 1,
             'id_status_penduduk' => $this->request->getPost('id_status_penduduk') ?: 1,
             'sumber_air'        => $this->request->getPost('sumber_air')
         ];
