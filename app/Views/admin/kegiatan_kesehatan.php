@@ -8,6 +8,22 @@
 	}
 	$belumDicatat = $totalPeserta - $sudahDicatat;
 
+	// $readOnly only ever means "plain RT admin viewing a joint RW event"
+	// (see Kesehatan::isReadOnlyForCaller()) - $peserta above is already
+	// narrowed to just this RT, so pesertaRw (the full joint roster) is
+	// used to show the RW-wide recap alongside the RT-specific one.
+	if ($readOnly && isset($pesertaRw)) {
+		$totalPesertaRw = count($pesertaRw);
+		$sudahDicatatRw = 0;
+		foreach ($pesertaRw as $p) {
+			if (kesehatan_has_data($catatan[$p->id_warga] ?? null)) {
+				$sudahDicatatRw++;
+			}
+		}
+		$belumDicatatRw = $totalPesertaRw - $sudahDicatatRw;
+		$namaRtSendiri  = current_rt()->nama ?? 'RT ini';
+	}
+
 	// Options for the "Filter RT" dropdown: unique RTs actually present
 	// among today's participants (only meaningful in the multi-RT/RW view).
 	$rtOptions = [];
@@ -81,24 +97,69 @@
 			</div>
 		</div>
 
-		<div class="col-auto d-flex">
-			<div class="card card-outline card-info mb-0">
-				<div class="card-body d-flex align-items-center py-2 px-3">
-					<div class="text-center px-3">
-						<div class="h4 mb-0 font-weight-bold"><?= $totalPeserta ?></div>
-						<div class="text-muted small">Total Peserta</div>
-					</div>
-					<div class="text-center px-3 border-left">
-						<div class="h4 mb-0 font-weight-bold text-success"><?= $sudahDicatat ?></div>
-						<div class="text-muted small">Sudah Dicatat</div>
-					</div>
-					<div class="text-center px-3 border-left">
-						<div class="h4 mb-0 font-weight-bold text-secondary"><?= $belumDicatat ?></div>
-						<div class="text-muted small">Belum Dicatat</div>
+		<?php if (isset($totalPesertaRw)): ?>
+			<div class="col-auto d-flex">
+				<div class="card card-outline card-secondary mb-0">
+					<div class="card-body d-flex align-items-center py-2 px-3">
+						<div class="text-muted small font-weight-bold mr-3">
+							<i class="fas fa-users mr-1"></i> RW<br>(Gabungan)
+						</div>
+						<div class="text-center px-3 border-left">
+							<div class="h4 mb-0 font-weight-bold"><?= $totalPesertaRw ?></div>
+							<div class="text-muted small">Total Peserta</div>
+						</div>
+						<div class="text-center px-3 border-left">
+							<div class="h4 mb-0 font-weight-bold text-success"><?= $sudahDicatatRw ?></div>
+							<div class="text-muted small">Sudah Dicatat</div>
+						</div>
+						<div class="text-center px-3 border-left">
+							<div class="h4 mb-0 font-weight-bold text-secondary"><?= $belumDicatatRw ?></div>
+							<div class="text-muted small">Belum Dicatat</div>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+			<div class="col-auto d-flex">
+				<div class="card card-outline card-info mb-0">
+					<div class="card-body d-flex align-items-center py-2 px-3">
+						<div class="text-muted small font-weight-bold mr-3">
+							<i class="fas fa-map-marker-alt mr-1"></i> <?= esc($namaRtSendiri) ?>
+						</div>
+						<div class="text-center px-3 border-left">
+							<div class="h4 mb-0 font-weight-bold"><?= $totalPeserta ?></div>
+							<div class="text-muted small">Total Peserta</div>
+						</div>
+						<div class="text-center px-3 border-left">
+							<div class="h4 mb-0 font-weight-bold text-success"><?= $sudahDicatat ?></div>
+							<div class="text-muted small">Sudah Dicatat</div>
+						</div>
+						<div class="text-center px-3 border-left">
+							<div class="h4 mb-0 font-weight-bold text-secondary"><?= $belumDicatat ?></div>
+							<div class="text-muted small">Belum Dicatat</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		<?php else: ?>
+			<div class="col-auto d-flex">
+				<div class="card card-outline card-info mb-0">
+					<div class="card-body d-flex align-items-center py-2 px-3">
+						<div class="text-center px-3">
+							<div class="h4 mb-0 font-weight-bold"><?= $totalPeserta ?></div>
+							<div class="text-muted small">Total Peserta</div>
+						</div>
+						<div class="text-center px-3 border-left">
+							<div class="h4 mb-0 font-weight-bold text-success"><?= $sudahDicatat ?></div>
+							<div class="text-muted small">Sudah Dicatat</div>
+						</div>
+						<div class="text-center px-3 border-left">
+							<div class="h4 mb-0 font-weight-bold text-secondary"><?= $belumDicatat ?></div>
+							<div class="text-muted small">Belum Dicatat</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		<?php endif; ?>
 	</div>
 
 	<?php if (!$readOnly): ?>

@@ -22,6 +22,17 @@ class Kesehatan extends BaseController
     protected $pekerjaanModel;
 
     /**
+     * Per-request memoization of RtModel::byRw() lookups, keyed by id_rw.
+     * authorizedRtIds() and printScopeRtIds() both resolve "every RT under
+     * this kegiatan's RW" and are commonly called back-to-back for the
+     * same kegiatan (e.g. kegiatan() computing both the narrowed and the
+     * RW-wide participant list) - this avoids issuing the same query twice.
+     *
+     * @var array<int, object[]>
+     */
+    private array $rwMembersCache = [];
+
+    /**
      * Kelurahan shown on the printed/exported rekap header. Not a DB
      * column anywhere (schema has no kelurahan table) - this app is
      * built specifically for RT/RW units inside Kelurahan Minomartani
@@ -153,6 +164,17 @@ class Kesehatan extends BaseController
         $data['pesertaIds']  = array_map(static fn ($p) => (int) $p->id_warga, $peserta);
         $data['multiRt']     = count($idRts) > 1;
         $data['readOnly']    = $this->isReadOnlyForCaller($kegiatan);
+
+        // Only a plain RT admin viewing a joint RW event ends up narrowed
+        // (readOnly === true): $peserta above is already just their own
+        // RT's slice. Fetch the RW-wide roster too so the recap can show
+        // both "keseluruhan RW" and "RT ini" side by side, instead of the
+        // RT admin only ever seeing their own numbers with no idea what
+        // the full joint event looks like.
+        if ($data['readOnly']) {
+            $data['pesertaRw'] = $this->pesertaForKegiatan($this->printScopeRtIds($kegiatan), $catatan);
+        }
+
         // Every RT the caller may add a resident into, for the "tambah
         // warga baru" picker. Not derived from $peserta (like $rtOptions
         // below is, for the filter dropdown) because an RT with zero
@@ -326,7 +348,7 @@ class Kesehatan extends BaseController
             throw PageNotFoundException::forPageNotFound();
         }
 
-        $idRts = $this->authorizedRtIds($kegiatan);
+        $idRts = $this->printScopeRtIds($kegiatan);
         $warga = $this->wargaModel->oneByRtIds((int) $idWarga, $idRts);
         if ($warga === null) {
             throw PageNotFoundException::forPageNotFound();
@@ -357,7 +379,7 @@ class Kesehatan extends BaseController
             throw PageNotFoundException::forPageNotFound();
         }
 
-        $idRts = $this->authorizedRtIds($kegiatan);
+        $idRts = $this->printScopeRtIds($kegiatan);
         $warga = $this->wargaModel->oneByRtIds((int) $idWarga, $idRts);
         if ($warga === null) {
             throw PageNotFoundException::forPageNotFound();
@@ -674,39 +696,68 @@ class Kesehatan extends BaseController
     }
 
     /**
-     * RT ids the caller may act within, given an already-authorized
-     * kegiatan (RT-owned -> that one RT; RW-owned -> every RT in that RW -
-     * but only for a caller who is actually RW-scoped). An RT-level admin
-     * opening an RW/Gabungan kegiatan is narrowed to just their own RT:
-     * they can see and record data for their own residents alongside the
-     * joint event, but never another member RT's, matching the isolation
-     * rule detailForCurrentScope() already applies to the kegiatan itself.
-     *
-     * @return int[]
-     */
-    /**
      * True when the kegiatan is RW-owned but the caller is only RT-scoped
-     * (plain RT admin, not an 'rw' account) - RT participation in a joint
-     * RW event is view/print-only, editing the kegiatan and recording
-     * measurements is reserved for the RW.
+     * (plain RT admin, not an 'rw' account and not superadmin) - RT
+     * participation in a joint RW event is view/print-only, editing the
+     * kegiatan and recording measurements is reserved for the RW (and
+     * superadmin, who can act on any tenant regardless of which RT their
+     * header dropdown currently has selected).
      */
     private function isReadOnlyForCaller(object $kegiatan): bool
     {
-        return $kegiatan->id_rw !== null && current_rw_id() === null;
+        return $kegiatan->id_rw !== null && current_rw_id() === null && !auth()->user()->inGroup('superadmin');
     }
 
+    /**
+     * RT ids the caller may act within, given an already-authorized
+     * kegiatan (RT-owned -> that one RT; RW-owned -> every RT in that RW -
+     * but only for a caller who is actually RW-scoped, or superadmin).
+     * A plain RT-level admin opening an RW/Gabungan kegiatan is narrowed to
+     * just their own RT: they can see and record data for their own
+     * residents alongside the joint event, but never another member RT's,
+     * matching the isolation rule detailForCurrentScope() already applies
+     * to the kegiatan itself. Read-only single-resident lookups (cetakPdf,
+     * cetakGambar) use printScopeRtIds() instead, which is never narrowed
+     * this way.
+     *
+     * @return int[]
+     */
     private function authorizedRtIds(object $kegiatan): array
     {
-        $fullScope = $kegiatan->id_rw !== null
-            ? array_map(static fn ($r) => (int) $r->id_rt, $this->rtModel->byRw((int) $kegiatan->id_rw))
-            : [(int) $kegiatan->id_rt];
+        $fullScope = $this->printScopeRtIds($kegiatan);
 
-        if (current_rw_id() !== null) {
+        if (current_rw_id() !== null || auth()->user()->inGroup('superadmin')) {
             return $fullScope;
         }
 
         $ownRt = current_rt_id();
         return in_array($ownRt, $fullScope, true) ? [$ownRt] : $fullScope;
+    }
+
+    /**
+     * Every RT id under the kegiatan's scope (RW-owned -> all member RTs;
+     * RT-owned -> just that RT), unnarrowed by the caller's own RT. Unlike
+     * authorizedRtIds() this never restricts a plain RT admin to their own
+     * RT - it's used for read-only purposes where seeing/printing the full
+     * joint roster is harmless once the caller can already open the
+     * kegiatan itself (detailForCurrentScope() gates that): single-resident
+     * print/export (cetakPdf, cetakGambar), and computing the RW-wide
+     * recap numbers shown alongside the RT-scoped ones on kegiatan().
+     *
+     * @return int[]
+     */
+    private function printScopeRtIds(object $kegiatan): array
+    {
+        if ($kegiatan->id_rw === null) {
+            return [(int) $kegiatan->id_rt];
+        }
+
+        $idRw = (int) $kegiatan->id_rw;
+        if (!isset($this->rwMembersCache[$idRw])) {
+            $this->rwMembersCache[$idRw] = $this->rtModel->byRw($idRw);
+        }
+
+        return array_map(static fn ($r) => (int) $r->id_rt, $this->rwMembersCache[$idRw]);
     }
 
     /**

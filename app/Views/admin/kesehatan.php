@@ -46,7 +46,7 @@
 											<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan) ?>">
 												<i class="fas fa-clipboard-list"></i> Catat Peserta
 											</a>
-											<?php if ($kegiatan->id_rw === null || current_rw_id() !== null): ?>
+											<?php if ($kegiatan->id_rw === null || current_rw_id() !== null || auth()->user()->inGroup('superadmin')): ?>
 												&nbsp;|&nbsp;
 												<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/edit') ?>">
 													<i class="far fa-edit"></i> Ubah
