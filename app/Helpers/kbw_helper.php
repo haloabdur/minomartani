@@ -208,22 +208,22 @@ if (!function_exists('kesehatan_summary_parts')) {
             $parts[] = 'TD ' . $row->tensi_sistol . '/' . $row->tensi_diastol;
         }
         if ($row->berat_badan !== null) {
-            $parts[] = 'BB ' . $row->berat_badan . 'kg';
+            $parts[] = 'BB ' . number_format((float) $row->berat_badan, 2, '.', '') . 'kg';
         }
         if ($row->tinggi_badan !== null) {
-            $parts[] = 'TB ' . $row->tinggi_badan . 'cm';
+            $parts[] = 'TB ' . number_format((float) $row->tinggi_badan, 2, '.', '') . 'cm';
         }
         if ($row->lingkar_perut !== null) {
-            $parts[] = 'LP ' . $row->lingkar_perut . 'cm';
+            $parts[] = 'LP ' . number_format((float) $row->lingkar_perut, 2, '.', '') . 'cm';
         }
         if ($row->gula_darah !== null) {
-            $parts[] = 'GD ' . $row->gula_darah . ($row->gula_darah_ket ? ' (' . $row->gula_darah_ket . ')' : '');
+            $parts[] = 'GD ' . number_format((float) $row->gula_darah, 2, '.', '') . ($row->gula_darah_ket ? ' (' . $row->gula_darah_ket . ')' : '');
         }
         if ($row->kolesterol !== null) {
-            $parts[] = 'Kol ' . $row->kolesterol;
+            $parts[] = 'Kol ' . number_format((float) $row->kolesterol, 2, '.', '');
         }
         if ($row->asam_urat !== null) {
-            $parts[] = 'AU ' . $row->asam_urat;
+            $parts[] = 'AU ' . number_format((float) $row->asam_urat, 2, '.', '');
         }
 
         return $parts;
@@ -265,24 +265,26 @@ if (!function_exists('kesehatan_evaluate')) {
         if ($row->berat_badan !== null && $row->tinggi_badan !== null && (float) $row->tinggi_badan > 0) {
             $tinggiM = ((float) $row->tinggi_badan) / 100;
             $imt     = ((float) $row->berat_badan) / ($tinggiM ** 2);
+            $imtText = number_format($imt, 2, '.', '');
             if ($imt < 18.5) {
-                $flags[] = ['label' => 'IMT', 'level' => 'warning', 'note' => 'Kurus (IMT ' . round($imt, 1) . ', <18.5)'];
+                $flags[] = ['label' => 'IMT', 'level' => 'warning', 'note' => 'Kurus (IMT ' . $imtText . ', <18.50)'];
             } elseif ($imt < 23) {
-                $flags[] = ['label' => 'IMT', 'level' => 'normal', 'note' => 'Normal (IMT ' . round($imt, 1) . ')'];
+                $flags[] = ['label' => 'IMT', 'level' => 'normal', 'note' => 'Normal (IMT ' . $imtText . ')'];
             } elseif ($imt < 25) {
-                $flags[] = ['label' => 'IMT', 'level' => 'warning', 'note' => 'Berisiko/overweight (IMT ' . round($imt, 1) . ', 23-24.9)'];
+                $flags[] = ['label' => 'IMT', 'level' => 'warning', 'note' => 'Berisiko/overweight (IMT ' . $imtText . ', 23.00-24.99)'];
             } else {
-                $flags[] = ['label' => 'IMT', 'level' => 'danger', 'note' => 'Obesitas (IMT ' . round($imt, 1) . ', >=25)'];
+                $flags[] = ['label' => 'IMT', 'level' => 'danger', 'note' => 'Obesitas (IMT ' . $imtText . ', >=25.00)'];
             }
         }
 
         if ($row->lingkar_perut !== null) {
             $lp    = (float) $row->lingkar_perut;
             $batas = ($jenisKelamin === 'P') ? 80 : 90;
+            $batasText = number_format($batas, 2, '.', '');
             if ($lp >= $batas) {
-                $flags[] = ['label' => 'Lingkar Perut', 'level' => 'danger', 'note' => 'Obesitas sentral (>=' . $batas . 'cm)'];
+                $flags[] = ['label' => 'Lingkar Perut', 'level' => 'danger', 'note' => 'Obesitas sentral (>=' . $batasText . 'cm)'];
             } else {
-                $flags[] = ['label' => 'Lingkar Perut', 'level' => 'normal', 'note' => 'Normal (<' . $batas . 'cm)'];
+                $flags[] = ['label' => 'Lingkar Perut', 'level' => 'normal', 'note' => 'Normal (<' . $batasText . 'cm)'];
             }
         }
 
@@ -291,19 +293,19 @@ if (!function_exists('kesehatan_evaluate')) {
             $puasa = ($row->gula_darah_ket === 'puasa');
             if ($puasa) {
                 if ($gd >= 126) {
-                    $flags[] = ['label' => 'Gula Darah', 'level' => 'danger', 'note' => 'Diabetes (puasa >=126)'];
+                    $flags[] = ['label' => 'Gula Darah', 'level' => 'danger', 'note' => 'Diabetes (puasa >=126.00)'];
                 } elseif ($gd >= 100) {
-                    $flags[] = ['label' => 'Gula Darah', 'level' => 'warning', 'note' => 'Prediabetes (puasa 100-125)'];
+                    $flags[] = ['label' => 'Gula Darah', 'level' => 'warning', 'note' => 'Prediabetes (puasa 100.00-125.99)'];
                 } else {
-                    $flags[] = ['label' => 'Gula Darah', 'level' => 'normal', 'note' => 'Normal (puasa <100)'];
+                    $flags[] = ['label' => 'Gula Darah', 'level' => 'normal', 'note' => 'Normal (puasa <100.00)'];
                 }
             } else {
                 if ($gd >= 200) {
-                    $flags[] = ['label' => 'Gula Darah', 'level' => 'danger', 'note' => 'Diabetes (sewaktu >=200)'];
+                    $flags[] = ['label' => 'Gula Darah', 'level' => 'danger', 'note' => 'Diabetes (sewaktu >=200.00)'];
                 } elseif ($gd >= 140) {
-                    $flags[] = ['label' => 'Gula Darah', 'level' => 'warning', 'note' => 'Prediabetes (sewaktu 140-199)'];
+                    $flags[] = ['label' => 'Gula Darah', 'level' => 'warning', 'note' => 'Prediabetes (sewaktu 140.00-199.99)'];
                 } else {
-                    $flags[] = ['label' => 'Gula Darah', 'level' => 'normal', 'note' => 'Normal (sewaktu <140)'];
+                    $flags[] = ['label' => 'Gula Darah', 'level' => 'normal', 'note' => 'Normal (sewaktu <140.00)'];
                 }
             }
         }
@@ -311,21 +313,22 @@ if (!function_exists('kesehatan_evaluate')) {
         if ($row->kolesterol !== null) {
             $kol = (float) $row->kolesterol;
             if ($kol >= 240) {
-                $flags[] = ['label' => 'Kolesterol', 'level' => 'danger', 'note' => 'Tinggi (>=240)'];
+                $flags[] = ['label' => 'Kolesterol', 'level' => 'danger', 'note' => 'Tinggi (>=240.00)'];
             } elseif ($kol >= 200) {
-                $flags[] = ['label' => 'Kolesterol', 'level' => 'warning', 'note' => 'Ambang batas (200-239)'];
+                $flags[] = ['label' => 'Kolesterol', 'level' => 'warning', 'note' => 'Ambang batas (200.00-239.99)'];
             } else {
-                $flags[] = ['label' => 'Kolesterol', 'level' => 'normal', 'note' => 'Normal (<200)'];
+                $flags[] = ['label' => 'Kolesterol', 'level' => 'normal', 'note' => 'Normal (<200.00)'];
             }
         }
 
         if ($row->asam_urat !== null) {
             $au    = (float) $row->asam_urat;
             $batas = ($jenisKelamin === 'P') ? 6.0 : 7.0;
+            $batasText = number_format($batas, 2, '.', '');
             if ($au > $batas) {
-                $flags[] = ['label' => 'Asam Urat', 'level' => 'danger', 'note' => 'Tinggi/hiperurisemia (>' . $batas . ')'];
+                $flags[] = ['label' => 'Asam Urat', 'level' => 'danger', 'note' => 'Tinggi/hiperurisemia (>' . $batasText . ')'];
             } else {
-                $flags[] = ['label' => 'Asam Urat', 'level' => 'normal', 'note' => 'Normal (<=' . $batas . ')'];
+                $flags[] = ['label' => 'Asam Urat', 'level' => 'normal', 'note' => 'Normal (<=' . $batasText . ')'];
             }
         }
 
