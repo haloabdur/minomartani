@@ -60,7 +60,7 @@
 										<div class="col-md-6">
 											<div class="form-group">
 												<label>Tempat Lahir</label>
-												<input type="text" name="tempat_lahir" class="form-control" value="<?php echo $warga->tempat_lahir ?>" placeholder="Tempat Lahir" required>
+												<input type="text" name="tempat_lahir" class="form-control" value="<?php echo $warga->tempat_lahir ?>" placeholder="Tempat Lahir">
 											</div>
 										</div>
 										<div class="col-md-6">
@@ -181,7 +181,7 @@
 										<div class="col-md-4">
 											<div class="form-group">
 												<label>Status Kawin</label>
-												<select class="form-control" name="status_kawin" required="">
+												<select class="form-control" name="status_kawin">
 													<option value="">-Pilih Status-</option>
 													<option <?php echo $warga->status_kawin == '0' ? 'selected' : '' ?> value="0">Belum Kawin</option>
 													<option <?php echo $warga->status_kawin == '1' ? 'selected' : '' ?> value="1">Kawin</option>
