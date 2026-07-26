@@ -604,17 +604,27 @@ class Kesehatan extends BaseController
 
     /**
      * RT ids the caller may act within, given an already-authorized
-     * kegiatan (RT-owned -> that one RT; RW-owned -> every RT in that RW).
+     * kegiatan (RT-owned -> that one RT; RW-owned -> every RT in that RW -
+     * but only for a caller who is actually RW-scoped). An RT-level admin
+     * opening an RW/Gabungan kegiatan is narrowed to just their own RT:
+     * they can see and record data for their own residents alongside the
+     * joint event, but never another member RT's, matching the isolation
+     * rule detailForCurrentScope() already applies to the kegiatan itself.
      *
      * @return int[]
      */
     private function authorizedRtIds(object $kegiatan): array
     {
-        if ($kegiatan->id_rw !== null) {
-            return array_map(static fn ($r) => (int) $r->id_rt, $this->rtModel->byRw((int) $kegiatan->id_rw));
+        $fullScope = $kegiatan->id_rw !== null
+            ? array_map(static fn ($r) => (int) $r->id_rt, $this->rtModel->byRw((int) $kegiatan->id_rw))
+            : [(int) $kegiatan->id_rt];
+
+        if (current_rw_id() !== null) {
+            return $fullScope;
         }
 
-        return [(int) $kegiatan->id_rt];
+        $ownRt = current_rt_id();
+        return in_array($ownRt, $fullScope, true) ? [$ownRt] : $fullScope;
     }
 
     /**
