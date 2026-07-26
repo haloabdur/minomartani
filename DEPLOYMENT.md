@@ -47,11 +47,13 @@ The site key and secret key are **two different values** from the Cloudflare das
 
 ## Schema changes going forward
 
-`Admin\Sync` (a stopgap tool that let any logged-in session upload JSON and run arbitrary `CREATE TABLE`/`ADD COLUMN` against the live DB) has been removed. **All schema changes now go through `app/Database/Migrations/`** — write a new migration class, test it, commit it, then `php spark migrate` on each environment. Never hand-edit the schema directly on production.
+**All schema changes go through `app/Database/Migrations/`** — write a new migration class, test it, commit it, then `php spark migrate` on each environment. Never hand-edit the schema directly on production.
+
+`Admin\DbSync` (`admin/dbsync`, `group:superadmin`) exists as the sanctioned dev-ops tool around this: run pending migrations from the browser (`migrate`), see which migration files haven't run yet (`check-migrations`), and export/import full or structure-only SQL dumps. It can also push the local DB to production (and pull production down to local) over `POST /api/dbsync`, authenticated by a shared-secret `dbsync.token` set in **both** environments' `.env`; the local side also needs `dbsync.productionURL`. Push/pull can only be *initiated* from a non-production environment, but the token-protected API endpoint itself is live on production — keep the token long and unguessable. `import`/`push` execute arbitrary SQL against the live DB: take a `mysqldump` backup before using them.
 
 ## User management
 
-- `admin/users/*` requires the Shield `admin` group (`group:admin` filter), not just being logged in.
+- `admin/users/*` requires the Shield `superadmin` group (`group:superadmin` filter), not just being logged in.
 - All 6 accounts ported from the legacy `user` table landed in the `admin` group (the old `role` column was never actually enforced, so there was no real permission tier to preserve). Review `Admin\Users` and demote any account that shouldn't have full admin access.
 - Two of the six migrated accounts have irregular data (`risto5`: malformed email `risto@rt29`; `risto6`: a second `risto`-named account) — confirm with the site owner whether these are still in use.
 
@@ -63,4 +65,5 @@ The site key and secret key are **two different values** from the Cloudflare das
 - [ ] `php spark migrate` run, `php spark migrate:status` shows all migrations applied
 - [ ] `php spark test` (or `vendor/bin/phpunit`) green — requires a `rt29mino_test` MySQL database (`mysql -u root -e "CREATE DATABASE rt29mino_test CHARACTER SET utf8mb4"`) and `phpunit.xml.dist`'s `database.tests.*` `<env>` values pointing at it
 - [ ] `php spark routes` reviewed - confirm no unexpected routes
+- [ ] `dbsync.token` set in production `.env` (long, random) and identical to the token in the local dev `.env` that will push/pull against it; local `.env` also has `dbsync.productionURL` pointing at the prod site
 - [ ] Full DB backup taken immediately before deploying (`mysqldump`)

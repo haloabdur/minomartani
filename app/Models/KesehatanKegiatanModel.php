@@ -19,11 +19,13 @@ class KesehatanKegiatanModel extends Model
     ];
 
     /**
-     * Riwayat general: RT-scoped admin sees ONLY the kegiatan their own RT
-     * created - never another RT's, never the RW's - strict isolation.
-     * RW-scoped admin sees everything under their RW: the RW's own
-     * kegiatan PLUS every kegiatan any member RT created independently,
-     * so nothing captured by an RT admin is hidden from the RW view.
+     * Riwayat general: RT-scoped admin sees kegiatan their own RT created
+     * PLUS their RW's own Gabungan kegiatan (so a joint RW event isn't
+     * invisible to member RTs) - but never another RT's independently
+     * created kegiatan. RW-scoped admin sees everything under their RW:
+     * the RW's own kegiatan PLUS every kegiatan any member RT created
+     * independently, so nothing captured by an RT admin is hidden from
+     * the RW view.
      * Sertakan jumlah peserta yang sudah tercatat per kegiatan.
      */
     public function forCurrentScope(): array
@@ -85,6 +87,16 @@ class KesehatanKegiatanModel extends Model
             return;
         }
 
-        $builder->where($prefix . 'id_rt', current_rt_id());
+        $rtId = current_rt_id();
+        $rt   = model(RtModel::class)->find($rtId);
+
+        // Own RT's kegiatan, plus the RW's own Gabungan kegiatan (own RT's
+        // kegiatan may have id_rw null, so this can't collapse into a single
+        // orWhereIn - id_rt and id_rw are matched against different values).
+        $builder->groupStart()->where($prefix . 'id_rt', $rtId);
+        if ($rt !== null && $rt->id_rw !== null) {
+            $builder->orWhere($prefix . 'id_rw', (int) $rt->id_rw);
+        }
+        $builder->groupEnd();
     }
 }
