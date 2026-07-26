@@ -712,26 +712,27 @@ class Kesehatan extends BaseController
      * RT ids the caller may act within, given an already-authorized
      * kegiatan (RT-owned -> that one RT; RW-owned -> every RT in that RW -
      * but only for a caller who is actually RW-scoped, or superadmin).
-     * A plain RT-level admin opening an RW/Gabungan kegiatan is narrowed to
-     * just their own RT: they can see and record data for their own
-     * residents alongside the joint event, but never another member RT's,
-     * matching the isolation rule detailForCurrentScope() already applies
-     * to the kegiatan itself. Read-only single-resident lookups (cetakPdf,
-     * cetakGambar) use printScopeRtIds() instead, which is never narrowed
-     * this way.
+     * A plain RT-level admin opening an RW/Gabungan kegiatan is ALWAYS
+     * narrowed to just their own RT: they can see and record data for
+     * their own residents alongside the joint event, but never another
+     * member RT's, matching the isolation rule detailForCurrentScope()
+     * already applies to the kegiatan itself. This must fail closed - if
+     * the caller's own RT is ever missing from printScopeRtIds() (e.g. it
+     * was deactivated mid-session, since that list filters is_aktif=1),
+     * the correct result is "just that RT id, which will now match zero
+     * residents", never "fall back to showing every member RT". Read-only
+     * single-resident lookups (cetakPdf, cetakGambar) use printScopeRtIds()
+     * instead, which is never narrowed this way.
      *
      * @return int[]
      */
     private function authorizedRtIds(object $kegiatan): array
     {
-        $fullScope = $this->printScopeRtIds($kegiatan);
-
         if (current_rw_id() !== null || auth()->user()->inGroup('superadmin')) {
-            return $fullScope;
+            return $this->printScopeRtIds($kegiatan);
         }
 
-        $ownRt = current_rt_id();
-        return in_array($ownRt, $fullScope, true) ? [$ownRt] : $fullScope;
+        return [current_rt_id()];
     }
 
     /**
