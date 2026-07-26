@@ -169,6 +169,30 @@ if (!function_exists('kesehatan_nama_text')) {
 }
 
 /**
+ * Title-cased alamat_lengkap for a rekap, but leaves Roman-numeral street/
+ * block tokens (VIII, IV, ...) untouched instead of mangling them into
+ * "Viii" the way plain ucwords() would.
+ */
+if (!function_exists('kesehatan_alamat_text')) {
+    function kesehatan_alamat_text(?string $alamat): string
+    {
+        $alamat = trim((string) $alamat);
+        if ($alamat === '') {
+            return '-';
+        }
+
+        return preg_replace_callback('/\p{L}+/u', static function (array $m) {
+            $word = $m[0];
+            if (preg_match('/^(?=[IVXLCDM])M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/i', $word)) {
+                return $word;
+            }
+
+            return ucfirst(strtolower($word));
+        }, $alamat);
+    }
+}
+
+/**
  * "155/83" tekanan darah text for a kesehatan_catatan row, or '-' when
  * either half is missing.
  */

@@ -47,14 +47,8 @@ $exportTitle    = 'Rekap_Kesehatan_' . preg_replace('/[^A-Za-z0-9_-]+/', '_', $k
             <table>
                 <tr><td class="label">NAMA KEGIATAN</td><td>:</td><td><?= esc($kegiatan->nama_kegiatan) ?></td></tr>
                 <tr><td class="label">RW / RT</td><td>:</td><td><?= esc($scopeLabel) ?></td></tr>
-                <tr><td class="label">KATEGORI</td><td>:</td><td><?= esc(ucfirst($kegiatan->kategori)) ?></td></tr>
-                <tr><td class="label">KALURAHAN</td><td>:</td><td><?= esc($kalurahan) ?></td></tr>
-            </table>
-            <table>
                 <tr><td class="label">TANGGAL PELAKSANAAN</td><td>:</td><td><?= esc(tanggal_indo($kegiatan->tanggal_kegiatan)) ?></td></tr>
-                <tr><td class="label">JUMLAH PESERTA</td><td>:</td><td><?= (int) $totalPeserta ?> orang</td></tr>
-                <tr><td class="label">SUMBER DATA</td><td>:</td><td>Aplikasi Warga RT/RW <?= esc($kalurahan) ?></td></tr>
-                <tr><td class="label">DICETAK TANGGAL</td><td>:</td><td><?= esc(tanggal_indo(date('Y-m-d'))) ?></td></tr>
+                <tr><td class="label">KALURAHAN</td><td>:</td><td><?= esc($kalurahan) ?></td></tr>
             </table>
         </div>
 
@@ -89,7 +83,7 @@ $exportTitle    = 'Rekap_Kesehatan_' . preg_replace('/[^A-Za-z0-9_-]+/', '_', $k
                             <td><?= esc(kesehatan_nama_text($p->nama_warga, $p->jenis_kelamin ?? null)) ?></td>
                             <td class="center"><?= esc($p->nik) ?></td>
                             <td class="center"><?= esc(tanggal($p->tanggal_lahir)) ?></td>
-                            <td><?= esc($p->alamat_lengkap ? ucwords(strtolower($p->alamat_lengkap)) : '-') ?></td>
+                            <td><?= esc(kesehatan_alamat_text($p->alamat_lengkap)) ?></td>
                             <td class="center"><?= esc(kesehatan_num_text($c->berat_badan ?? null)) ?></td>
                             <td class="center"><?= esc(kesehatan_num_text($c->tinggi_badan ?? null)) ?></td>
                             <td class="center"><?= esc(kesehatan_num_text($c->lingkar_perut ?? null)) ?></td>
