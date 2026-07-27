@@ -125,7 +125,17 @@ class Tenants extends BaseController
             'subdomain' => $subdomain,
             'id_rw'     => (int) $this->request->getPost('id_rw'),
             'is_aktif'  => (int) ($this->request->getPost('is_aktif') ?? 1),
+            'alamat'    => $this->request->getPost('alamat'),
+            'deskripsi' => $this->request->getPost('deskripsi'),
+            'no_wa'     => $this->request->getPost('no_wa'),
         ];
+
+        $fotoHero = $this->request->getFile('foto_hero');
+        if ($fotoHero && $fotoHero->isValid() && !$fotoHero->hasMoved()) {
+            $newName = $fotoHero->getRandomName();
+            $fotoHero->move(FCPATH . 'public/rt', $newName);
+            $data['foto_hero'] = $newName;
+        }
 
         $this->rtModel->insert($data);
         setFlashData('success', 'RT berhasil ditambahkan!');
@@ -189,7 +199,21 @@ class Tenants extends BaseController
             'subdomain' => $subdomain,
             'id_rw'     => (int) $this->request->getPost('id_rw'),
             'is_aktif'  => (int) ($this->request->getPost('is_aktif') ?? 1),
+            'alamat'    => $this->request->getPost('alamat'),
+            'deskripsi' => $this->request->getPost('deskripsi'),
+            'no_wa'     => $this->request->getPost('no_wa'),
         ];
+
+        $fotoHero = $this->request->getFile('foto_hero');
+        if ($fotoHero && $fotoHero->isValid() && !$fotoHero->hasMoved()) {
+            $newName = $fotoHero->getRandomName();
+            $fotoHero->move(FCPATH . 'public/rt', $newName);
+            $data['foto_hero'] = $newName;
+
+            if (!empty($rt->foto_hero) && file_exists(FCPATH . 'public/rt/' . $rt->foto_hero)) {
+                unlink(FCPATH . 'public/rt/' . $rt->foto_hero);
+            }
+        }
 
         $this->rtModel->update($id, $data);
         setFlashData('success', 'RT berhasil diubah!');

@@ -1,3 +1,15 @@
+<?php
+$__rtNama = (isset($rt) && $rt !== null) ? $rt->nama : 'RT29';
+$__rtRw   = (isset($rw) && $rw !== null) ? $rw->nama : null;
+$__rtAlamat = (isset($rt) && $rt !== null && !empty($rt->alamat)) ? $rt->alamat : 'Ngaglik, Sleman, Daerah Istimewa Yogyakarta';
+$__rtDeskripsi = (isset($rt) && $rt !== null && !empty($rt->deskripsi))
+    ? $rt->deskripsi
+    : "{$__rtNama} Minomartani adalah bagian dari Desa Minomartani, Kecamatan Ngaglik, Kabupaten Sleman, Daerah Istimewa Yogyakarta.";
+$__rtWa   = (isset($rt) && $rt !== null && !empty($rt->no_wa)) ? $rt->no_wa : '6283869281843';
+$__rtHero = (isset($rt) && $rt !== null && !empty($rt->foto_hero))
+    ? base_url('public/rt/' . $rt->foto_hero)
+    : base_url('public/home/') . 'assets/img/tentang-kami.png';
+?>
 <!-- Navigation-->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
     <div class="container">
@@ -19,8 +31,8 @@
 <!-- Masthead-->
 <header class="masthead">
     <div class="container">
-        <div class="masthead-heading">Situs Resmi <br> RT 29 Minomartani</div>
-        <div class="masthead-subheading">Ngaglik, Sleman, Daerah Istimewa Yogyakarta</div>
+        <div class="masthead-heading">Situs Resmi <br> <?= esc($__rtNama) ?> Minomartani</div>
+        <div class="masthead-subheading"><?= esc($__rtAlamat) ?></div>
         <a class="btn btn-primary btn-xl my-3" href="#tentang-kami">Profil Kami</a>
     </div>
 </header>
@@ -29,7 +41,7 @@
 <section class="page-section" id="berita">
     <div class="container">
         <div class="row justify-content-center">
-            <h2 class="section-heading mb-5 text-center">Berita RT</h2>
+            <h2 class="section-heading mb-5 text-center">Berita <?= esc($__rtNama) ?></h2>
             <style>
                 .card-img-bg {
                     width: 100%;
@@ -40,6 +52,9 @@
                     border-radius: 1.5rem 1.5rem 0 0;
                 }
             </style>
+            <?php if (empty($beritas)): ?>
+                <p class="text-center text-muted">Belum ada berita.</p>
+            <?php endif; ?>
             <?php foreach ($beritas as $berita): ?>
                 <div style="border-radius: 1.5rem" class="card col-md-3 mx-2 px-0 shadow-lg">
                     <div class="card-img-bg" style="background-image: url('<?= base_url('public/berita/' . $berita->foto) ?>');"></div>
@@ -59,18 +74,18 @@
         <div class="row">
             <div class="col-md-6 py-5">
                 <h3 class="section-subheading mb-2 text-muted">TENTANG KAMI</h3>
-                <h2 class="section-heading mb-5">RT 29 Minomartani</h2>
+                <h2 class="section-heading mb-5"><?= esc($__rtNama) ?> Minomartani</h2>
 
-                <p class="text-muted">Desa Minomartani adalah Desa/Kelurahan yang terletak di daerah utara Kota Yogyakarta yang tepatnya berada pada kecamatan Ngaglik, Kabupaten Sleman. Desa Minomartani memiliki total 5 RW yang masing-masing menghimpun 5 RT. Adapun <strong>RT 29 Minomartani</strong> adalah bagian dari RW 006. RT 29 Minomartani memiliki kurang lebih 60 kk.</p>
+                <p class="text-muted"><?= esc($__rtDeskripsi) ?></p>
                 <br>
                 <div class="row">
                     <div class="col-12 col-md-5">
-                        <a class="btn btn-primary p-3 px-5 d-block" style="border-radius: 3rem" href="https://wa.me/62818272504">Hubungi Kami</a>
+                        <a class="btn btn-primary p-3 px-5 d-block" style="border-radius: 3rem" href="https://wa.me/<?= esc($__rtWa) ?>">Hubungi Kami</a>
                     </div>
                 </div>
             </div>
             <div class="col-md-6">
-                <img style="border-radius: 1.5rem" class="img-fluid" src="<?= base_url('public/home/') ?>assets/img/tentang-kami.png" alt="..." />
+                <img style="border-radius: 1.5rem" class="img-fluid" src="<?= esc($__rtHero) ?>" alt="<?= esc($__rtNama) ?>" />
             </div>
         </div>
     </div>
@@ -103,7 +118,7 @@
             <div class="col-md-3 justify-content-center d-flex pb-3">
                 <img src="<?= base_url('public/home/') ?>assets/lokasi-icon.svg" width="48px" class="me-3 rounded-circle shadow-icon">
                 <div class="d-flex align-self-center">
-                    <h3>1</h3><span class="align-self-center ms-2">Masjid</span>
+                    <h3><?= $jml_alamat ?></h3><span class="align-self-center ms-2">Alamat</span>
                 </div>
             </div>
         </div>
@@ -116,19 +131,9 @@
         <div class="row">
             <div class="col-md-6 py-5">
                 <h3 class="section-subheading mb-2 text-muted">WILAYAH KAMI</h3>
-                <h2 class="section-heading mb-5">Lokasi RT 029 / RW 006</h2>
+                <h2 class="section-heading mb-5">Lokasi <?= esc($__rtNama) ?><?= $__rtRw !== null ? ' / ' . esc($__rtRw) : '' ?></h2>
 
-                <p class="text-muted">Desa Minomartani memiliki luas wilayah yang besar sekitar 155,13 Ha. Adapun RT 29 terletak dibagian tengah dari Desa Minomartani. RT 29 Memiliki beberapa gang/ruas jalan diantaranya :
-                </p>
-                <ul class="text-muted ps-3">
-                    <li class="py-1">Jl. Bandeng I</li>
-                    <li class="py-1">Jl. Bandeng II</li>
-                    <li class="py-1">Jl. Bandeng III</li>
-                    <li class="py-1">Jl. Bandeng IV</li>
-                    <li class="py-1">Jl. Kakap Raya</li>
-                </ul>
-
-                <p class="text-muted">Lokasi RT 29 cukup mudah untuk dijangkau, dikarenakan tempat yang terbuka dan akses jalan yang sangat mudah untuk dilalui.</p>
+                <p class="text-muted"><?= esc($__rtAlamat) ?>. Wilayah ini merupakan bagian dari Desa Minomartani, Kecamatan Ngaglik, Kabupaten Sleman.</p>
 
                 <a class="text-primary py-3" target="_blank" href="https://www.google.com/maps/place/Minomartani,+Ngaglik,+Sleman+Regency,+Special+Region+of+Yogyakarta/@-7.7393059,110.4079884,18.75z/data=!4m5!3m4!1s0x2e7a596c429c827f:0x1d71fac6900f38d2!8m2!3d-7.7349434!4d110.405355">Lihat di Google Maps</a>
             </div>
@@ -144,10 +149,13 @@
     <div class="container">
         <div class="text-center pb-4">
             <h3 class="section-subheading mb-2 text-muted">KETUA RT</h3>
-            <h2 class="section-heading mb-5">Milestone RT 29</h2>
+            <h2 class="section-heading mb-5">Ketua <?= esc($__rtNama) ?></h2>
         </div>
 
         <div class="row">
+            <?php if (empty($ketuas)): ?>
+                <p class="text-center text-muted">Data ketua RT belum tersedia.</p>
+            <?php endif; ?>
             <?php foreach ($ketuas as $ketua): ?>
                 <div class="col-lg-3">
                     <div class="team-member">
@@ -160,10 +168,12 @@
 
         </div>
 
-        <div class="row">
-            <div class="col-lg-8 mx-auto text-center">
-                <p class="large text-muted">RT 29 berdiri sejak tahun 1985 hingga saat ini. Ini adalah data rekam jejak / Milestone Ketua RT 29.</p>
+        <?php if (! empty($ketuas)): ?>
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <p class="large text-muted">Berikut rekam jejak jajaran Ketua <?= esc($__rtNama) ?> dari waktu ke waktu.</p>
+                </div>
             </div>
-        </div>
+        <?php endif; ?>
     </div>
 </section>

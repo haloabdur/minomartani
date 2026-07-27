@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\AlamatModel;
 use App\Models\BeritaModel;
+use App\Models\RwModel;
 use App\Models\WargaModel;
 
 class Home extends BaseController
@@ -34,11 +35,16 @@ class Home extends BaseController
 
         $db = \Config\Database::connect();
 
+        $rt = current_rt();
+
+        $data['rt']        = $rt;
+        $data['rw']        = $rt !== null ? (new RwModel())->find($rt->id_rw) : null;
         $data['ketuas']    = $db->table('ketua')->where('id_rt', current_rt_id())->get()->getResult();
         $data['beritas']   = $db->table('berita')->where('id_rt', current_rt_id())->where('is_status', 1)->orderBy('timestamp', 'desc')->limit(3)->get()->getResult();
         $data['kk']        = $this->wargaModel->kk_count();
         $data['laki']      = $this->wargaModel->laki_count();
         $data['perempuan'] = $this->wargaModel->perempuan_count();
+        $data['jml_alamat'] = $this->alamatModel->alamat_count();
 
         return $this->load_view('beranda', $data);
     }
@@ -67,6 +73,7 @@ class Home extends BaseController
 
         $this->resolveTenant($slug);
 
+        $data['rt']     = current_rt();
         $data['alamat'] = $this->alamatModel->alamat_detail($kode);
 
         if (empty($data['alamat'])) {
@@ -90,6 +97,7 @@ class Home extends BaseController
 
         $this->resolveTenant($slug);
 
+        $data['rt']     = current_rt();
         $data['berita'] = $this->beritaModel->detail_berita($newsSlug);
 
         if (empty($data['berita'])) {

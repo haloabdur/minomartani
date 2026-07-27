@@ -143,8 +143,9 @@ class WargaModel extends Model
         }
 
         return $this->db->table($this->table)
-            ->select('id_warga, nama_warga, nik, tanggal_lahir, alamat_lengkap, jenis_kelamin, warga.id_rt, rt.nama nama_rt')
+            ->select('id_warga, nama_warga, nik, tanggal_lahir, alamat.alamat, jenis_kelamin, warga.id_rt, rt.nama nama_rt')
             ->join('rt', 'rt.id_rt = warga.id_rt')
+            ->join('alamat', 'alamat.id_alamat = warga.id_alamat', 'left')
             ->where('status_warga', 1)
             ->whereIn('warga.id_rt', $idRts)
             ->where('TIMESTAMPDIFF(YEAR, tanggal_lahir, CURDATE()) >=', self::LANSIA_MIN_AGE)
@@ -189,8 +190,9 @@ class WargaModel extends Model
         }
 
         return $this->db->table($this->table)
-            ->select('id_warga, nama_warga, nik, tanggal_lahir, alamat_lengkap, jenis_kelamin, warga.id_rt, rt.nama nama_rt')
+            ->select('id_warga, nama_warga, nik, tanggal_lahir, alamat.alamat, jenis_kelamin, warga.id_rt, rt.nama nama_rt')
             ->join('rt', 'rt.id_rt = warga.id_rt')
+            ->join('alamat', 'alamat.id_alamat = warga.id_alamat', 'left')
             ->whereIn('id_warga', $ids)
             ->orderBy('nama_warga')
             ->get()->getResult();

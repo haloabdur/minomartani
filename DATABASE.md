@@ -251,6 +251,10 @@ PK: `id_rt` (AI). Unique: `slug`, `subdomain`. Index: `id_rw`. Engine/charset: I
 | `slug` | varchar(50) NOT NULL, UNIQUE |
 | `subdomain` | varchar(63) NULL, UNIQUE |
 | `is_aktif` | tinyint(4) NOT NULL DEFAULT 1 |
+| `alamat` | varchar(255) NULL — dipakai di landing page publik |
+| `deskripsi` | text NULL — dipakai di landing page publik |
+| `no_wa` | varchar(20) NULL — kontak WhatsApp landing page publik |
+| `foto_hero` | varchar(255) NULL — nama file di `public/public/rt/`, dipakai di landing page publik |
 | `created_at` | timestamp NULL DEFAULT current_timestamp() |
 
 ---

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <title>Situs Resmi - RT29 Minomartani</title>
+    <title>Situs Resmi - <?= esc((isset($rt) && $rt !== null) ? $rt->nama : 'RT29') ?> Minomartani</title>
     <!-- Favicon-->
     <link rel="icon" type="image/x-icon" href="<?= base_url('public/home/') ?>assets/logo-sleman.jpg" />
     <!-- Font Awesome icons (free version)-->

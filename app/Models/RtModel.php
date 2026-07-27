@@ -9,7 +9,7 @@ class RtModel extends Model
     protected $table         = 'rt';
     protected $primaryKey    = 'id_rt';
     protected $returnType    = 'object';
-    protected $allowedFields = ['id_rw', 'nama', 'slug', 'subdomain', 'is_aktif'];
+    protected $allowedFields = ['id_rw', 'nama', 'slug', 'subdomain', 'is_aktif', 'alamat', 'deskripsi', 'no_wa', 'foto_hero'];
 
     public function bySlug(string $slug): ?object
     {

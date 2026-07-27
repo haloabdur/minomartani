@@ -101,7 +101,7 @@ ob_end_clean();
                             <td><?= esc(kesehatan_nama_text($p->nama_warga, $p->jenis_kelamin ?? null)) ?></td>
                             <td class="center" style="mso-number-format:'\@';"><?= esc($p->nik) ?></td>
                             <td class="center"><?= esc(tanggal($p->tanggal_lahir)) ?></td>
-                            <td><?= esc(kesehatan_alamat_text($p->alamat_lengkap)) ?></td>
+                            <td><?= esc(kesehatan_alamat_text($p->alamat ? $p->alamat : null)) ?></td>
                             <td class="center"><?= esc(kesehatan_num_text($c->berat_badan ?? null)) ?></td>
                             <td class="center"><?= esc(kesehatan_num_text($c->tinggi_badan ?? null)) ?></td>
                             <td class="center"><?= esc(kesehatan_num_text($c->lingkar_perut ?? null)) ?></td>
