@@ -26,7 +26,11 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
     $routes->get('dashboard', 'Admin\Dashboard::index');
     $routes->get('switch-tenant/(:num)', 'Admin\Dashboard::switchTenant/$1');
 
-    // Warga - per-user menu access, see Config\AuthGroups + Admin\Users
+    // Warga - per-user menu access, see Config\AuthGroups + Admin\Users.
+    // The 'export' route carries a second filter: downloading resident
+    // data is its own per-user permission ('menu.export'), granted
+    // separately from merely being able to read the module on screen.
+    // CI4 merges group filters with per-route filters, so both run.
     $routes->group('warga', ['filter' => 'menuaccess:warga'], function ($routes) {
         $routes->get('/', 'Admin\Warga::index');
         $routes->get('add', 'Admin\Warga::add');
@@ -34,7 +38,7 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->get('view/(:num)', 'Admin\Warga::view/$1');
         $routes->get('edit/(:num)', 'Admin\Warga::edit/$1');
         $routes->post('update/(:num)', 'Admin\Warga::update/$1');
-        $routes->get('export', 'Admin\Warga::export');
+        $routes->get('export', 'Admin\Warga::export', ['filter' => 'menuaccess:export']);
     });
 
     // Alamat - per-user menu access, see Config\AuthGroups + Admin\Users
@@ -132,7 +136,7 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
     $routes->group('rekap', ['filter' => 'menuaccess:rekap'], function ($routes) {
         $routes->get('/', 'Admin\Rekap::index');
         $routes->get('warga/(:num)', 'Admin\Rekap::warga/$1');
-        $routes->get('warga/(:num)/export', 'Admin\Rekap::export/$1');
+        $routes->get('warga/(:num)/export', 'Admin\Rekap::export/$1', ['filter' => 'menuaccess:export']);
     });
 
     // Kesehatan Lansia - per-user menu access for both 'admin' and 'rw'
@@ -143,10 +147,10 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->get('add', 'Admin\Kesehatan::add');
         $routes->post('store', 'Admin\Kesehatan::store');
         $routes->get('kegiatan/(:num)', 'Admin\Kesehatan::kegiatan/$1');
-        $routes->get('kegiatan/(:num)/export', 'Admin\Kesehatan::exportExcel/$1');
-        $routes->get('kegiatan/(:num)/export/pdf', 'Admin\Kesehatan::exportPdf/$1');
-        $routes->get('kegiatan/(:num)/cetak/(:num)', 'Admin\Kesehatan::cetakPdf/$1/$2');
-        $routes->get('kegiatan/(:num)/gambar/(:num)', 'Admin\Kesehatan::cetakGambar/$1/$2');
+        $routes->get('kegiatan/(:num)/export', 'Admin\Kesehatan::exportExcel/$1', ['filter' => 'menuaccess:export']);
+        $routes->get('kegiatan/(:num)/export/pdf', 'Admin\Kesehatan::exportPdf/$1', ['filter' => 'menuaccess:export']);
+        $routes->get('kegiatan/(:num)/cetak/(:num)', 'Admin\Kesehatan::cetakPdf/$1/$2', ['filter' => 'menuaccess:export']);
+        $routes->get('kegiatan/(:num)/gambar/(:num)', 'Admin\Kesehatan::cetakGambar/$1/$2', ['filter' => 'menuaccess:export']);
         $routes->get('kegiatan/(:num)/edit', 'Admin\Kesehatan::editKegiatan/$1');
         $routes->post('kegiatan/(:num)/update', 'Admin\Kesehatan::updateKegiatan/$1');
         $routes->post('kegiatan/(:num)/simpan', 'Admin\Kesehatan::simpanCatatan/$1');
@@ -156,6 +160,26 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->get('kegiatan/(:num)/scan-rfid', 'Admin\Kesehatan::scanRfid/$1');
         $routes->post('kegiatan/(:num)/daftar-rfid', 'Admin\Kesehatan::daftarRfid/$1');
         $routes->get('warga/(:num)', 'Admin\Kesehatan::warga/$1');
+    });
+
+    // Presensi Acara - per-user menu access for both 'admin' and 'rw'
+    // (see Config\AuthGroups + Admin\Users), superadmin bypasses via the
+    // 'menu.*' matrix wildcard.
+    $routes->group('presensi', ['filter' => 'menuaccess:presensi'], function ($routes) {
+        $routes->get('/', 'Admin\Presensi::index');
+        $routes->get('add', 'Admin\Presensi::add');
+        $routes->post('store', 'Admin\Presensi::store');
+        $routes->get('acara/(:num)', 'Admin\Presensi::acara/$1');
+        $routes->get('acara/(:num)/export', 'Admin\Presensi::exportExcel/$1', ['filter' => 'menuaccess:export']);
+        $routes->get('acara/(:num)/export/pdf', 'Admin\Presensi::exportPdf/$1', ['filter' => 'menuaccess:export']);
+        $routes->get('acara/(:num)/edit', 'Admin\Presensi::editAcara/$1');
+        $routes->post('acara/(:num)/update', 'Admin\Presensi::updateAcara/$1');
+        $routes->post('acara/(:num)/tandai', 'Admin\Presensi::tandai/$1');
+        $routes->get('acara/(:num)/hapus/(:num)', 'Admin\Presensi::hapusKehadiran/$1/$2');
+        $routes->post('acara/(:num)/tambah-warga-baru', 'Admin\Presensi::tambahWargaBaru/$1');
+        $routes->get('acara/(:num)/scan-rfid', 'Admin\Presensi::scanRfid/$1');
+        $routes->post('acara/(:num)/daftar-rfid', 'Admin\Presensi::daftarRfid/$1');
+        $routes->get('warga/(:num)', 'Admin\Presensi::warga/$1');
     });
 });
 

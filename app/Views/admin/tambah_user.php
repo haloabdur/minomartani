@@ -117,6 +117,26 @@
 								</div>
 							</div>
 						</div>
+
+						<div class="row mt-3">
+							<div class="col">
+								<div class="form-group">
+									<label class="text-danger">Hak Akses Download Data <small class="text-muted">(berlaku untuk Admin RT maupun Pengurus RW)</small></label>
+									<div>
+										<?php foreach ($actionOptions as $key => $label): ?>
+											<div class="form-check">
+												<input class="form-check-input" type="checkbox" name="menu_akses[]" value="<?= esc($key) ?>" id="menu_<?= esc($key) ?>" <?= in_array($key, $userPermissions, true) ? 'checked' : '' ?>>
+												<label class="form-check-label" for="menu_<?= esc($key) ?>"><?= esc($label) ?></label>
+											</div>
+										<?php endforeach; ?>
+									</div>
+									<small class="form-text text-muted">
+										Izin mengunduh/mencetak data warga (Export Excel, Export/Cetak PDF, cetak gambar) di seluruh modul.
+										Sengaja tidak dicentang secara default - berikan hanya kepada pengurus yang memang berhak memegang salinan data warga.
+									</small>
+								</div>
+							</div>
+						</div>
 					</div>
 					<!-- /.card-body -->
 

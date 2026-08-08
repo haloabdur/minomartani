@@ -87,7 +87,14 @@ class AuthGroups extends ShieldAuthGroups
         'menu.alamat'         => 'Can access the Alamat menu',
         'menu.berita'         => 'Can access the Berita menu',
         'menu.kesehatan'      => 'Can access the Kesehatan Lansia menu',
+        'menu.presensi'       => 'Can access the Presensi Acara menu',
         'menu.rekap'          => 'Can access the Rekap RW menu',
+        // Not a menu of its own: a cross-cutting action permission gating
+        // every "download the data" surface (Warga export, Rekap RW
+        // export, Kesehatan export/cetak, Presensi export). Named under
+        // 'menu.' so superadmin/developer keep covering it with their
+        // existing 'menu.*' matrix wildcard.
+        'menu.export'         => 'Can download/export resident data (all modules)',
     ];
 
     /**

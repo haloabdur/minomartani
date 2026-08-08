@@ -43,7 +43,13 @@ class MenuAccessFilter implements FilterInterface
         }
 
         helper('kbw');
-        setFlashData('error', 'Anda tidak memiliki akses ke menu ini.');
+        // 'export' isn't a menu but a cross-cutting action permission
+        // (see Admin\Users::ACTION_PERMISSIONS) applied as a second
+        // filter on top of the owning module's own menuaccess filter, so
+        // the generic "menu" wording would be misleading here.
+        setFlashData('error', $menu === 'export'
+            ? 'Anda tidak memiliki izin untuk mengunduh/mencetak data. Hubungi superadmin.'
+            : 'Anda tidak memiliki akses ke menu ini.');
 
         return redirect()->to(default_admin_route());
     }

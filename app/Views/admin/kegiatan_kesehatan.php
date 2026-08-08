@@ -58,6 +58,7 @@
 							$urlExportExcel = base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/export');
 							$urlExportPdf   = base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/export/pdf');
 						?>
+						<?php if (can_export()): ?>
 						<div class="dropdown d-inline-block">
 							<button type="button" class="btn btn-sm btn-outline-success dropdown-toggle" data-toggle="dropdown">
 								<i class="fas fa-file-download"></i> Export Rekap
@@ -86,6 +87,7 @@
 								<?php endif; ?>
 							</div>
 						</div>
+						<?php endif; ?>
 						<?php if (!$readOnly): ?>
 							<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/edit') ?>" class="btn btn-sm btn-outline-secondary">
 								<i class="far fa-edit"></i> Ubah Kegiatan
@@ -223,13 +225,13 @@
 								<th>Usia</th>
 								<th>Status</th>
 								<th width="1">Aksi</th>
-								<th width="1">Cetak</th>
+								<?php if (can_export()): ?><th width="1">Cetak</th><?php endif; ?>
 							</tr>
 						</thead>
 						<tbody>
 							<?php if (empty($peserta)): ?>
 								<tr>
-									<td colspan="<?= $multiRt ? 7 : 6 ?>" class="text-center text-muted py-4">
+									<td colspan="<?= 5 + ($multiRt ? 1 : 0) + (can_export() ? 1 : 0) ?>" class="text-center text-muted py-4">
 										Tidak ada warga lansia (60+ tahun) yang terdaftar di scope ini. Gunakan tombol "Tambah Peserta Lain" untuk mencatat warga lain.
 									</td>
 								</tr>
@@ -301,6 +303,7 @@
 												</button>
 											<?php endif; ?>
 										</td>
+										<?php if (can_export()): ?>
 										<td class="text-nowrap">
 											<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/cetak/' . $p->id_warga) ?>" target="_blank" class="btn btn-sm btn-outline-danger" title="Cetak/download PDF catatan kesehatan">
 												<i class="fas fa-file-pdf"></i>
@@ -309,6 +312,7 @@
 												<i class="fas fa-image"></i>
 											</a>
 										</td>
+										<?php endif; ?>
 									</tr>
 								<?php endforeach; ?>
 							<?php endif; ?>

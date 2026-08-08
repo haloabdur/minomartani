@@ -15,9 +15,9 @@ Terakhir diperbarui: 2026-07-15.
 
 ## Ringkasan arsitektur
 
-- **Multi-tenant**: hierarki `rw` → `rt`. Tabel data milik tenant (`warga`, `alamat`, `berita`, `surat`, `inventaris`, `dawis`, `ketua`) dan `kesehatan_kegiatan`/`kesehatan_catatan` punya kolom `id_rt` (dua tabel kesehatan juga bisa `id_rw` untuk kegiatan level RW). Tabel lookup (`pekerjaan`, `status_keluarga`, `status_penduduk`) global, tanpa `id_rt`.
+- **Multi-tenant**: hierarki `rw` → `rt`. Tabel data milik tenant (`warga`, `alamat`, `berita`, `surat`, `inventaris`, `dawis`, `ketua`) dan `kesehatan_kegiatan`/`kesehatan_catatan`/`presensi_acara`/`presensi_kehadiran` punya kolom `id_rt` (`kesehatan_kegiatan` dan `presensi_acara` juga bisa `id_rw` untuk kegiatan/acara level RW). Tabel lookup (`pekerjaan`, `status_keluarga`, `status_penduduk`) global, tanpa `id_rt`.
 - **Auth**: CodeIgniter Shield (`users`, `auth_identities`, dst). Tabel `user` (legacy CI3) diarsipkan, tidak dipakai aplikasi.
-- **Charset campuran**: tabel era CI3 pakai `latin1`/`latin1_swedish_ci` (`alamat`, `berita`, `dawis`, `ketua`, `pekerjaan`, `status_keluarga`, `status_penduduk`, `surat`, `user`, `warga`); tabel baru pakai `utf8mb4` (`auth_*`, `kesehatan_*`, `rt`, `rw`, `settings`, `users`); `inventaris` pakai `utf8mb3`.
+- **Charset campuran**: tabel era CI3 pakai `latin1`/`latin1_swedish_ci` (`alamat`, `berita`, `dawis`, `ketua`, `pekerjaan`, `status_keluarga`, `status_penduduk`, `surat`, `user`, `warga`); tabel baru pakai `utf8mb4` (`auth_*`, `kesehatan_*`, `presensi_*`, `rt`, `rw`, `settings`, `users`); `inventaris` pakai `utf8mb3`.
 - **FK constraint nyata di DB cuma sedikit**: `dawis.id_warga → warga.id_warga` dan rantai `auth_*.user_id → users.id` (semua `ON DELETE CASCADE`). Semua relasi tenant/lookup lainnya (warga→alamat, warga→pekerjaan, surat→warga, dst) ditegakkan di query aplikasi, bukan constraint DB.
 - **Server**: MariaDB 10.11.18 (dump generation tool: phpMyAdmin 5.2.3, PHP 8.2.29).
 
@@ -189,6 +189,37 @@ PK: `id_catatan` (AI). Unique: (`id_kegiatan`,`id_warga`). Index: `id_warga`, `i
 | `created_at` | timestamp | NULL DEFAULT current_timestamp() |
 | `timestamp` | timestamp | NULL ON UPDATE current_timestamp() |
 
+### `presensi_acara` — Acara RT/RW yang dipresensi (rapat, kerja bakti, dll)
+PK: `id_acara` (AI). Index: `id_rt`, `id_rw`. Engine/charset: InnoDB, `utf8mb4`/`utf8mb4_general_ci`. Kepemilikan sama seperti `kesehatan_kegiatan`: terisi salah satu antara `id_rt` (acara level RT) atau `id_rw` (acara gabungan RW), ditegakkan di model/controller bukan di DB.
+
+| Kolom | Tipe | Nullable / Default |
+|---|---|---|
+| `id_acara` | int(11) | PK, AUTO_INCREMENT |
+| `nama_acara` | varchar(255) | NOT NULL |
+| `tanggal_acara` | date | NOT NULL |
+| `tempat` | varchar(255) | NULL |
+| `id_rt` | int(11) | NULL — terisi jika acara level RT |
+| `id_rw` | int(11) | NULL — terisi jika acara level RW |
+| `catatan` | text | NULL |
+| `id_user` | int(11) | NULL |
+| `created_at` | timestamp | NULL DEFAULT current_timestamp() |
+| `timestamp` | timestamp | NULL ON UPDATE current_timestamp() |
+
+### `presensi_kehadiran` — Kehadiran per warga per acara
+PK: `id_presensi` (AI). Unique: (`id_acara`,`id_warga`). Index: `id_warga`, `id_rt`. Engine/charset: InnoDB, `utf8mb4`/`utf8mb4_general_ci`. Baris hanya ada setelah warga ditandai — **tidak adanya baris** berarti "belum dipresensi", berbeda dari `status = 'tidak'` ("dicatat tidak hadir").
+
+| Kolom | Tipe | Nullable / Default |
+|---|---|---|
+| `id_presensi` | int(11) | PK, AUTO_INCREMENT |
+| `id_acara` | int(11) | NOT NULL |
+| `id_warga` | int(11) | NOT NULL |
+| `id_rt` | int(11) | NOT NULL — salinan denormalisasi `warga.id_rt` saat pencatatan |
+| `status` | varchar(10) | NOT NULL DEFAULT `'hadir'` — `hadir`\|`tidak` |
+| `waktu` | datetime | NULL — jam saat ditandai |
+| `id_user` | int(11) | NULL |
+| `created_at` | timestamp | NULL DEFAULT current_timestamp() |
+| `timestamp` | timestamp | NULL ON UPDATE current_timestamp() |
+
 ---
 
 ## Tabel lookup (global, shared antar tenant)
@@ -332,7 +363,7 @@ PK: `id`. Index: `user_id`. FK: `user_id → users.id` (CASCADE).
 ### `auth_permissions_users`
 PK: `id`. FK: `user_id → users.id` (CASCADE).
 
-Per-user permission overrides on top of the group matrix (`app/Config/AuthGroups.php`). Used for the menu access feature: `menu.warga`/`menu.alamat`/`menu.berita` are exclusive to the `admin` group, `menu.rekap` is exclusive to `rw`, and `menu.kesehatan` is independently assignable to *either* group (superadmin can freely toggle it per user regardless of role) — the `admin`/`rw` groups themselves are granted none of these in the matrix, so access is entirely per-user via `Admin\Users`' checkboxes. None of these five is a group-wide bypass or automatic default; every account needs at least one explicitly assigned or `Admin\Users` refuses to save it. Pre-existing accounts were backfilled so nobody lost access on deploy: `2026-07-21-100000_BackfillAdminMenuPermissions.php` (all four admin menus for existing `admin` users), `2026-07-21-110000_BackfillRwMenuPermissions.php` (`menu.rekap` for existing `rw` users), `2026-07-22-090000_BackfillRwKesehatanPermission.php` (`menu.kesehatan` for existing `rw` users, since it used to be an unconditional bypass rather than a stored permission). `App\Helpers\menu_helper.php`'s `default_admin_route()` sends a user to their first assigned menu on login instead of a blanket dashboard (superadmin/developer, which hold a `menu.*` matrix wildcard, still land on `admin/dashboard`); `App\Filters\TenantFilter` logs out an `rw` account with neither `menu.rekap` nor `menu.kesehatan` (defense-in-depth against the same "zero menus" state `Admin\Users` is meant to prevent).
+Per-user permission overrides on top of the group matrix (`app/Config/AuthGroups.php`). Used for the menu access feature: `menu.warga`/`menu.alamat`/`menu.berita` are exclusive to the `admin` group, `menu.rekap` is exclusive to `rw`, and `menu.kesehatan`/`menu.presensi` are independently assignable to *either* group (superadmin can freely toggle it per user regardless of role) — the `admin`/`rw` groups themselves are granted none of these in the matrix, so access is entirely per-user via `Admin\Users`' checkboxes. None of these six is a group-wide bypass or automatic default; every account needs at least one explicitly assigned or `Admin\Users` refuses to save it. Pre-existing accounts were backfilled so nobody lost access on deploy: `2026-07-21-100000_BackfillAdminMenuPermissions.php` (all four admin menus for existing `admin` users), `2026-07-21-110000_BackfillRwMenuPermissions.php` (`menu.rekap` for existing `rw` users), `2026-07-22-090000_BackfillRwKesehatanPermission.php` (`menu.kesehatan` for existing `rw` users, since it used to be an unconditional bypass rather than a stored permission), `2026-08-05-090200_BackfillPresensiPermission.php` (`menu.presensi` for every user — `admin` or `rw` — that already holds `menu.kesehatan`, same audience). `App\Helpers\menu_helper.php`'s `default_admin_route()` sends a user to their first assigned menu on login instead of a blanket dashboard (superadmin/developer, which hold a `menu.*` matrix wildcard, still land on `admin/dashboard`); `App\Filters\TenantFilter` logs out an `rw` account with none of `menu.rekap`, `menu.kesehatan`, `menu.presensi` (defense-in-depth against the same "zero menus" state `Admin\Users` is meant to prevent).
 
 | Kolom | Tipe |
 |---|---|
@@ -388,4 +419,6 @@ Auth CI3 lama, digantikan Shield (lihat migration `MigrateLegacyUsersToShield.ph
 - `warga.id_status_penduduk → status_penduduk.id_status_penduduk`
 - `surat.id_warga → warga.id_warga`
 - `kesehatan_kegiatan.id_rt → rt.id_rt` / `kesehatan_kegiatan.id_rw → rw.id_rw`
-- `kesehatan_catatan.id_kegiatan → ke
+- `kesehatan_catatan.id_kegiatan → kesehatan_kegiatan.id_kegiatan` / `kesehatan_catatan.id_warga → warga.id_warga` / `kesehatan_catatan.id_rt → rt.id_rt`
+- `presensi_acara.id_rt → rt.id_rt` / `presensi_acara.id_rw → rw.id_rw`
+- `presensi_kehadiran.id_acara → presensi_acara.id_acara` / `presensi_kehadiran.id_warga → warga.id_warga` / `presensi_kehadiran.id_rt → rt.id_rt`

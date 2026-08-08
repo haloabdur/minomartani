@@ -118,6 +118,17 @@
         </li>
         <?php endif ?>
 
+        <?php if (auth()->user() && auth()->user()->can('menu.presensi')): ?>
+        <li class="nav-item">
+            <a href="<?= base_url('admin/presensi') ?>" class="nav-link">
+                <i class="nav-icon fas fa-clipboard-check"></i>
+                <p>
+                    Presensi Acara
+                </p>
+            </a>
+        </li>
+        <?php endif ?>
+
         <?php if (auth()->user() && auth()->user()->inGroup('superadmin')): ?>
         <li class="nav-item">
             <a href="<?= base_url('admin/users') ?>" class="nav-link">

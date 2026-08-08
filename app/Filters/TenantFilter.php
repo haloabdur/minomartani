@@ -81,15 +81,15 @@ class TenantFilter implements FilterInterface
                 return redirect()->to('login');
             }
 
-            // Rekap RW and Kesehatan Lansia are both plain per-user
-            // permissions now (see Config\AuthGroups + Admin\Users), with
-            // no group-wide bypass. Admin\Users enforces "at least one
-            // menu assigned" through the UI, so this should only trip for
-            // an account that predates that check or was edited directly
-            // in the DB - same defense-in-depth as the empty id_rw check
-            // above, otherwise this account would bounce forever between
-            // default_admin_route() and the redirect below.
-            if (! $user->can('menu.rekap') && ! $user->can('menu.kesehatan')) {
+            // Rekap RW, Kesehatan Lansia and Presensi Acara are all plain
+            // per-user permissions (see Config\AuthGroups + Admin\Users),
+            // with no group-wide bypass. Admin\Users enforces "at least
+            // one menu assigned" through the UI, so this should only trip
+            // for an account that predates that check or was edited
+            // directly in the DB - same defense-in-depth as the empty
+            // id_rw check above, otherwise this account would bounce
+            // forever between default_admin_route() and the redirect below.
+            if (! $user->can('menu.rekap') && ! $user->can('menu.kesehatan') && ! $user->can('menu.presensi')) {
                 auth()->logout();
                 helper('kbw');
                 setFlashData('error', 'Akun Anda belum memiliki akses menu apa pun. Hubungi superadmin.');
@@ -100,13 +100,17 @@ class TenantFilter implements FilterInterface
             $session->remove('tenant_rt_id');
             $session->set('tenant_rw_id', (int) $user->id_rw);
 
-            // RW accounts are otherwise read-only: rekap (read-only) and
-            // kesehatan (read-write, cross-RT within their RW) are their
-            // only surfaces. Which of the two they land on by default -
-            // and get bounced back to from anywhere else - depends on
-            // which menu permission(s) they've been assigned (see
-            // Config\AuthGroups + Admin\Users).
-            if (strpos($path, 'admin/rekap') !== 0 && strpos($path, 'admin/kesehatan') !== 0) {
+            // RW accounts are otherwise read-only: rekap (read-only),
+            // kesehatan and presensi (read-write, cross-RT within their
+            // RW) are their only surfaces. Which one they land on by
+            // default - and get bounced back to from anywhere else -
+            // depends on which menu permission(s) they've been assigned
+            // (see Config\AuthGroups + Admin\Users).
+            if (
+                strpos($path, 'admin/rekap') !== 0
+                && strpos($path, 'admin/kesehatan') !== 0
+                && strpos($path, 'admin/presensi') !== 0
+            ) {
                 return redirect()->to(default_admin_route());
             }
 

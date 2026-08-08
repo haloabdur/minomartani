@@ -94,7 +94,7 @@
 										<td><?= $r->asam_urat !== null ? esc($r->asam_urat) : '-' ?></td>
 										<td><?= esc($r->catatan ?? '-') ?></td>
 										<td class="text-center text-nowrap">
-											<?php if ($hasRecord($r)): ?>
+											<?php if ($hasRecord($r) && can_export()): ?>
 												<a href="<?= base_url('admin/kesehatan/kegiatan/' . $r->id_kegiatan . '/cetak/' . $r->id_warga) ?>" target="_blank" class="text-danger" title="Cetak PDF"><i class="fas fa-file-pdf"></i></a>
 												<a href="<?= base_url('admin/kesehatan/kegiatan/' . $r->id_kegiatan . '/gambar/' . $r->id_warga) ?>" target="_blank" class="text-success ml-2" title="Cetak Gambar (untuk WA)"><i class="fas fa-image"></i></a>
 											<?php else: ?>

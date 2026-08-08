@@ -107,4 +107,47 @@ final class RouteFilterTest extends CIUnitTestCase
         $this->assertFilter('admin/rekap', 'before', 'menuaccess:rekap');
         $this->assertFilter('admin/rekap/warga/([0-9]+)', 'before', 'menuaccess:rekap');
     }
+
+    /**
+     * Every route that hands resident data to the browser as a file is
+     * gated by the separate 'menu.export' permission *in addition to* its
+     * owning module's menu permission - being allowed to read a module on
+     * screen is not the same as being allowed to walk away with a copy of
+     * the data. CI4 merges group filters with per-route ones, so both
+     * must show up here.
+     */
+    public function testDownloadRoutesRequireExportPermission(): void
+    {
+        $downloadRoutes = [
+            'admin/warga/export'                              => 'menuaccess:warga',
+            'admin/rekap/warga/([0-9]+)/export'               => 'menuaccess:rekap',
+            'admin/kesehatan/kegiatan/([0-9]+)/export'        => 'menuaccess:kesehatan',
+            'admin/kesehatan/kegiatan/([0-9]+)/export/pdf'    => 'menuaccess:kesehatan',
+            'admin/kesehatan/kegiatan/([0-9]+)/cetak/([0-9]+)' => 'menuaccess:kesehatan',
+            'admin/kesehatan/kegiatan/([0-9]+)/gambar/([0-9]+)' => 'menuaccess:kesehatan',
+            'admin/presensi/acara/([0-9]+)/export'            => 'menuaccess:presensi',
+            'admin/presensi/acara/([0-9]+)/export/pdf'        => 'menuaccess:presensi',
+        ];
+
+        foreach ($downloadRoutes as $route => $moduleFilter) {
+            $this->assertFilter($route, 'before', 'menuaccess:export');
+            // The module's own filter must survive the merge, otherwise
+            // an 'rw' account granted only 'menu.export' could reach a
+            // module it has no menu permission for.
+            $this->assertFilter($route, 'before', $moduleFilter);
+        }
+    }
+
+    /**
+     * The inverse: reading a module on screen must NOT require the export
+     * permission, or restricting downloads would lock users out of the
+     * module entirely.
+     */
+    public function testModuleIndexRoutesDoNotRequireExportPermission(): void
+    {
+        $this->assertNotFilter('admin/warga', 'before', 'menuaccess:export');
+        $this->assertNotFilter('admin/rekap', 'before', 'menuaccess:export');
+        $this->assertNotFilter('admin/kesehatan', 'before', 'menuaccess:export');
+        $this->assertNotFilter('admin/presensi', 'before', 'menuaccess:export');
+    }
 }

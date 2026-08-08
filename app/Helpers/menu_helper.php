@@ -31,12 +31,14 @@ if (! function_exists('default_admin_route')) {
             ? [
                 'menu.rekap'     => 'admin/rekap',
                 'menu.kesehatan' => 'admin/kesehatan',
+                'menu.presensi'  => 'admin/presensi',
             ]
             : [
                 'menu.warga'     => 'admin/warga',
                 'menu.alamat'    => 'admin/alamat',
                 'menu.berita'    => 'admin/berita',
                 'menu.kesehatan' => 'admin/kesehatan',
+                'menu.presensi'  => 'admin/presensi',
             ];
 
         foreach ($ordered as $permission => $route) {
@@ -46,5 +48,27 @@ if (! function_exists('default_admin_route')) {
         }
 
         return 'admin/dashboard';
+    }
+}
+
+if (! function_exists('can_export')) {
+    /**
+     * Whether the current user may download resident data anywhere in the
+     * app - Warga export, Rekap RW export, Kesehatan export/cetak,
+     * Presensi export. Views use this to hide the download buttons;
+     * the URLs themselves are enforced by the 'menuaccess:export' route
+     * filter (see Config\Routes), so hiding the button is presentation,
+     * not the security boundary.
+     *
+     * Unlike the other menu permissions this one is never granted by
+     * default and was never backfilled: an account can only export once a
+     * superadmin explicitly ticks it in Admin\Users. superadmin and
+     * developer pass via their 'menu.*' matrix wildcard.
+     */
+    function can_export(): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && $user->can('menu.export');
     }
 }

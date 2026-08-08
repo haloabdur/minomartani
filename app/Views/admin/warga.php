@@ -81,10 +81,12 @@ foreach ($wargas as $w) {
 	<div class="row mb-3">
 		<div class="col"><a href="<?php echo base_url('admin/warga/add') ?>" class="btn btn-primary">Tambah Warga</a></div>
 		<div class="col text-right">
-			<a id="btn-export-warga" href="<?php echo base_url('admin/warga/export') ?>" class="btn btn-success">Export Data</a>
-			<button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#modal-export-custom" title="Pilih kolom export">
-				<i class="fas fa-cog"></i>
-			</button>
+			<?php if (can_export()): ?>
+				<a id="btn-export-warga" href="<?php echo base_url('admin/warga/export') ?>" class="btn btn-success">Export Data</a>
+				<button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#modal-export-custom" title="Pilih kolom export">
+					<i class="fas fa-cog"></i>
+				</button>
+			<?php endif; ?>
 		</div>
 	</div>
 
@@ -319,6 +321,7 @@ foreach ($wargas as $w) {
 	<!-- /.row -->
 </div><!-- /.container-fluid -->
 
+<?php if (can_export()): ?>
 <div class="modal fade" id="modal-export-custom" tabindex="-1" role="dialog" aria-labelledby="modalExportCustomLabel" aria-hidden="true">
 	<div class="modal-dialog modal-lg" role="document">
 		<div class="modal-content">
@@ -356,6 +359,7 @@ foreach ($wargas as $w) {
 		</div>
 	</div>
 </div>
+<?php endif; ?>
 
 <script>
 	document.addEventListener("DOMContentLoaded", function() {

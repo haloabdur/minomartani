@@ -34,6 +34,24 @@ class Users extends BaseController
      */
     private const SHARED_MENU_PERMISSIONS = [
         'menu.kesehatan' => 'Kesehatan Lansia',
+        'menu.presensi'  => 'Presensi Acara',
+    ];
+
+    /**
+     * Cross-cutting *action* permissions - not menus. Assignable to both
+     * 'admin' and 'rw' like SHARED_MENU_PERMISSIONS, but deliberately
+     * kept out of the "at least one menu" check (hasAtLeastOneMenu()) and
+     * out of default_admin_route()'s landing list: granting only
+     * 'menu.export' would leave a user with nowhere to actually go.
+     *
+     * 'menu.export' gates every download surface in the app at the route
+     * level (see Config\Routes' 'menuaccess:export' filters) and hides
+     * the corresponding buttons in the views via can_export().
+     * Deliberately NOT pre-checked for new users and never backfilled:
+     * exporting warga data is opt-in per account.
+     */
+    private const ACTION_PERMISSIONS = [
+        'menu.export' => 'Download / Export Data (Warga, Rekap, Kesehatan, Presensi)',
     ];
 
     public function index()
@@ -66,9 +84,13 @@ class Users extends BaseController
         $data['menuOptions'] = self::ADMIN_MENU_PERMISSIONS;
         $data['rwMenuOptions'] = self::RW_MENU_PERMISSIONS;
         $data['sharedMenuOptions'] = self::SHARED_MENU_PERMISSIONS;
-        // Checked by default: leaving every box ticked preserves today's
-        // behavior (full access for a new admin/rw) unless the creator
-        // deliberately unchecks something to restrict this user.
+        $data['actionOptions'] = self::ACTION_PERMISSIONS;
+        // Menus are checked by default: leaving every box ticked
+        // preserves today's behavior (full access for a new admin/rw)
+        // unless the creator deliberately unchecks something to restrict
+        // this user. ACTION_PERMISSIONS is deliberately absent - data
+        // export has to be granted consciously, not inherited from the
+        // default.
         $data['userPermissions'] = array_merge(
             array_keys(self::ADMIN_MENU_PERMISSIONS),
             array_keys(self::RW_MENU_PERMISSIONS),
@@ -176,6 +198,7 @@ class Users extends BaseController
         $data['menuOptions'] = self::ADMIN_MENU_PERMISSIONS;
         $data['rwMenuOptions'] = self::RW_MENU_PERMISSIONS;
         $data['sharedMenuOptions'] = self::SHARED_MENU_PERMISSIONS;
+        $data['actionOptions'] = self::ACTION_PERMISSIONS;
         $data['userPermissions'] = $data['user']->getPermissions() ?? [];
 
         return $this->loadViews('admin/ubah_user', $this->global, $data);
@@ -297,12 +320,14 @@ class Users extends BaseController
      * Kesehatan Lansia is a normal per-user toggle for both, same as
      * every other menu - so each must have at least one menu_akses[]
      * checkbox checked or the account would be created with zero
-     * reachable menus. Other target groups (superadmin) don't use
-     * per-user menu permissions at all.
+     * reachable menus. Checks navigable menus only: 'menu.export' is an
+     * action permission with no page of its own, so a user with nothing
+     * but that ticked would still land nowhere. Other target groups
+     * (superadmin) don't use per-user menu permissions at all.
      */
     private function hasAtLeastOneMenu(string $targetGroup): bool
     {
-        $allowed = $this->assignableMenusFor($targetGroup);
+        $allowed = $this->navigableMenusFor($targetGroup);
 
         if ($allowed === null) {
             return true;
@@ -313,7 +338,20 @@ class Users extends BaseController
         return array_intersect($posted, array_keys($allowed)) !== [];
     }
 
+    /**
+     * Everything the target group may be granted through the menu access
+     * checkboxes - navigable menus plus cross-cutting action permissions.
+     * Null means "this group doesn't use per-user permissions".
+     */
     private function assignableMenusFor(string $targetGroup): ?array
+    {
+        $navigable = $this->navigableMenusFor($targetGroup);
+
+        return $navigable === null ? null : $navigable + self::ACTION_PERMISSIONS;
+    }
+
+    /** Menus that actually have a page to land on, per target group. */
+    private function navigableMenusFor(string $targetGroup): ?array
     {
         return match ($targetGroup) {
             'admin' => self::ADMIN_MENU_PERMISSIONS + self::SHARED_MENU_PERMISSIONS,
