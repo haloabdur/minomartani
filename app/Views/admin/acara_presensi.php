@@ -448,6 +448,23 @@ document.addEventListener('DOMContentLoaded', function () {
 	var csrfName  = '<?= csrf_token() ?>';
 	var csrfHash  = '<?= csrf_hash() ?>';
 
+	/**
+	 * Adopt the fresh token from an AJAX response. The regenerated hash
+	 * invalidates not just our next fetch() but also the token baked into
+	 * every <form> rendered at page load - "Warga Belum Terdaftar" and the
+	 * hidden daftar-RFID form - so those hidden inputs must be rewritten
+	 * too. Without this, tapping Hadir once and then submitting either
+	 * form is rejected with a 403 SecurityException.
+	 */
+	function segarkanCsrf(hash) {
+		if (!hash) {
+			return;
+		}
+
+		csrfHash = hash;
+		jQuery('input[name="' + csrfName + '"]').val(hash);
+	}
+
 	function hitungUlangStatistik() {
 		var hadir = 0, tidak = 0, belum = 0;
 		jQuery('#tabelPresensi tbody tr[data-status]').each(function () {
@@ -502,9 +519,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		})
 			.then(function (res) { return res.json(); })
 			.then(function (res) {
-				if (res.csrfHash) {
-					csrfHash = res.csrfHash;
-				}
+				segarkanCsrf(res.csrfHash);
 				if (res.status === 'ok') {
 					terapkanStatus(res.idWarga, res.kehadiran, res.waktu, res.idPresensi);
 				} else {
