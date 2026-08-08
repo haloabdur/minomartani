@@ -53,6 +53,10 @@
 						<table class="table table-bordered table-striped mb-0">
 							<thead>
 								<tr>
+									<!-- Action column first: this is the widest table in
+									     the app, so on a phone the cetak buttons would
+									     otherwise sit far off the right edge. -->
+									<th width="1">Aksi</th>
 									<th>Kegiatan</th>
 									<th>Tanggal</th>
 									<th>Tensi</th>
@@ -63,7 +67,6 @@
 									<th>Kolesterol</th>
 									<th>Asam Urat</th>
 									<th>Catatan</th>
-									<th>Aksi</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -83,6 +86,14 @@
 								?>
 								<?php foreach (array_reverse($riwayat) as $r): ?>
 									<tr>
+										<td class="text-center text-nowrap align-middle">
+											<?php if ($hasRecord($r) && can_export()): ?>
+												<a href="<?= base_url('admin/kesehatan/kegiatan/' . $r->id_kegiatan . '/cetak/' . $r->id_warga) ?>" target="_blank" class="text-danger" title="Cetak PDF"><i class="fas fa-file-pdf"></i></a>
+												<a href="<?= base_url('admin/kesehatan/kegiatan/' . $r->id_kegiatan . '/gambar/' . $r->id_warga) ?>" target="_blank" class="text-success ml-2" title="Cetak Gambar (untuk WA)"><i class="fas fa-image"></i></a>
+											<?php else: ?>
+												<span class="text-muted">-</span>
+											<?php endif; ?>
+										</td>
 										<td><?= esc($r->nama_kegiatan) ?></td>
 										<td><?= tanggal($r->tanggal_kegiatan) ?></td>
 										<td><?= ($r->tensi_sistol !== null && $r->tensi_diastol !== null) ? esc($r->tensi_sistol . '/' . $r->tensi_diastol) : '-' ?></td>
@@ -93,14 +104,6 @@
 										<td><?= $r->kolesterol !== null ? esc($r->kolesterol) : '-' ?></td>
 										<td><?= $r->asam_urat !== null ? esc($r->asam_urat) : '-' ?></td>
 										<td><?= esc($r->catatan ?? '-') ?></td>
-										<td class="text-center text-nowrap">
-											<?php if ($hasRecord($r) && can_export()): ?>
-												<a href="<?= base_url('admin/kesehatan/kegiatan/' . $r->id_kegiatan . '/cetak/' . $r->id_warga) ?>" target="_blank" class="text-danger" title="Cetak PDF"><i class="fas fa-file-pdf"></i></a>
-												<a href="<?= base_url('admin/kesehatan/kegiatan/' . $r->id_kegiatan . '/gambar/' . $r->id_warga) ?>" target="_blank" class="text-success ml-2" title="Cetak Gambar (untuk WA)"><i class="fas fa-image"></i></a>
-											<?php else: ?>
-												<span class="text-muted">-</span>
-											<?php endif; ?>
-										</td>
 									</tr>
 								<?php endforeach; ?>
 							</tbody>

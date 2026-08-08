@@ -219,13 +219,18 @@
 					<table class="table table-bordered table-striped datatable" id="tabelPresensi">
 						<thead>
 							<tr>
+								<!-- Presensi (the action buttons) sits in the first
+								     column deliberately: on a phone the roster is wide
+								     enough to scroll horizontally, and marking someone
+								     hadir is the one thing this screen exists for - it
+								     must be reachable without scrolling right. -->
+								<th width="1">Presensi</th>
 								<th width="1">No.</th>
 								<th>Nama</th>
 								<th>NIK</th>
 								<?php if ($multiRt): ?><th>RT</th><?php endif; ?>
 								<th>Usia</th>
 								<th>Status</th>
-								<th width="1">Presensi</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -243,7 +248,29 @@
 										$usia      = (new DateTime($p->tanggal_lahir))->diff(new DateTime())->y;
 									?>
 									<tr data-id-rt="<?= (int) $p->id_rt ?>" data-status="<?= esc($statusKey) ?>" id="barisWarga<?= (int) $p->id_warga ?>">
-										<td><?= $i + 1 ?></td>
+										<td class="text-nowrap align-middle">
+											<?php if (!$readOnly): ?>
+												<div class="btn-group btn-group-sm" role="group">
+													<button type="button" class="btn btn-tandai btn-<?= $statusKey === 'hadir' ? '' : 'outline-' ?>success"
+														data-id-warga="<?= (int) $p->id_warga ?>" data-status="hadir">
+														<i class="fas fa-check"></i> Hadir
+													</button>
+													<button type="button" class="btn btn-tandai btn-<?= $statusKey === 'tidak' ? '' : 'outline-' ?>danger"
+														data-id-warga="<?= (int) $p->id_warga ?>" data-status="tidak">
+														<i class="fas fa-times"></i> Tidak
+													</button>
+												</div>
+												<a href="<?= base_url('admin/presensi/acara/' . $acara->id_acara . '/hapus/' . ($row->id_presensi ?? 0)) ?>"
+													class="btn btn-sm btn-link text-muted sel-batal"
+													style="<?= $row === null ? 'display:none' : '' ?>"
+													onclick="return confirm('Batalkan presensi warga ini?')" title="Batalkan presensi">
+													<i class="fas fa-undo"></i>
+												</a>
+											<?php else: ?>
+												<span class="text-muted small">&mdash;</span>
+											<?php endif; ?>
+										</td>
+										<td class="align-middle"><?= $i + 1 ?></td>
 										<td>
 											<?= esc($p->nama_warga) ?>
 											<div class="small">
@@ -267,28 +294,6 @@
 												<div class="text-muted small sel-waktu"><?= date('H:i', strtotime($row->waktu)) ?></div>
 											<?php else: ?>
 												<div class="text-muted small sel-waktu"></div>
-											<?php endif; ?>
-										</td>
-										<td class="text-nowrap">
-											<?php if (!$readOnly): ?>
-												<div class="btn-group btn-group-sm" role="group">
-													<button type="button" class="btn btn-tandai btn-<?= $statusKey === 'hadir' ? '' : 'outline-' ?>success"
-														data-id-warga="<?= (int) $p->id_warga ?>" data-status="hadir">
-														<i class="fas fa-check"></i> Hadir
-													</button>
-													<button type="button" class="btn btn-tandai btn-<?= $statusKey === 'tidak' ? '' : 'outline-' ?>danger"
-														data-id-warga="<?= (int) $p->id_warga ?>" data-status="tidak">
-														<i class="fas fa-times"></i> Tidak
-													</button>
-												</div>
-												<a href="<?= base_url('admin/presensi/acara/' . $acara->id_acara . '/hapus/' . ($row->id_presensi ?? 0)) ?>"
-													class="btn btn-sm btn-link text-muted sel-batal"
-													style="<?= $row === null ? 'display:none' : '' ?>"
-													onclick="return confirm('Batalkan presensi warga ini?')" title="Batalkan presensi">
-													<i class="fas fa-undo"></i>
-												</a>
-											<?php else: ?>
-												<span class="text-muted small">&mdash;</span>
 											<?php endif; ?>
 										</td>
 									</tr>
@@ -364,27 +369,29 @@
 				<table class="table table-bordered table-striped" id="tabelDaftarRfid">
 					<thead>
 						<tr>
+							<!-- Action column first, same rule as the main roster:
+							     reachable on a phone without scrolling right. -->
+							<th width="1">Aksi</th>
 							<th width="1">No.</th>
 							<th>Nama</th>
 							<th>NIK</th>
 							<?php if ($multiRt): ?><th>RT</th><?php endif; ?>
 							<th>Usia</th>
-							<th width="1">Aksi</th>
 						</tr>
 					</thead>
 					<tbody>
 						<?php foreach ($peserta as $i => $w): ?>
 							<tr>
-								<td><?= $i + 1 ?></td>
-								<td><?= esc($w->nama_warga) ?></td>
-								<td><?= esc($w->nik) ?></td>
-								<?php if ($multiRt): ?><td><?= esc($w->nama_rt ?? '-') ?></td><?php endif; ?>
-								<td><?= (new DateTime($w->tanggal_lahir))->diff(new DateTime())->y ?> th</td>
-								<td>
+								<td class="align-middle">
 									<button type="button" class="btn btn-sm btn-primary btn-daftarkan-rfid" data-id-warga="<?= $w->id_warga ?>" data-nama="<?= esc($w->nama_warga) ?>">
 										<i class="fas fa-link mr-1"></i> Daftarkan
 									</button>
 								</td>
+								<td class="align-middle"><?= $i + 1 ?></td>
+								<td><?= esc($w->nama_warga) ?></td>
+								<td><?= esc($w->nik) ?></td>
+								<?php if ($multiRt): ?><td><?= esc($w->nama_rt ?? '-') ?></td><?php endif; ?>
+								<td><?= (new DateTime($w->tanggal_lahir))->diff(new DateTime())->y ?> th</td>
 							</tr>
 						<?php endforeach; ?>
 					</tbody>
@@ -567,6 +574,12 @@ document.addEventListener('DOMContentLoaded', function () {
 		if (!daftarRfidInitialized) {
 			jQuery('#tabelDaftarRfid').DataTable({
 				language: { search: '_INPUT_', searchPlaceholder: 'Cari nama/NIK...' },
+				// Unlike #tabelPresensi (footer.php inits '.datatable' with
+				// ordering:false) this table sorts, and column 0 is now the
+				// action button - not data. Make it unsortable and point the
+				// default sort at 'No.', which moved to index 1.
+				columnDefs: [{ orderable: false, targets: 0 }],
+				order: [[1, 'asc']],
 			});
 			daftarRfidInitialized = true;
 		} else {

@@ -219,13 +219,18 @@
 					<table class="table table-bordered table-striped datatable" id="tabelPeserta">
 						<thead>
 							<tr>
+								<!-- Aksi/Cetak sit in the first columns deliberately:
+								     on a phone this roster is wide enough to scroll
+								     horizontally, and filling in a resident's data is
+								     the one thing this screen exists for - it must be
+								     reachable without scrolling right. -->
+								<th width="1">Aksi</th>
+								<?php if (can_export()): ?><th width="1">Cetak</th><?php endif; ?>
 								<th width="1">No.</th>
 								<th>Nama</th>
 								<?php if ($multiRt): ?><th>RT</th><?php endif; ?>
 								<th>Usia</th>
 								<th>Status</th>
-								<th width="1">Aksi</th>
-								<?php if (can_export()): ?><th width="1">Cetak</th><?php endif; ?>
 							</tr>
 						</thead>
 						<tbody>
@@ -244,7 +249,37 @@
 										$statusKey = $hasData ? 'sudah' : ($existing !== null ? 'ditambahkan' : 'belum');
 									?>
 									<tr data-id-rt="<?= (int) $p->id_rt ?>" data-status="<?= $statusKey ?>">
-										<td><?= $i + 1 ?></td>
+										<td class="align-middle">
+											<?php if (!$readOnly): ?>
+												<button type="button" class="btn btn-sm btn-outline-primary btn-isi-data"
+													data-id-warga="<?= $p->id_warga ?>"
+													data-nama="<?= esc($p->nama_warga) ?>"
+													data-id-catatan="<?= esc($existing->id_catatan ?? '') ?>"
+													data-tensi-sistol="<?= esc($existing->tensi_sistol ?? '') ?>"
+													data-tensi-diastol="<?= esc($existing->tensi_diastol ?? '') ?>"
+													data-berat-badan="<?= esc($existing->berat_badan ?? '') ?>"
+													data-tinggi-badan="<?= esc($existing->tinggi_badan ?? '') ?>"
+													data-lingkar-perut="<?= esc($existing->lingkar_perut ?? '') ?>"
+													data-gula-darah="<?= esc($existing->gula_darah ?? '') ?>"
+													data-gula-darah-ket="<?= esc($existing->gula_darah_ket ?? '') ?>"
+													data-kolesterol="<?= esc($existing->kolesterol ?? '') ?>"
+													data-asam-urat="<?= esc($existing->asam_urat ?? '') ?>"
+													data-catatan="<?= esc($existing->catatan ?? '') ?>">
+													<i class="fas fa-notes-medical"></i> Isi Data
+												</button>
+											<?php endif; ?>
+										</td>
+										<?php if (can_export()): ?>
+										<td class="text-nowrap align-middle">
+											<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/cetak/' . $p->id_warga) ?>" target="_blank" class="btn btn-sm btn-outline-danger" title="Cetak/download PDF catatan kesehatan">
+												<i class="fas fa-file-pdf"></i>
+											</a>
+											<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/gambar/' . $p->id_warga) ?>" target="_blank" class="btn btn-sm btn-outline-success" title="Cetak gambar (untuk WA)">
+												<i class="fas fa-image"></i>
+											</a>
+										</td>
+										<?php endif; ?>
+										<td class="align-middle"><?= $i + 1 ?></td>
 										<td>
 											<?= esc($p->nama_warga) ?>
 											<?php if ($hasData): ?>
@@ -283,36 +318,6 @@
 												<span class="badge badge-secondary">Belum dicatat</span>
 											<?php endif; ?>
 										</td>
-										<td>
-											<?php if (!$readOnly): ?>
-												<button type="button" class="btn btn-sm btn-outline-primary btn-isi-data"
-													data-id-warga="<?= $p->id_warga ?>"
-													data-nama="<?= esc($p->nama_warga) ?>"
-													data-id-catatan="<?= esc($existing->id_catatan ?? '') ?>"
-													data-tensi-sistol="<?= esc($existing->tensi_sistol ?? '') ?>"
-													data-tensi-diastol="<?= esc($existing->tensi_diastol ?? '') ?>"
-													data-berat-badan="<?= esc($existing->berat_badan ?? '') ?>"
-													data-tinggi-badan="<?= esc($existing->tinggi_badan ?? '') ?>"
-													data-lingkar-perut="<?= esc($existing->lingkar_perut ?? '') ?>"
-													data-gula-darah="<?= esc($existing->gula_darah ?? '') ?>"
-													data-gula-darah-ket="<?= esc($existing->gula_darah_ket ?? '') ?>"
-													data-kolesterol="<?= esc($existing->kolesterol ?? '') ?>"
-													data-asam-urat="<?= esc($existing->asam_urat ?? '') ?>"
-													data-catatan="<?= esc($existing->catatan ?? '') ?>">
-													<i class="fas fa-notes-medical"></i> Isi Data
-												</button>
-											<?php endif; ?>
-										</td>
-										<?php if (can_export()): ?>
-										<td class="text-nowrap">
-											<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/cetak/' . $p->id_warga) ?>" target="_blank" class="btn btn-sm btn-outline-danger" title="Cetak/download PDF catatan kesehatan">
-												<i class="fas fa-file-pdf"></i>
-											</a>
-											<a href="<?= base_url('admin/kesehatan/kegiatan/' . $kegiatan->id_kegiatan . '/gambar/' . $p->id_warga) ?>" target="_blank" class="btn btn-sm btn-outline-success" title="Cetak gambar (untuk WA)">
-												<i class="fas fa-image"></i>
-											</a>
-										</td>
-										<?php endif; ?>
 									</tr>
 								<?php endforeach; ?>
 							<?php endif; ?>
@@ -412,23 +417,20 @@
 				<table class="table table-bordered table-striped" id="tabelSemuaWarga">
 					<thead>
 						<tr>
+							<!-- Action column first, same rule as the peserta table:
+							     reachable on a phone without scrolling right. -->
+							<th width="1">Aksi</th>
 							<th width="1">No.</th>
 							<th>Nama</th>
 							<th>NIK</th>
 							<?php if ($multiRt): ?><th>RT</th><?php endif; ?>
 							<th>Usia</th>
-							<th width="1">Aksi</th>
 						</tr>
 					</thead>
 					<tbody>
 						<?php foreach ($semuaWarga as $i => $w): ?>
 							<tr>
-								<td><?= $i + 1 ?></td>
-								<td><?= esc($w->nama_warga) ?></td>
-								<td><?= esc($w->nik) ?></td>
-								<?php if ($multiRt): ?><td><?= esc($w->nama_rt ?? '-') ?></td><?php endif; ?>
-								<td><?= (new DateTime($w->tanggal_lahir))->diff(new DateTime())->y ?> th</td>
-								<td>
+								<td class="align-middle">
 									<?php if (in_array((int) $w->id_warga, $pesertaIds, true)): ?>
 										<span class="badge badge-secondary">Sudah di kegiatan ini</span>
 									<?php else: ?>
@@ -440,6 +442,11 @@
 										<?php echo form_close() ?>
 									<?php endif; ?>
 								</td>
+								<td class="align-middle"><?= $i + 1 ?></td>
+								<td><?= esc($w->nama_warga) ?></td>
+								<td><?= esc($w->nik) ?></td>
+								<?php if ($multiRt): ?><td><?= esc($w->nama_rt ?? '-') ?></td><?php endif; ?>
+								<td><?= (new DateTime($w->tanggal_lahir))->diff(new DateTime())->y ?> th</td>
 							</tr>
 						<?php endforeach; ?>
 					</tbody>
@@ -510,27 +517,29 @@
 				<table class="table table-bordered table-striped" id="tabelDaftarRfid">
 					<thead>
 						<tr>
+							<!-- Action column first, same rule as the peserta table:
+							     reachable on a phone without scrolling right. -->
+							<th width="1">Aksi</th>
 							<th width="1">No.</th>
 							<th>Nama</th>
 							<th>NIK</th>
 							<?php if ($multiRt): ?><th>RT</th><?php endif; ?>
 							<th>Usia</th>
-							<th width="1">Aksi</th>
 						</tr>
 					</thead>
 					<tbody>
 						<?php foreach ($semuaWarga as $i => $w): ?>
 							<tr>
-								<td><?= $i + 1 ?></td>
-								<td><?= esc($w->nama_warga) ?></td>
-								<td><?= esc($w->nik) ?></td>
-								<?php if ($multiRt): ?><td><?= esc($w->nama_rt ?? '-') ?></td><?php endif; ?>
-								<td><?= (new DateTime($w->tanggal_lahir))->diff(new DateTime())->y ?> th</td>
-								<td>
+								<td class="align-middle">
 									<button type="button" class="btn btn-sm btn-primary btn-daftarkan-rfid" data-id-warga="<?= $w->id_warga ?>" data-nama="<?= esc($w->nama_warga) ?>">
 										<i class="fas fa-link mr-1"></i> Daftarkan
 									</button>
 								</td>
+								<td class="align-middle"><?= $i + 1 ?></td>
+								<td><?= esc($w->nama_warga) ?></td>
+								<td><?= esc($w->nik) ?></td>
+								<?php if ($multiRt): ?><td><?= esc($w->nama_rt ?? '-') ?></td><?php endif; ?>
+								<td><?= (new DateTime($w->tanggal_lahir))->diff(new DateTime())->y ?> th</td>
 							</tr>
 						<?php endforeach; ?>
 					</tbody>
@@ -584,6 +593,12 @@ document.addEventListener('DOMContentLoaded', function () {
 		if (!initialized) {
 			jQuery('#tabelSemuaWarga').DataTable({
 				language: { search: '_INPUT_', searchPlaceholder: 'Cari nama/NIK...' },
+				// Unlike #tabelPeserta (footer.php inits '.datatable' with
+				// ordering:false) this table sorts, and column 0 is now the
+				// action button - not data. Make it unsortable and point the
+				// default sort at 'No.', which moved to index 1.
+				columnDefs: [{ orderable: false, targets: 0 }],
+				order: [[1, 'asc']],
 			});
 			initialized = true;
 		} else {
@@ -685,6 +700,9 @@ document.addEventListener('DOMContentLoaded', function () {
 		if (!daftarRfidInitialized) {
 			jQuery('#tabelDaftarRfid').DataTable({
 				language: { search: '_INPUT_', searchPlaceholder: 'Cari nama/NIK...' },
+				// Action column moved to index 0 - see #tabelSemuaWarga above.
+				columnDefs: [{ orderable: false, targets: 0 }],
+				order: [[1, 'asc']],
 			});
 			daftarRfidInitialized = true;
 		} else {
