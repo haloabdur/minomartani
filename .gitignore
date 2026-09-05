@@ -51,6 +51,11 @@ Vagrantfile
 /backups/
 
 #-------------------------
+# Local-only docs (may contain credentials - never commit)
+#-------------------------
+docs/*.local.md
+
+#-------------------------
 # Temporary Files
 #-------------------------
 writable/cache/*

@@ -22,6 +22,7 @@ $__rtHero = (isset($rt) && $rt !== null && !empty($rt->foto_hero))
             <ul class="navbar-nav text-uppercase ms-auto py-4 py-lg-0">
                 <li class="nav-item"><a class="nav-link" href="#tentang-kami">Profil</a></li>
                 <li class="nav-item"><a class="nav-link" href="#berita">Berita RT</a></li>
+                <li class="nav-item"><a class="nav-link" href="#papan-informasi">Papan Informasi</a></li>
                 <li class="nav-item"><a class="nav-link" href="#ketua-rt">Ketua RT</a></li>
                 <li class="nav-item"><a class="nav-link" href="#hubungi-kami">Hubungi Kami</a></li>
             </ul>
@@ -64,6 +65,32 @@ $__rtHero = (isset($rt) && $rt !== null && !empty($rt->foto_hero))
                     </div>
                 </div>
             <?php endforeach ?>
+        </div>
+    </div>
+</section>
+
+<!-- Papan Informasi -->
+<section class="page-section bg-light" id="papan-informasi">
+    <div class="container">
+        <div class="text-center pb-4">
+            <h3 class="section-subheading mb-2 text-muted">HIMBAUAN &amp; TATA TERTIB</h3>
+            <h2 class="section-heading mb-5">Papan Informasi <?= esc($__rtNama) ?></h2>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <?php if (empty($papanInformasis)): ?>
+                    <p class="text-center text-muted">Belum ada informasi yang berlaku.</p>
+                <?php endif; ?>
+                <?php foreach ($papanInformasis as $papan): ?>
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body">
+                            <h4><?= $papan->judul ?></h4>
+                            <p class="text-muted mb-0"><?= substr(strip_tags($papan->isi), 0, 200) ?><?= strlen(strip_tags($papan->isi)) > 200 ? '...' : '' ?></p>
+                            <a class="stretched-link" href="<?= base_url('papan-informasi/' . $papan->id_papan) ?>"></a>
+                        </div>
+                    </div>
+                <?php endforeach ?>
+            </div>
         </div>
     </div>
 </section>

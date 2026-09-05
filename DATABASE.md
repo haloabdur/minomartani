@@ -15,9 +15,9 @@ Terakhir diperbarui: 2026-07-15.
 
 ## Ringkasan arsitektur
 
-- **Multi-tenant**: hierarki `rw` → `rt`. Tabel data milik tenant (`warga`, `alamat`, `berita`, `surat`, `inventaris`, `dawis`, `ketua`) dan `kesehatan_kegiatan`/`kesehatan_catatan`/`presensi_acara`/`presensi_kehadiran` punya kolom `id_rt` (`kesehatan_kegiatan` dan `presensi_acara` juga bisa `id_rw` untuk kegiatan/acara level RW). Tabel lookup (`pekerjaan`, `status_keluarga`, `status_penduduk`) global, tanpa `id_rt`.
+- **Multi-tenant**: hierarki `rw` → `rt`. Tabel data milik tenant (`warga`, `alamat`, `berita`, `surat`, `inventaris`, `dawis`, `ketua`, `papan_informasi`) dan `kesehatan_kegiatan`/`kesehatan_catatan`/`presensi_acara`/`presensi_kehadiran` punya kolom `id_rt` (`kesehatan_kegiatan` dan `presensi_acara` juga bisa `id_rw` untuk kegiatan/acara level RW). Tabel lookup (`pekerjaan`, `status_keluarga`, `status_penduduk`) global, tanpa `id_rt`.
 - **Auth**: CodeIgniter Shield (`users`, `auth_identities`, dst). Tabel `user` (legacy CI3) diarsipkan, tidak dipakai aplikasi.
-- **Charset campuran**: tabel era CI3 pakai `latin1`/`latin1_swedish_ci` (`alamat`, `berita`, `dawis`, `ketua`, `pekerjaan`, `status_keluarga`, `status_penduduk`, `surat`, `user`, `warga`); tabel baru pakai `utf8mb4` (`auth_*`, `kesehatan_*`, `presensi_*`, `rt`, `rw`, `settings`, `users`); `inventaris` pakai `utf8mb3`.
+- **Charset campuran**: tabel era CI3 pakai `latin1`/`latin1_swedish_ci` (`alamat`, `berita`, `dawis`, `ketua`, `pekerjaan`, `status_keluarga`, `status_penduduk`, `surat`, `user`, `warga`); tabel baru pakai `utf8mb4` (`auth_*`, `kesehatan_*`, `presensi_*`, `papan_informasi`, `rt`, `rw`, `settings`, `users`); `inventaris` pakai `utf8mb3`.
 - **FK constraint nyata di DB cuma sedikit**: `dawis.id_warga → warga.id_warga` dan rantai `auth_*.user_id → users.id` (semua `ON DELETE CASCADE`). Semua relasi tenant/lookup lainnya (warga→alamat, warga→pekerjaan, surat→warga, dst) ditegakkan di query aplikasi, bukan constraint DB.
 - **Server**: MariaDB 10.11.18 (dump generation tool: phpMyAdmin 5.2.3, PHP 8.2.29).
 
@@ -89,6 +89,20 @@ PK: `id_berita` (AI). Index: `id_rt`. Engine/charset: InnoDB, `latin1`/`latin1_s
 | `sumber` | varchar(255) | NULL |
 | `is_status` | tinyint(4) | NOT NULL |
 | `created_by` | tinyint(4) | NULL |
+| `timestamp` | timestamp | NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() |
+| `id_rt` | int(11) | NOT NULL DEFAULT 1 |
+
+### `papan_informasi` — Papan informasi (himbauan/tatib tetap per RT)
+PK: `id_papan` (AI). Index: `id_rt`. Engine/charset: InnoDB, `utf8mb4`/`utf8mb4_general_ci`.
+
+| Kolom | Tipe | Nullable / Default |
+|---|---|---|
+| `id_papan` | int(11) | PK, AUTO_INCREMENT |
+| `judul` | varchar(255) | NOT NULL |
+| `isi` | text | NOT NULL |
+| `lampiran` | varchar(255) | NULL |
+| `is_status` | tinyint(4) | NOT NULL DEFAULT 0 |
+| `created_by` | int(11) | NULL |
 | `timestamp` | timestamp | NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() |
 | `id_rt` | int(11) | NOT NULL DEFAULT 1 |
 

@@ -10,6 +10,7 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 $routes->get('detail/(:any)', 'Home::alamat/$1');
 $routes->get('berita/(:any)', 'Home::berita/$1');
+$routes->get('papan-informasi/(:any)', 'Home::papanInformasi/$1');
 $routes->get('layanan', 'Layanan::index');
 $routes->post('layanan/store', 'Layanan::store');
 $routes->get('layanan/sukses', 'Layanan::sukses');
@@ -58,6 +59,16 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->post('store', 'Admin\Berita::store');
         $routes->get('edit/(:num)', 'Admin\Berita::edit/$1');
         $routes->post('update/(:num)', 'Admin\Berita::update/$1');
+    });
+
+    // Papan Informasi - per-user menu access, see Config\AuthGroups + Admin\Users
+    $routes->group('papan-informasi', ['filter' => 'menuaccess:papan_informasi'], function ($routes) {
+        $routes->get('/', 'Admin\PapanInformasi::index');
+        $routes->get('add', 'Admin\PapanInformasi::add');
+        $routes->post('store', 'Admin\PapanInformasi::store');
+        $routes->get('edit/(:num)', 'Admin\PapanInformasi::edit/$1');
+        $routes->post('update/(:num)', 'Admin\PapanInformasi::update/$1');
+        $routes->get('delete/(:num)', 'Admin\PapanInformasi::delete/$1');
     });
 
     // Inventaris
@@ -187,6 +198,7 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
 $routes->get('(:segment)', 'Home::index/$1');
 $routes->get('(:segment)/detail/(:any)', 'Home::alamat/$1/$2');
 $routes->get('(:segment)/berita/(:any)', 'Home::berita/$1/$2');
+$routes->get('(:segment)/papan-informasi/(:any)', 'Home::papanInformasi/$1/$2');
 $routes->get('(:segment)/layanan', 'Layanan::index/$1');
 $routes->post('(:segment)/layanan/store', 'Layanan::store/$1');
 $routes->get('(:segment)/layanan/sukses', 'Layanan::sukses/$1');

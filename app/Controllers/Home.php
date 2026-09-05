@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\AlamatModel;
 use App\Models\BeritaModel;
+use App\Models\PapanInformasiModel;
 use App\Models\RwModel;
 use App\Models\WargaModel;
 
@@ -11,12 +12,14 @@ class Home extends BaseController
 {
     protected $alamatModel;
     protected $beritaModel;
+    protected $papanInformasiModel;
     protected $wargaModel;
 
     public function __construct()
     {
         $this->alamatModel = new AlamatModel();
         $this->beritaModel = new BeritaModel();
+        $this->papanInformasiModel = new PapanInformasiModel();
         $this->wargaModel  = new WargaModel();
     }
 
@@ -41,6 +44,7 @@ class Home extends BaseController
         $data['rw']        = $rt !== null ? (new RwModel())->find($rt->id_rw) : null;
         $data['ketuas']    = $db->table('ketua')->where('id_rt', current_rt_id())->get()->getResult();
         $data['beritas']   = $db->table('berita')->where('id_rt', current_rt_id())->where('is_status', 1)->orderBy('timestamp', 'desc')->limit(3)->get()->getResult();
+        $data['papanInformasis'] = $this->papanInformasiModel->published();
         $data['kk']        = $this->wargaModel->kk_count();
         $data['laki']      = $this->wargaModel->laki_count();
         $data['perempuan'] = $this->wargaModel->perempuan_count();
@@ -105,5 +109,29 @@ class Home extends BaseController
         }
 
         return $this->load_view('berita_detail', $data);
+    }
+
+    public function papanInformasi($param1, $param2 = null)
+    {
+        if ($param2 === null) {
+            // Unslugged: $param1 is $id
+            $slug = null;
+            $id = $param1;
+        } else {
+            // Slugged: $param1 is $slug, $param2 is $id
+            $slug = $param1;
+            $id = $param2;
+        }
+
+        $this->resolveTenant($slug);
+
+        $data['rt']    = current_rt();
+        $data['papan'] = $this->papanInformasiModel->detail($id);
+
+        if (empty($data['papan']) || ! $data['papan']->is_status) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        return $this->load_view('papan_informasi_detail', $data);
     }
 }

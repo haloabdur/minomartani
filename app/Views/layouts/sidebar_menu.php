@@ -64,6 +64,17 @@
         </li>
         <?php endif ?>
 
+        <?php if (auth()->user()->can('menu.papan_informasi')): ?>
+        <li class="nav-item">
+            <a href="<?= base_url('admin/papan-informasi') ?>" class="nav-link">
+                <i class="nav-icon fas fa-clipboard-list"></i>
+                <p>
+                    Papan Informasi
+                </p>
+            </a>
+        </li>
+        <?php endif ?>
+
         <?php if (auth()->user()->can('menu.alamat')): ?>
         <li class="nav-item">
             <a href="<?= base_url('admin/alamat') ?>" class="nav-link">
