@@ -87,6 +87,7 @@ class AuthGroups extends ShieldAuthGroups
         'menu.alamat'         => 'Can access the Alamat menu',
         'menu.berita'         => 'Can access the Berita menu',
         'menu.papan_informasi' => 'Can access the Papan Informasi menu',
+        'menu.ketua'          => 'Can access the Ketua RT menu',
         'menu.kesehatan'      => 'Can access the Kesehatan Lansia menu',
         'menu.presensi'       => 'Can access the Presensi Acara menu',
         'menu.rekap'          => 'Can access the Rekap RW menu',

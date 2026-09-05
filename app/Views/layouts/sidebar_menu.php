@@ -85,6 +85,17 @@
             </a>
         </li>
         <?php endif ?>
+
+        <?php if (auth()->user()->can('menu.ketua')): ?>
+        <li class="nav-item">
+            <a href="<?= base_url('admin/ketua') ?>" class="nav-link">
+                <i class="nav-icon fas fa-user-tie"></i>
+                <p>
+                    Ketua RT
+                </p>
+            </a>
+        </li>
+        <?php endif ?>
         <?php endif ?>
 
         <li class="nav-header">DATA RT/RW</li>

@@ -71,6 +71,16 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->get('delete/(:num)', 'Admin\PapanInformasi::delete/$1');
     });
 
+    // Ketua RT - per-user menu access, see Config\AuthGroups + Admin\Users
+    $routes->group('ketua', ['filter' => 'menuaccess:ketua'], function ($routes) {
+        $routes->get('/', 'Admin\Ketua::index');
+        $routes->get('add', 'Admin\Ketua::add');
+        $routes->post('store', 'Admin\Ketua::store');
+        $routes->get('edit/(:num)', 'Admin\Ketua::edit/$1');
+        $routes->post('update/(:num)', 'Admin\Ketua::update/$1');
+        $routes->get('delete/(:num)', 'Admin\Ketua::delete/$1');
+    });
+
     // Inventaris
     $routes->get('inventaris', 'Admin\Inventaris::index');
     $routes->get('inventaris/add', 'Admin\Inventaris::add');
