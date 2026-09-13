@@ -288,8 +288,20 @@ class Kesehatan extends BaseController
                 continue;
             }
             usort($items, static fn ($a, $b) => strcasecmp($a->nama_warga, $b->nama_warga));
-            $groups[] = ['rt' => $rt, 'items' => $items];
             $total += count($items);
+
+            // Drop participants with a placeholder record (added via
+            // tambahPeserta() but never measured) from the export tables -
+            // totalPeserta above still counts them, only the printed rows
+            // are narrowed to those with at least one measurement.
+            $measured = array_values(array_filter(
+                $items,
+                fn ($p) => $this->hasAnyMeasurement($catatan[(int) $p->id_warga] ?? null)
+            ));
+            if (empty($measured)) {
+                continue;
+            }
+            $groups[] = ['rt' => $rt, 'items' => $measured];
         }
 
         // Every RT belongs to exactly one RW; read it off whichever RT row
@@ -333,6 +345,28 @@ class Kesehatan extends BaseController
         foreach ($peserta as $p) {
             $row = $catatan[(int) $p->id_warga] ?? null;
             if ($row !== null && $row->{$field} !== null && $row->{$field} !== '') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Measurement columns on kesehatan_catatan (excludes gula_darah_ket and the free-text catatan field). */
+    private const MEASUREMENT_FIELDS = [
+        'tensi_sistol', 'tensi_diastol', 'berat_badan', 'tinggi_badan',
+        'lingkar_perut', 'gula_darah', 'kolesterol', 'asam_urat',
+    ];
+
+    /** Whether $row has at least one measurement recorded, vs. a blank placeholder row created by tambahPeserta(). */
+    private function hasAnyMeasurement(?object $row): bool
+    {
+        if ($row === null) {
+            return false;
+        }
+
+        foreach (self::MEASUREMENT_FIELDS as $field) {
+            if ($row->{$field} !== null && $row->{$field} !== '') {
                 return true;
             }
         }
