@@ -235,7 +235,7 @@ foreach ($wargas as $w) {
 									<th width="1">ID.</th>
 									<th>Nama</th>
 									<th>Usia</th>
-									<th>Alamat RT29 / KK</th>
+									<th>Alamat / KK</th>
 									<th class="text-center">Status</th>
 									<th>Action</th>
 								</tr>

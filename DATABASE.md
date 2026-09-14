@@ -17,7 +17,7 @@ Terakhir diperbarui: 2026-07-15.
 
 - **Multi-tenant**: hierarki `rw` → `rt`. Tabel data milik tenant (`warga`, `alamat`, `berita`, `surat`, `inventaris`, `dawis`, `ketua`, `papan_informasi`) dan `kesehatan_kegiatan`/`kesehatan_catatan`/`presensi_acara`/`presensi_kehadiran` punya kolom `id_rt` (`kesehatan_kegiatan` dan `presensi_acara` juga bisa `id_rw` untuk kegiatan/acara level RW). Tabel lookup (`pekerjaan`, `status_keluarga`, `status_penduduk`) global, tanpa `id_rt`.
 - **Auth**: CodeIgniter Shield (`users`, `auth_identities`, dst). Tabel `user` (legacy CI3) diarsipkan, tidak dipakai aplikasi.
-- **Charset campuran**: tabel era CI3 pakai `latin1`/`latin1_swedish_ci` (`alamat`, `berita`, `dawis`, `ketua`, `pekerjaan`, `status_keluarga`, `status_penduduk`, `surat`, `user`, `warga`); tabel baru pakai `utf8mb4` (`auth_*`, `kesehatan_*`, `presensi_*`, `papan_informasi`, `rt`, `rw`, `settings`, `users`); `inventaris` pakai `utf8mb3`.
+- **Charset campuran**: tabel era CI3 pakai `latin1`/`latin1_swedish_ci` (`alamat`, `dawis`, `ketua`, `pekerjaan`, `status_keluarga`, `status_penduduk`, `surat`, `user`, `warga`); tabel baru (dan `berita`, dikonversi via `ConvertBeritaToUtf8mb4` biar emoji gak kesimpen jadi `?`) pakai `utf8mb4` (`auth_*`, `berita`, `kesehatan_*`, `presensi_*`, `papan_informasi`, `rt`, `rw`, `settings`, `users`); `inventaris` pakai `utf8mb3`.
 - **FK constraint nyata di DB cuma sedikit**: `dawis.id_warga → warga.id_warga` dan rantai `auth_*.user_id → users.id` (semua `ON DELETE CASCADE`). Semua relasi tenant/lookup lainnya (warga→alamat, warga→pekerjaan, surat→warga, dst) ditegakkan di query aplikasi, bukan constraint DB.
 - **Server**: MariaDB 10.11.18 (dump generation tool: phpMyAdmin 5.2.3, PHP 8.2.29).
 
@@ -75,7 +75,7 @@ PK: `id_alamat` (AI). Index: `id_rt`. Engine/charset: InnoDB, `latin1`/`latin1_s
 Catatan: **tidak ada** `nomor` di sini meski dicantumkan di `AlamatModel::$allowedFields` — lihat temuan #4 di atas (harmless, dead field).
 
 ### `berita` — Berita/pengumuman
-PK: `id_berita` (AI). Index: `id_rt`. Engine/charset: InnoDB, `latin1`/`latin1_swedish_ci`.
+PK: `id_berita` (AI). Index: `id_rt`. Engine/charset: InnoDB, `utf8mb4`/`utf8mb4_general_ci` (dikonversi dari `latin1`/`latin1_swedish_ci` oleh `ConvertBeritaToUtf8mb4` — latin1 gak bisa nampung emoji 4-byte, kesimpen jadi `?`).
 
 | Kolom | Tipe | Nullable / Default |
 |---|---|---|
