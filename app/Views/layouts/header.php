@@ -1,3 +1,12 @@
+<?php
+// rt.nama is just "RT 29" - append the suffix only when it's missing so
+// tenants whose nama already includes "Minomartani" don't get it doubled.
+$__rt         = current_rt();
+$__tenantName = 'RT 29 Minomartani';
+if ($__rt !== null) {
+    $__tenantName = str_contains($__rt->nama, 'Minomartani') ? $__rt->nama : $__rt->nama . ' Minomartani';
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,11 +15,11 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="RT 29 Minomartani Admin Panel">
+    <meta name="description" content="<?= esc($__tenantName) ?> Admin Panel">
     <meta name="theme-color" content="#15C269" />
     <link rel="icon" href="<?= base_url('public/img/logo.png') ?>" type="image/x-icon">
 
-    <title>RT 29 Minomartani | Admin</title>
+    <title><?= esc($__tenantName) ?> | Admin</title>
 
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="<?= base_url('public') ?>/plugins/fontawesome-free/css/all.min.css">
@@ -101,7 +110,7 @@
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
             <a href="<?= base_url('admin/dashboard') ?>" class="brand-link">
-                <img src="<?= base_url('public') ?>/home/assets/img/logo-white.png" alt="Logo RT 29 Minomartani" class="brand-image">
+                <img src="<?= base_url('public') ?>/home/assets/img/logo-white.png" alt="Logo <?= esc($__tenantName) ?>" class="brand-image">
                 <span class="brand-text font-weight-light">&nbsp;</span>
             </a>
 

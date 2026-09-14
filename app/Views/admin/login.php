@@ -4,12 +4,17 @@
 // (same helper TenantFilter uses) rather than current_rt()/current_rw().
 $hostTenant   = resolve_tenant_by_host(request_host(request()));
 $tenantName   = 'RT 29 Minomartani';
+$tenantWa     = '6283869281843';
 if ($hostTenant !== null) {
   // rt.nama is just "RT 29"; rw.nama already includes "Minomartani"
   // ("RW 06 Minomartani") - append the suffix only when it's missing so
   // neither case ends up duplicated.
   $baseName   = $hostTenant['type'] === 'rt' ? $hostTenant['rt']->nama : $hostTenant['rw']->nama;
   $tenantName = str_contains($baseName, 'Minomartani') ? $baseName : $baseName . ' Minomartani';
+
+  if ($hostTenant['type'] === 'rt' && !empty($hostTenant['rt']->no_wa)) {
+    $tenantWa = $hostTenant['rt']->no_wa;
+  }
 }
 ?>
 <!DOCTYPE html>
@@ -136,7 +141,7 @@ if ($hostTenant !== null) {
   <!-- /.login-box -->
 
   <nav class="navbar fixed-bottom navbar-expand-sm">
-    <a class="text-muted ml-auto small" target="_blank" href="https://wa.me/6283869281843">By Tim IT RT 29</a>
+    <a class="text-muted ml-auto small" target="_blank" href="https://wa.me/<?= esc($tenantWa) ?>">By Tim IT <?= esc($tenantName) ?></a>
   </nav>
 
   <!-- jQuery -->

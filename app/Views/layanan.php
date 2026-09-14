@@ -80,7 +80,8 @@
                         <div class="row mt-3">
                             <div class="col">
                                 <div class="form-group">
-                                    <label class="mb-2 small">PIN Anda di RT 29 &nbsp; <a target="_blank" href="https://wa.me/6283869281843" class="small">Lupa PIN Anda?</a></label>
+                                    <?php $__rt = current_rt(); ?>
+                                    <label class="mb-2 small">PIN Anda di <?= esc($__rt !== null ? $__rt->nama : 'RT 29') ?> &nbsp; <a target="_blank" href="https://wa.me/<?= esc(($__rt !== null && !empty($__rt->no_wa)) ? $__rt->no_wa : '6283869281843') ?>" class="small">Lupa PIN Anda?</a></label>
                                     <input type="text" name="pin" class="form-control" placeholder="PIN Anda" required>
                                 </div>
                             </div>

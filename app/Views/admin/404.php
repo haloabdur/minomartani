@@ -1,3 +1,10 @@
+<?php
+$__rt         = current_rt();
+$__tenantName = 'RT 29 Minomartani';
+if ($__rt !== null) {
+    $__tenantName = str_contains($__rt->nama, 'Minomartani') ? $__rt->nama : $__rt->nama . ' Minomartani';
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 
@@ -5,7 +12,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="theme-color" content="#15C269" />
-    <title>404 | RT 29 Minomartani</title>
+    <title>404 | <?= esc($__tenantName) ?></title>
     <link rel="stylesheet" href="<?= base_url('public') ?>/plugins/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="<?= base_url('public') ?>/dist/css/adminlte.min.css">
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">

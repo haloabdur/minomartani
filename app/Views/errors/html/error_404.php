@@ -87,9 +87,16 @@
         }
     </style>
 </head>
+<?php
+$__rt         = current_rt();
+$__tenantName = 'RT 29 Minomartani';
+if ($__rt !== null) {
+    $__tenantName = str_contains($__rt->nama, 'Minomartani') ? $__rt->nama : $__rt->nama . ' Minomartani';
+}
+?>
 <body>
     <div class="card">
-        <img src="<?= base_url('public/img/logo.png') ?>" alt="RT 29 Minomartani" class="logo">
+        <img src="<?= base_url('public/img/logo.png') ?>" alt="<?= esc($__tenantName) ?>" class="logo">
         <p class="code">404</p>
         <h1><?= lang('Errors.pageNotFound') ?></h1>
         <p class="message">
@@ -100,7 +107,7 @@
             <?php endif; ?>
         </p>
         <a href="<?= base_url('/') ?>" class="btn">Kembali ke Beranda</a>
-        <div class="footer">RT 29 Minomartani</div>
+        <div class="footer"><?= esc($__tenantName) ?></div>
     </div>
 </body>
 </html>

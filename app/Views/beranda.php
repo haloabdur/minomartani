@@ -1,5 +1,5 @@
 <?php
-$__rtNama = (isset($rt) && $rt !== null) ? $rt->nama : 'RT29';
+$__rtNama = (isset($rt) && $rt !== null) ? $rt->nama : 'RT 29';
 $__rtRw   = (isset($rw) && $rw !== null) ? $rw->nama : null;
 $__rtAlamat = (isset($rt) && $rt !== null && !empty($rt->alamat)) ? $rt->alamat : 'Ngaglik, Sleman, Daerah Istimewa Yogyakarta';
 $__rtDeskripsi = (isset($rt) && $rt !== null && !empty($rt->deskripsi))

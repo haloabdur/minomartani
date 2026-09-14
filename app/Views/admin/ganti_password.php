@@ -14,7 +14,14 @@
                 <input type="password" name="npassword" class="form-control" placeholder="Password Baru Admin" required>
               </div>
               <button class="btn btn-lg btn-primary btn-block" type="submit">Ganti Password</button>
-              <p class="mt-5 mb-3 text-muted">&copy; Copyright <a href="<?php echo base_url() ?>">RT 29 Minomartani</a> <?php echo date('Y') ?></p>
+              <?php
+              $__rt         = current_rt();
+              $__tenantName = 'RT 29 Minomartani';
+              if ($__rt !== null) {
+                  $__tenantName = str_contains($__rt->nama, 'Minomartani') ? $__rt->nama : $__rt->nama . ' Minomartani';
+              }
+              ?>
+              <p class="mt-5 mb-3 text-muted">&copy; Copyright <a href="<?php echo base_url() ?>"><?= esc($__tenantName) ?></a> <?php echo date('Y') ?></p>
             </form>
 				</div>
 			</div>

@@ -1,5 +1,6 @@
-<?php $__rtNama = (isset($rt) && $rt !== null) ? $rt->nama : 'RT29'; ?>
-<?php $__rtWa   = (isset($rt) && $rt !== null && !empty($rt->no_wa)) ? $rt->no_wa : '6283869281843'; ?>
+<?php $__rt     = (isset($rt) && $rt !== null) ? $rt : current_rt(); ?>
+<?php $__rtNama = $__rt !== null ? $__rt->nama : 'RT 29'; ?>
+<?php $__rtWa   = ($__rt !== null && !empty($__rt->no_wa)) ? $__rt->no_wa : '6283869281843'; ?>
 <!-- Clients-->
 <div class="py-5 my-5" id="hubungi-kami">
     <div class="container">

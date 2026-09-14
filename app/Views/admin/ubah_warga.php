@@ -218,7 +218,7 @@
 														</button>
 													</div>
 												</div>
-												<p class="text-muted small mt-1">Apabila <strong>Ayah</strong> adalah warga RT 29 maka masukkan nomor ID. Contoh : 1</p>
+												<p class="text-muted small mt-1">Apabila <strong>Ayah</strong> adalah warga <?= esc(current_rt()->nama ?? 'RT 29') ?> maka masukkan nomor ID. Contoh : 1</p>
 											</div>
 										</div>
 										<div class="col-md-6">
@@ -232,7 +232,7 @@
 														</button>
 													</div>
 												</div>
-												<p class="text-muted small mt-1">Apabila <strong>Ibu</strong> adalah warga RT 29 maka masukkan nomor ID. Contoh : 2</p>
+												<p class="text-muted small mt-1">Apabila <strong>Ibu</strong> adalah warga <?= esc(current_rt()->nama ?? 'RT 29') ?> maka masukkan nomor ID. Contoh : 2</p>
 											</div>
 										</div>
 									</div>

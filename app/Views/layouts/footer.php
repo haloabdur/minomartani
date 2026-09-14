@@ -3,14 +3,20 @@
     </div>
     <!-- /.content-wrapper -->
 
+    <?php
+    $__rt         = current_rt();
+    $__rtNama     = $__rt !== null ? $__rt->nama : 'RT 29';
+    $__rtWa       = ($__rt !== null && !empty($__rt->no_wa)) ? $__rt->no_wa : '6283869281843';
+    $__tenantName = str_contains($__rtNama, 'Minomartani') ? $__rtNama : $__rtNama . ' Minomartani';
+    ?>
     <!-- Main Footer -->
     <footer class="main-footer no-print">
         <!-- To the right -->
         <div class="float-right d-none d-sm-inline">
-            <a class="small text-muted" href="https://wa.me/6283869281843" target="_blank">By Tim IT RT 29</a>
+            <a class="small text-muted" href="https://wa.me/<?= esc($__rtWa) ?>" target="_blank">By Tim IT <?= esc($__rtNama) ?></a>
         </div>
         <!-- Default to the left -->
-        <strong>Copyright &copy; <?= date('Y') ?> <a>RT 29 Minomartani</a>.</strong> All rights reserved.
+        <strong>Copyright &copy; <?= date('Y') ?> <a><?= esc($__tenantName) ?></a>.</strong> All rights reserved.
     </footer>
     </div>
     <!-- ./wrapper -->

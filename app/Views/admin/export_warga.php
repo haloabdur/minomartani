@@ -1,7 +1,13 @@
 <?php
 
+use App\Models\RwModel;
+
+$__rt      = current_rt();
+$__rw      = $__rt !== null ? model(RwModel::class)->find($__rt->id_rw) : null;
+$__rtLabel = trim(($__rt->nama ?? 'RT 29') . ' ' . ($__rw->nama ?? ''));
+
 header("Content-type: application/vnd.ms-excel");
-header("Content-Disposition: attachment; filename=datart29_" . date('dmY-His') . ".xls");
+header("Content-Disposition: attachment; filename=datawarga_" . date('dmY-His') . ".xls");
 header("Pragma: no-cache");
 header("Expires: 0");
 ob_end_clean();
@@ -9,7 +15,7 @@ ob_end_clean();
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Data Warga RT 029 RW 006</title>
+        <title>Data Warga <?= esc($__rtLabel) ?></title>
     </head>
     <body>
 
