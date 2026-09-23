@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Libraries\ImageCompressor;
 use App\Libraries\R2Storage;
 use App\Models\BeritaFotoModel;
 use App\Models\BeritaModel;
@@ -15,12 +16,28 @@ class Berita extends BaseController
     protected $beritaModel;
     protected $beritaFotoModel;
     protected $r2Storage;
+    protected $imageCompressor;
 
     public function __construct()
     {
         $this->beritaModel     = new BeritaModel();
         $this->beritaFotoModel = new BeritaFotoModel();
         $this->r2Storage       = new R2Storage();
+        $this->imageCompressor = new ImageCompressor();
+    }
+
+    /**
+     * Compresses every file to WebP under the size budget. Throws (via
+     * ImageCompressor) if any file can't get under budget - callers must
+     * do this before any DB/storage mutation, so a rejected image never
+     * leaves a submission half-applied.
+     *
+     * @param \CodeIgniter\HTTP\Files\UploadedFile[] $files
+     * @return \CodeIgniter\HTTP\Files\UploadedFile[]
+     */
+    private function compressAll(array $files): array
+    {
+        return array_map(fn ($f) => $this->imageCompressor->compress($f), $files);
     }
 
     /**
@@ -118,6 +135,13 @@ class Berita extends BaseController
             return redirect()->to(back());
         }
 
+        try {
+            $fotos = $this->compressAll($fotos);
+        } catch (\RuntimeException $e) {
+            setFlashData('error', $e->getMessage());
+            return redirect()->to(back());
+        }
+
         $data = [
             'judul'      => $this->request->getPost('judul'),
             'slug'       => url_title($this->request->getPost('judul'), '-', true),
@@ -132,6 +156,10 @@ class Berita extends BaseController
         // cover among several is only offered on edit (once images have
         // URLs to preview), not at upload time.
         $urls = array_map(fn ($f) => $this->storeFoto($f), $fotos);
+
+        foreach ($fotos as $f) {
+            @unlink($f->getTempName());
+        }
 
         $data['foto']      = $urls[0];
         $data['is_status'] = 0;
@@ -216,6 +244,15 @@ class Berita extends BaseController
             return redirect()->to(back());
         }
 
+        // Compress before any deletion/upload happens, so a rejected image
+        // never leaves the berita with some photos already removed.
+        try {
+            $newFiles = $this->compressAll($newFiles);
+        } catch (\RuntimeException $e) {
+            setFlashData('error', $e->getMessage());
+            return redirect()->to(back());
+        }
+
         // Remove deleted photos from storage, then their rows.
         foreach ($removed as $photo) {
             $this->deleteFoto($photo->foto);
@@ -246,6 +283,7 @@ class Berita extends BaseController
             ]);
             $newIds[]           = $newId;
             $urlById[(int) $newId] = $url;
+            @unlink($file->getTempName());
         }
 
         // Cover choice: "existing:<id_berita_foto>" or "new:<index>" (into
