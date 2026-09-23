@@ -46,7 +46,7 @@ class Home extends BaseController
         $data['rt']        = $rt;
         $data['rw']        = $rt !== null ? (new RwModel())->find($rt->id_rw) : null;
         $data['ketuas']    = $db->table('ketua')->where('id_rt', current_rt_id())->get()->getResult();
-        $data['beritas']   = $db->table('berita')->where('id_rt', current_rt_id())->where('is_status', 1)->orderBy('timestamp', 'desc')->limit(3)->get()->getResult();
+        $data['beritas']   = $db->table('berita')->where('id_rt', current_rt_id())->where('is_status', 1)->orderBy('created_time', 'desc')->limit(3)->get()->getResult();
         $data['papanInformasis'] = $this->papanInformasiModel->published();
         $data['kk']        = $this->wargaModel->kk_count();
         $data['laki']      = $this->wargaModel->laki_count();

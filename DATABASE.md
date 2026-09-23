@@ -79,6 +79,8 @@ PK: `id_berita` (AI). Index: `id_rt`. Engine/charset: InnoDB, `utf8mb4`/`utf8mb4
 
 `foto` adalah pointer ke gambar **cover** (dipakai di semua tampilan list/thumbnail: admin index, beranda publik) — bisa berupa URL R2 penuh (`https://cdn.minomartani.com/berita/...`, upload baru lewat `R2Storage`) atau nama file lokal legacy/fallback (`public/berita/<file>`, lihat `foto_url()` di `kbw_helper.php`). Widened dari `varchar(50)` ke `varchar(255)` oleh `WidenBeritaFotoColumn` — URL R2 penuh lebih panjang dari 50 char dan akan kepotong diam-diam kalau masih varchar(50). Semua gambar (termasuk yang jadi cover) juga ada barisnya di `berita_foto`, kecuali baris berita lama yang belum pernah dibuka lewat `Admin\Berita::edit()` sejak fitur multi-gambar ada (lihat `berita_foto` di bawah).
 
+`timestamp` (`ON UPDATE CURRENT_TIMESTAMP`) vs `created_time` (set sekali saat insert, **tidak** `ON UPDATE`, ditambahkan oleh `AddCreatedTimeToBerita`): sebelum `created_time` ada, list/urutan publik & admin sort by `timestamp`, jadi edit apa pun (ganti foto, benerin typo) diam-diam mindahin berita itu ke urutan teratas. `BeritaModel::all()` dan `Home::index()`'s berita query sekarang sort by `created_time` (immutable) — `timestamp` masih ada, masih ke-update tiap edit, cuma gak dipakai buat urutan lagi. Admin bisa override `created_time` manual lewat form tambah/ubah berita (field "Tanggal Dibuat"). Baris lama di-backfill `created_time = timestamp` (perkiraan terbaik yang ada saat migrasi jalan).
+
 | Kolom | Tipe | Nullable / Default |
 |---|---|---|
 | `id_berita` | int(11) | PK, AUTO_INCREMENT |
@@ -92,6 +94,7 @@ PK: `id_berita` (AI). Index: `id_rt`. Engine/charset: InnoDB, `utf8mb4`/`utf8mb4
 | `is_status` | tinyint(4) | NOT NULL |
 | `created_by` | tinyint(4) | NULL |
 | `timestamp` | timestamp | NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() |
+| `created_time` | timestamp | NOT NULL DEFAULT current_timestamp() (bukan ON UPDATE — dipakai buat sort, bisa diedit manual di form admin) |
 | `id_rt` | int(11) | NOT NULL DEFAULT 1 |
 
 ### `berita_foto` — Galeri gambar berita (1-5 per berita)

@@ -22,6 +22,13 @@
 									<input type="text" name="kategori" class="form-control" value="<?php echo $berita->kategori ?>" placeholder="ex: Covid, Berita, Bupati" required>
 								</div>
 							</div>
+
+							<div class="col">
+								<div class="form-group">
+									<label>Tanggal Dibuat</label>
+									<input type="datetime-local" name="created_time" class="form-control" value="<?= date('Y-m-d\TH:i', strtotime($berita->created_time)) ?>">
+								</div>
+							</div>
 						</div>
 
 						<div class="row mt-3">

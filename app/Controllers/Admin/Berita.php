@@ -37,6 +37,20 @@ class Berita extends BaseController
     }
 
     /**
+     * `created_time` from a <input type="datetime-local"> field
+     * ("YYYY-MM-DDTHH:MM") into MySQL DATETIME format. Blank/missing
+     * leaves it unset so the DB default (CURRENT_TIMESTAMP, insert-only)
+     * applies on create; on edit, blank keeps whatever it already was
+     * since the field isn't included in $data at all.
+     */
+    private function parseCreatedTime(): ?string
+    {
+        $value = trim((string) $this->request->getPost('created_time'));
+
+        return $value === '' ? null : str_replace('T', ' ', $value);
+    }
+
+    /**
      * Uploads to R2; falls back to local disk (today's behavior) if the R2
      * call fails, so a Cloudflare outage doesn't block publishing berita.
      * Fallback rows are bare filenames just like pre-R2 legacy rows, so
@@ -121,6 +135,11 @@ class Berita extends BaseController
 
         $data['foto']      = $urls[0];
         $data['is_status'] = 0;
+
+        $createdTime = $this->parseCreatedTime();
+        if ($createdTime !== null) {
+            $data['created_time'] = $createdTime;
+        }
 
         $idBerita = $this->beritaModel->insert($data);
 
@@ -262,6 +281,11 @@ class Berita extends BaseController
         if ($coverId !== null) {
             $this->beritaFotoModel->setCover($id, (int) $coverId);
             $data['foto'] = $urlById[(int) $coverId] ?? $existing->foto;
+        }
+
+        $createdTime = $this->parseCreatedTime();
+        if ($createdTime !== null) {
+            $data['created_time'] = $createdTime;
         }
 
         $this->beritaModel->update($id, $data);

@@ -55,7 +55,14 @@ class BeritaMigrateToR2 extends BaseCommand
                 $uploaded = new \CodeIgniter\HTTP\Files\UploadedFile($localPath, $row->foto, mime_content_type($localPath) ?: null, null, null, null);
                 $url      = $r2->upload($uploaded, 'berita');
 
-                $db->table('berita')->where('id_berita', $row->id_berita)->update(['foto' => $url]);
+                // `timestamp` has ON UPDATE CURRENT_TIMESTAMP - explicitly
+                // setting it back to its own value stops MySQL auto-bumping
+                // it, which would otherwise reorder the berita list (sorted
+                // by timestamp DESC) even though only storage location changed.
+                $db->table('berita')->where('id_berita', $row->id_berita)->update([
+                    'foto'      => $url,
+                    'timestamp' => $row->timestamp,
+                ]);
                 unlink($localPath);
 
                 CLI::write("id_berita={$row->id_berita}: migrated -> {$url}", 'green');

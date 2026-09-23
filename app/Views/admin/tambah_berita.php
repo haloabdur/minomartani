@@ -22,6 +22,13 @@
 									<input type="text" name="kategori" class="form-control" placeholder="ex: Covid, Berita, Bupati" required>
 								</div>
 							</div>
+
+							<div class="col">
+								<div class="form-group">
+									<label>Tanggal Dibuat <span class="text-muted">Kosongkan untuk sekarang</span></label>
+									<input type="datetime-local" name="created_time" class="form-control">
+								</div>
+							</div>
 						</div>
 
 						<div class="row mt-3">

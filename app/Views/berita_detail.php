@@ -6,7 +6,7 @@
             <div class="col-md-8">
                 <div class="row py-3">
                     <div class="col"><a href="<?= base_url() ?>#berita"><i class="fa fa-arrow-left"></i> &nbsp;Kembali</a></div>
-                    <div class="col text-end text-muted"><i class="fas fa-clock"></i> &nbsp;<?= date('d-m-Y', strtotime($berita->timestamp)) ?></div>
+                    <div class="col text-end text-muted"><i class="fas fa-clock"></i> &nbsp;<?= date('d-m-Y', strtotime($berita->created_time)) ?></div>
                 </div>
                 <div class="card border-0">
 
