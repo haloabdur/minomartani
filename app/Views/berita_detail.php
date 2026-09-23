@@ -80,9 +80,13 @@
 
                         <script>
                             function bukaGaleriBerita(index) {
-                                var carousel = bootstrap.Carousel.getOrCreateInstance(document.getElementById('galeriBeritaCarousel'));
+                                var carouselEl = document.getElementById('galeriBeritaCarousel');
+                                var carousel = bootstrap.Carousel.getInstance(carouselEl) || new bootstrap.Carousel(carouselEl);
                                 carousel.to(index);
-                                bootstrap.Modal.getOrCreateInstance(document.getElementById('galeriBeritaModal')).show();
+
+                                var modalEl = document.getElementById('galeriBeritaModal');
+                                var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                                modal.show();
                             }
                         </script>
                     <?php endif ?>
