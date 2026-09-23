@@ -26,7 +26,7 @@
 							?>
 							<tr>
 								<td><?php echo $i+1 ?></td>
-								<td width="1"><img class="rounded" src="<?php echo foto_url($berita->foto) ?>" width="56" ></td>
+								<td width="1"><img class="rounded" src="<?php echo foto_url($berita->foto) ?>" width="56" style="cursor: zoom-in;" onclick="showFotoPreview(this.src)"></td>
 								<td>
 									<?php echo $berita->judul ?>
 									<?php if (!empty($berita->lampiran)): ?>
@@ -54,3 +54,21 @@
 	</div>
 	<!-- /.row -->
 </div><!-- /.container-fluid -->
+
+<div class="modal fade" id="modal-foto-preview" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+		<div class="modal-content bg-transparent border-0">
+			<button type="button" class="close text-white mb-2" data-dismiss="modal" aria-label="Close" style="text-shadow: none;">
+				<span aria-hidden="true">&times;</span>
+			</button>
+			<img id="modal-foto-preview-img" src="" class="img-fluid rounded" alt="Preview">
+		</div>
+	</div>
+</div>
+
+<script>
+	function showFotoPreview(src) {
+		document.getElementById('modal-foto-preview-img').src = src;
+		$('#modal-foto-preview').modal('show');
+	}
+</script>

@@ -55,7 +55,7 @@
 								<div class="row">
 									<?php foreach ($fotos as $f): ?>
 										<div class="col-auto text-center mb-3">
-											<img class="rounded d-block mb-1" src="<?= foto_url($f->foto) ?>" width="90">
+											<img class="rounded d-block mb-1" src="<?= foto_url($f->foto) ?>" width="90" style="cursor: zoom-in;" onclick="showFotoPreview(this.src)">
 											<div class="form-check form-check-inline">
 												<input class="form-check-input" type="radio" name="cover" id="cover-<?= $f->id_berita_foto ?>" value="existing:<?= $f->id_berita_foto ?>" <?= $f->is_cover ? 'checked' : '' ?>>
 												<label class="form-check-label small" for="cover-<?= $f->id_berita_foto ?>">Cover</label>
@@ -108,3 +108,21 @@
 		</div>
 	</div>
 </div>
+
+<div class="modal fade" id="modal-foto-preview" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+		<div class="modal-content bg-transparent border-0">
+			<button type="button" class="close text-white mb-2" data-dismiss="modal" aria-label="Close" style="text-shadow: none;">
+				<span aria-hidden="true">&times;</span>
+			</button>
+			<img id="modal-foto-preview-img" src="" class="img-fluid rounded" alt="Preview">
+		</div>
+	</div>
+</div>
+
+<script>
+	function showFotoPreview(src) {
+		document.getElementById('modal-foto-preview-img').src = src;
+		$('#modal-foto-preview').modal('show');
+	}
+</script>
