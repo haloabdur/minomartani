@@ -43,28 +43,31 @@
 						</div>
 
 						<div class="row mt-3">
-							<div class="col">
+							<div class="col-12">
+								<label>Gambar <span class="text-muted">min 1, maks <?= $maxFoto ?>. Pilih cover, atau centang hapus (sisa gambar tidak boleh kurang dari 1).</span></label>
 								<div class="row">
-									<div class="col">
-										<?php if (!empty($berita->foto)): ?>
-											<div class="form-group">
-												<label>Foto saat ini</label> <br>
-												<img class="pr-2 rounded" src="<?php echo base_url('public/berita/'.$berita->foto) ?>" width="70" >
-												<small class="text-muted"><?php echo $berita->foto ?></small>
-												<input type="hidden" name="foto_old" value="<?php echo $berita->foto ?>">
+									<?php foreach ($fotos as $f): ?>
+										<div class="col-auto text-center mb-3">
+											<img class="rounded d-block mb-1" src="<?= foto_url($f->foto) ?>" width="90">
+											<div class="form-check form-check-inline">
+												<input class="form-check-input" type="radio" name="cover" id="cover-<?= $f->id_berita_foto ?>" value="existing:<?= $f->id_berita_foto ?>" <?= $f->is_cover ? 'checked' : '' ?>>
+												<label class="form-check-label small" for="cover-<?= $f->id_berita_foto ?>">Cover</label>
 											</div>
-										<?php endif ?>
-									</div>
-
-									<div class="col">
-										<div class="form-group">
-											<label>Ganti Foto? <span class="text-muted">Ukuran 1200 x 730</span></label>
-											<input type="file" name="foto" class="form-control">
+											<div class="form-check form-check-inline">
+												<input class="form-check-input" type="checkbox" name="delete_foto[]" id="del-<?= $f->id_berita_foto ?>" value="<?= $f->id_berita_foto ?>">
+												<label class="form-check-label small text-danger" for="del-<?= $f->id_berita_foto ?>">Hapus</label>
+											</div>
 										</div>
-									</div>
+									<?php endforeach ?>
+								</div>
+								<div class="form-group mt-2">
+									<label>Tambah gambar baru <span class="text-muted">Total maks <?= $maxFoto ?> gambar</span></label>
+									<input type="file" name="foto[]" class="form-control" accept="image/*" multiple>
 								</div>
 							</div>
+						</div>
 
+						<div class="row mt-3">
 							<div class="col">
 								<div class="form-group">
 									<label>Lampiran <span class="text-muted">Link Google Drive</span></label>
@@ -72,7 +75,7 @@
 								</div>
 							</div>
 						</div>
-                      
+
                       <div class="row">
                       	<div class="col">
                         	<div class="form-group">

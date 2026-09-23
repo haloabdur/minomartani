@@ -58,7 +58,7 @@ $__rtHero = (isset($rt) && $rt !== null && !empty($rt->foto_hero))
             <?php endif; ?>
             <?php foreach ($beritas as $berita): ?>
                 <div style="border-radius: 1.5rem" class="card col-md-3 mx-2 px-0 shadow-lg">
-                    <div class="card-img-bg" style="background-image: url('<?= base_url('public/berita/' . $berita->foto) ?>');"></div>
+                    <div class="card-img-bg" style="background-image: url('<?= foto_url($berita->foto) ?>');"></div>
                     <div class="card-body">
                         <h4 class="py-2"><?= $berita->judul ?></h4>
                         <a class="stretched-link" href="<?= base_url('berita/' . $berita->slug) ?>"></a>

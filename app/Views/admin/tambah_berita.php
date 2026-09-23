@@ -45,8 +45,8 @@
 						<div class="row mt-3">
 							<div class="col">
 								<div class="form-group">
-									<label>Foto <span class="text-muted">Ukuran 1200 x 730</span></label>
-									<input type="file" name="foto" class="form-control" required>
+									<label>Foto <span class="text-muted">1-5 gambar, ukuran 1200 x 730. Gambar pertama jadi cover.</span></label>
+									<input type="file" name="foto[]" class="form-control" accept="image/*" multiple required onchange="if(this.files.length>5){alert(&#39;Maksimal 5 gambar&#39;);this.value=&#39;&#39;;}">
 								</div>
 							</div>
 

@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\AlamatModel;
+use App\Models\BeritaFotoModel;
 use App\Models\BeritaModel;
 use App\Models\PapanInformasiModel;
 use App\Models\RwModel;
@@ -12,6 +13,7 @@ class Home extends BaseController
 {
     protected $alamatModel;
     protected $beritaModel;
+    protected $beritaFotoModel;
     protected $papanInformasiModel;
     protected $wargaModel;
 
@@ -19,6 +21,7 @@ class Home extends BaseController
     {
         $this->alamatModel = new AlamatModel();
         $this->beritaModel = new BeritaModel();
+        $this->beritaFotoModel = new BeritaFotoModel();
         $this->papanInformasiModel = new PapanInformasiModel();
         $this->wargaModel  = new WargaModel();
     }
@@ -107,6 +110,11 @@ class Home extends BaseController
         if (empty($data['berita'])) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
+
+        // Gallery is only populated for berita created/edited since the
+        // multi-image feature shipped; older untouched rows fall back to
+        // the single cover image in the view.
+        $data['fotos'] = $this->beritaFotoModel->forBerita($data['berita']->id_berita);
 
         return $this->load_view('berita_detail', $data);
     }

@@ -26,7 +26,7 @@
 							?>
 							<tr>
 								<td><?php echo $i+1 ?></td>
-								<td width="1"><img class="rounded" src="<?php echo base_url('public/berita/'.$berita->foto) ?>" width="56" ></td>
+								<td width="1"><img class="rounded" src="<?php echo foto_url($berita->foto) ?>" width="56" ></td>
 								<td>
 									<?php echo $berita->judul ?>
 									<?php if (!empty($berita->lampiran)): ?>

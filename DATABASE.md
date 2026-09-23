@@ -15,10 +15,10 @@ Terakhir diperbarui: 2026-07-15.
 
 ## Ringkasan arsitektur
 
-- **Multi-tenant**: hierarki `rw` → `rt`. Tabel data milik tenant (`warga`, `alamat`, `berita`, `surat`, `inventaris`, `dawis`, `ketua`, `papan_informasi`) dan `kesehatan_kegiatan`/`kesehatan_catatan`/`presensi_acara`/`presensi_kehadiran` punya kolom `id_rt` (`kesehatan_kegiatan` dan `presensi_acara` juga bisa `id_rw` untuk kegiatan/acara level RW). Tabel lookup (`pekerjaan`, `status_keluarga`, `status_penduduk`) global, tanpa `id_rt`.
+- **Multi-tenant**: hierarki `rw` → `rt`. Tabel data milik tenant (`warga`, `alamat`, `berita`, `berita_foto`, `surat`, `inventaris`, `dawis`, `ketua`, `papan_informasi`) dan `kesehatan_kegiatan`/`kesehatan_catatan`/`presensi_acara`/`presensi_kehadiran` punya kolom `id_rt` (`kesehatan_kegiatan` dan `presensi_acara` juga bisa `id_rw` untuk kegiatan/acara level RW). Tabel lookup (`pekerjaan`, `status_keluarga`, `status_penduduk`) global, tanpa `id_rt`.
 - **Auth**: CodeIgniter Shield (`users`, `auth_identities`, dst). Tabel `user` (legacy CI3) diarsipkan, tidak dipakai aplikasi.
-- **Charset campuran**: tabel era CI3 pakai `latin1`/`latin1_swedish_ci` (`alamat`, `dawis`, `ketua`, `pekerjaan`, `status_keluarga`, `status_penduduk`, `surat`, `user`, `warga`); tabel baru (dan `berita`, dikonversi via `ConvertBeritaToUtf8mb4` biar emoji gak kesimpen jadi `?`) pakai `utf8mb4` (`auth_*`, `berita`, `kesehatan_*`, `presensi_*`, `papan_informasi`, `rt`, `rw`, `settings`, `users`); `inventaris` pakai `utf8mb3`.
-- **FK constraint nyata di DB cuma sedikit**: `dawis.id_warga → warga.id_warga` dan rantai `auth_*.user_id → users.id` (semua `ON DELETE CASCADE`). Semua relasi tenant/lookup lainnya (warga→alamat, warga→pekerjaan, surat→warga, dst) ditegakkan di query aplikasi, bukan constraint DB.
+- **Charset campuran**: tabel era CI3 pakai `latin1`/`latin1_swedish_ci` (`alamat`, `dawis`, `ketua`, `pekerjaan`, `status_keluarga`, `status_penduduk`, `surat`, `user`, `warga`); tabel baru (dan `berita`, dikonversi via `ConvertBeritaToUtf8mb4` biar emoji gak kesimpen jadi `?`) pakai `utf8mb4` (`auth_*`, `berita`, `berita_foto`, `kesehatan_*`, `presensi_*`, `papan_informasi`, `rt`, `rw`, `settings`, `users`); `inventaris` pakai `utf8mb3`.
+- **FK constraint nyata di DB cuma sedikit**: `dawis.id_warga → warga.id_warga`, `berita_foto.id_berita → berita.id_berita` (`ON DELETE CASCADE`), dan rantai `auth_*.user_id → users.id` (semua `ON DELETE CASCADE`). Semua relasi tenant/lookup lainnya (warga→alamat, warga→pekerjaan, surat→warga, dst) ditegakkan di query aplikasi, bukan constraint DB.
 - **Server**: MariaDB 10.11.18 (dump generation tool: phpMyAdmin 5.2.3, PHP 8.2.29).
 
 ---
@@ -77,6 +77,8 @@ Catatan: **tidak ada** `nomor` di sini meski dicantumkan di `AlamatModel::$allow
 ### `berita` — Berita/pengumuman
 PK: `id_berita` (AI). Index: `id_rt`. Engine/charset: InnoDB, `utf8mb4`/`utf8mb4_general_ci` (dikonversi dari `latin1`/`latin1_swedish_ci` oleh `ConvertBeritaToUtf8mb4` — latin1 gak bisa nampung emoji 4-byte, kesimpen jadi `?`).
 
+`foto` adalah pointer ke gambar **cover** (dipakai di semua tampilan list/thumbnail: admin index, beranda publik) — bisa berupa URL R2 penuh (`https://cdn.minomartani.com/berita/...`, upload baru lewat `R2Storage`) atau nama file lokal legacy/fallback (`public/berita/<file>`, lihat `foto_url()` di `kbw_helper.php`). Widened dari `varchar(50)` ke `varchar(255)` oleh `WidenBeritaFotoColumn` — URL R2 penuh lebih panjang dari 50 char dan akan kepotong diam-diam kalau masih varchar(50). Semua gambar (termasuk yang jadi cover) juga ada barisnya di `berita_foto`, kecuali baris berita lama yang belum pernah dibuka lewat `Admin\Berita::edit()` sejak fitur multi-gambar ada (lihat `berita_foto` di bawah).
+
 | Kolom | Tipe | Nullable / Default |
 |---|---|---|
 | `id_berita` | int(11) | PK, AUTO_INCREMENT |
@@ -84,13 +86,28 @@ PK: `id_berita` (AI). Index: `id_rt`. Engine/charset: InnoDB, `utf8mb4`/`utf8mb4
 | `slug` | varchar(255) | NULL |
 | `deskripsi` | text | NOT NULL |
 | `kategori` | varchar(50) | NULL |
-| `foto` | varchar(50) | NULL |
+| `foto` | varchar(255) | NULL |
 | `lampiran` | varchar(255) | NULL |
 | `sumber` | varchar(255) | NULL |
 | `is_status` | tinyint(4) | NOT NULL |
 | `created_by` | tinyint(4) | NULL |
 | `timestamp` | timestamp | NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() |
 | `id_rt` | int(11) | NOT NULL DEFAULT 1 |
+
+### `berita_foto` — Galeri gambar berita (1-5 per berita)
+PK: `id_berita_foto` (AI). Index: `id_berita`, `id_rt`. FK: `id_berita` → `berita.id_berita` (`ON DELETE CASCADE`). Engine/charset: InnoDB, `utf8mb4`/`utf8mb4_general_ci`.
+
+Semua gambar sebuah berita (ditampilkan bareng di halaman detail publik); satu di antaranya ditandai `is_cover = 1` dan URL-nya disalin ke `berita.foto` (dipakai list/thumbnail, lihat catatan di atas). Batas 1-5 gambar per berita ditegakkan di `Admin\Berita`, bukan di level DB. Baris berita yang dibuat sebelum fitur ini (single `foto`, tanpa baris `berita_foto`) dibiarkan apa adanya sampai ada admin yang buka `Admin\Berita::edit()` — saat itu foto lama diadopsi jadi satu baris `berita_foto` (`urutan=1`, `is_cover=1`) secara otomatis.
+
+| Kolom | Tipe | Nullable / Default |
+|---|---|---|
+| `id_berita_foto` | int(11) | PK, AUTO_INCREMENT |
+| `id_berita` | int(11) | NOT NULL, FK → `berita.id_berita` |
+| `foto` | varchar(255) | NOT NULL |
+| `urutan` | tinyint(3) unsigned | NOT NULL DEFAULT 1 |
+| `is_cover` | tinyint(1) | NOT NULL DEFAULT 0 |
+| `id_rt` | int(11) | NOT NULL DEFAULT 1 |
+| `timestamp` | timestamp | NOT NULL DEFAULT current_timestamp() |
 
 ### `papan_informasi` — Papan informasi (himbauan/tatib tetap per RT)
 PK: `id_papan` (AI). Index: `id_rt`. Engine/charset: InnoDB, `utf8mb4`/`utf8mb4_general_ci`.

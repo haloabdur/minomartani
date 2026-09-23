@@ -1,0 +1,73 @@
+<?php
+
+namespace App\Commands;
+
+use App\Libraries\R2Storage;
+use CodeIgniter\CLI\BaseCommand;
+use CodeIgniter\CLI\CLI;
+use Config\Database;
+
+/**
+ * One-off/re-runnable backfill: uploads any berita.foto value that isn't
+ * already a full R2 URL (pre-R2 legacy rows, and rows saved by the local
+ * fallback when an R2 upload failed at request time) to R2, then updates
+ * the row and removes the local file. Safe to run repeatedly - rows
+ * already migrated are full URLs and get skipped.
+ */
+class BeritaMigrateToR2 extends BaseCommand
+{
+    protected $group       = 'App';
+    protected $name        = 'berita:migrate-to-r2';
+    protected $description = 'Uploads local-disk berita foto files to R2 and updates their DB rows.';
+
+    public function run(array $params)
+    {
+        $db    = Database::connect();
+        $r2    = new R2Storage();
+        $rows  = $db->table('berita')
+            ->where('foto IS NOT NULL', null, false)
+            ->where('foto !=', '')
+            ->get()->getResult();
+
+        $pending = array_filter($rows, static fn ($row) => !str_starts_with($row->foto, 'http://') && !str_starts_with($row->foto, 'https://'));
+
+        if (empty($pending)) {
+            CLI::write('Nothing to migrate - all berita foto values are already R2 URLs.', 'green');
+
+            return EXIT_SUCCESS;
+        }
+
+        CLI::write(count($pending) . ' local berita foto(s) to migrate.');
+
+        $migrated = 0;
+        $failed   = 0;
+
+        foreach ($pending as $row) {
+            $localPath = FCPATH . 'public/berita/' . $row->foto;
+
+            if (!is_file($localPath)) {
+                CLI::error("id_berita={$row->id_berita}: local file not found ({$row->foto}), skipping.");
+                $failed++;
+                continue;
+            }
+
+            try {
+                $uploaded = new \CodeIgniter\HTTP\Files\UploadedFile($localPath, $row->foto, mime_content_type($localPath) ?: null, null, null, null);
+                $url      = $r2->upload($uploaded, 'berita');
+
+                $db->table('berita')->where('id_berita', $row->id_berita)->update(['foto' => $url]);
+                unlink($localPath);
+
+                CLI::write("id_berita={$row->id_berita}: migrated -> {$url}", 'green');
+                $migrated++;
+            } catch (\Throwable $e) {
+                CLI::error("id_berita={$row->id_berita}: upload failed - {$e->getMessage()}");
+                $failed++;
+            }
+        }
+
+        CLI::write("Done. Migrated: {$migrated}, failed: {$failed}.");
+
+        return $failed > 0 ? EXIT_ERROR : EXIT_SUCCESS;
+    }
+}

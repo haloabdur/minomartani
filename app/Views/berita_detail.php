@@ -10,7 +10,21 @@
                 </div>
                 <div class="card border-0">
 
-                    <img src="<?= base_url('public/berita/' . $berita->foto) ?>" class="card-img-top rounded" alt="Gambar">
+                    <?php if (!empty($fotos)): ?>
+                        <?php if (count($fotos) === 1): ?>
+                            <img src="<?= foto_url($fotos[0]->foto) ?>" class="card-img-top rounded" alt="Gambar">
+                        <?php else: ?>
+                            <div class="row g-2">
+                                <?php foreach ($fotos as $f): ?>
+                                    <div class="col-6 col-md-4">
+                                        <img src="<?= foto_url($f->foto) ?>" class="img-fluid rounded" alt="Gambar">
+                                    </div>
+                                <?php endforeach ?>
+                            </div>
+                        <?php endif ?>
+                    <?php else: ?>
+                        <img src="<?= foto_url($berita->foto) ?>" class="card-img-top rounded" alt="Gambar">
+                    <?php endif ?>
                     <div class="card-body px-0">
                         <h2 class="py-2"><?= $berita->judul ?></h2>
                         <p class="text-muted"><?= strtoupper($berita->kategori) ?></p>

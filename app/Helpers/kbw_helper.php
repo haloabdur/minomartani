@@ -376,6 +376,24 @@ if (!function_exists('kesehatan_evaluate')) {
 }
 
 /**
+ * Renders a berita foto value for display: full R2 URLs pass through
+ * unchanged, legacy bare filenames (pre-R2 uploads, or local fallback
+ * saves when an R2 upload failed) resolve against public/berita/.
+ */
+if (!function_exists('foto_url')) {
+    function foto_url(?string $path): string
+    {
+        if (empty($path)) {
+            return '';
+        }
+
+        return (str_starts_with($path, 'http://') || str_starts_with($path, 'https://'))
+            ? $path
+            : base_url('public/berita/' . $path);
+    }
+}
+
+/**
  * Get asset URL
  */
 if (!function_exists('assets')) {
