@@ -27,6 +27,13 @@ class R2Storage
     /**
      * Uploads a file to R2 and returns the full public URL to store in the DB.
      * Throws on any failure - callers decide the fallback behavior.
+     *
+     * $prefix should include the module name and, for tenant-owned data,
+     * the current tenant's slug (e.g. "berita/" . current_rt()->slug), so
+     * objects land grouped per-module-per-RT in the bucket. This class
+     * itself stays tenant-agnostic - it doesn't resolve current_rt() on
+     * its own, since not every caller (e.g. a CLI backfill iterating rows
+     * across multiple tenants) has a single ambient tenant context.
      */
     public function upload(\CodeIgniter\HTTP\Files\UploadedFile $file, string $prefix): string
     {

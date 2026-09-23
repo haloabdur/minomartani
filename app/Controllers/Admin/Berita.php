@@ -73,10 +73,25 @@ class Berita extends BaseController
      * Fallback rows are bare filenames just like pre-R2 legacy rows, so
      * `spark berita:migrate-to-r2` picks them up on its next run.
      */
+    /**
+     * R2 key prefix "berita/{rt_slug}", so new uploads land grouped by
+     * tenant in the bucket (e.g. berita/rt29/...). Falls back to bare
+     * "berita" if no tenant is resolvable (shouldn't happen on admin
+     * routes - TenantFilter always sets one - but storeFoto() must never
+     * fatal on this). Images already uploaded under the old flat
+     * "berita/..." layout are left as-is, not retroactively moved.
+     */
+    private function r2Prefix(): string
+    {
+        $rt = current_rt();
+
+        return $rt !== null ? 'berita/' . $rt->slug : 'berita';
+    }
+
     private function storeFoto($foto): string
     {
         try {
-            return $this->r2Storage->upload($foto, 'berita');
+            return $this->r2Storage->upload($foto, $this->r2Prefix());
         } catch (\Throwable $e) {
             log_message('error', 'R2 upload failed for berita foto, falling back to local disk: ' . $e->getMessage());
 
