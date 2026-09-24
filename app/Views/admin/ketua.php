@@ -27,7 +27,7 @@
 								<td><?php echo $i+1 ?></td>
 								<td class="text-center" width="1">
 									<?php if (!empty($ketua->foto_ketua)): ?>
-										<img src="<?php echo base_url('public/ketua/'.$ketua->foto_ketua) ?>" width="50">
+										<img src="<?php echo foto_url($ketua->foto_ketua, 'ketua') ?>" width="50">
 									<?php else: ?>
 										<span class="text-muted">-</span>
 									<?php endif ?>

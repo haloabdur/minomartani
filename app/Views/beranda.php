@@ -186,7 +186,7 @@ $__rtHero = (isset($rt) && $rt !== null && !empty($rt->foto_hero))
             <?php foreach ($ketuas as $ketua): ?>
                 <div class="col-lg-3">
                     <div class="team-member">
-                        <img class="rounded-circle" src="<?= base_url('public/home/') ?>assets/img/profile.png" alt="<?= $ketua->nama_ketua ?>" />
+                        <img class="rounded-circle" src="<?= !empty($ketua->foto_ketua) ? esc(foto_url($ketua->foto_ketua, 'ketua')) : base_url('public/home/') . 'assets/img/profile.png' ?>" alt="<?= $ketua->nama_ketua ?>" />
                         <h4><?= $ketua->nama_ketua ?></h4>
                         <p class="text-muted"><?= $ketua->mulai ?> - <?= $ketua->selesai ?></p>
                     </div>

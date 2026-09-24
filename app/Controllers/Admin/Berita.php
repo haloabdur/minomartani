@@ -95,8 +95,15 @@ class Berita extends BaseController
         } catch (\Throwable $e) {
             log_message('error', 'R2 upload failed for berita foto, falling back to local disk: ' . $e->getMessage());
 
+            // $foto is ImageCompressor's WRITEPATH temp file, not a real
+            // HTTP upload, so UploadedFile::move() (move_uploaded_file())
+            // would refuse it - copy() it into place instead. copy, not
+            // rename: callers unlink every temp file after storing.
             $newName = $foto->getRandomName();
-            $foto->move(FCPATH . 'public/berita', $newName);
+            if (!is_dir(FCPATH . 'public/berita')) {
+                mkdir(FCPATH . 'public/berita', 0755, true);
+            }
+            copy($foto->getTempName(), FCPATH . 'public/berita/' . $newName);
 
             return $newName;
         }

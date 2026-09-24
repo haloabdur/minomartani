@@ -178,11 +178,13 @@ PK: `id_ketua` (AI). Index: `id_rt`. Engine/charset: InnoDB, `latin1`/`latin1_sw
 | `nama_ketua` | varchar(50) | NOT NULL |
 | `mulai` | varchar(20) | NOT NULL |
 | `selesai` | varchar(20) | NOT NULL |
-| `foto_ketua` | varchar(50) | NULL |
+| `foto_ketua` | varchar(255) | NULL |
 | `timestamp` | timestamp | NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() |
 | `id_rt` | int(11) | NOT NULL DEFAULT 1 |
 
-Diakses lewat query builder langsung di `Home.php`, tidak ada Model khusus.
+`foto_ketua` bisa berupa URL R2 penuh (`https://cdn.minomartani.com/ketua/<rt_slug>/...`, upload lewat `Admin\Ketua` + `R2Storage`, dikompres ke WebP) atau nama file lokal legacy/fallback (`public/ketua/<file>`, render lewat `foto_url($v, 'ketua')`). Widened dari `varchar(50)` ke `varchar(255)` oleh `WidenKetuaFotoColumn` — alasan sama dengan `berita.foto`.
+
+Dibaca publik lewat query builder langsung di `Home.php`; admin CRUD lewat `KetuaModel`.
 
 ### `kesehatan_kegiatan` — Sesi kegiatan kesehatan (mis. Posyandu Lansia)
 PK: `id_kegiatan` (AI). Index: `id_rt`, `id_rw`. Engine/charset: InnoDB, `utf8mb4`/`utf8mb4_general_ci`.

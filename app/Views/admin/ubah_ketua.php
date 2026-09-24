@@ -38,11 +38,10 @@
 									<label>Foto</label>
 									<?php if (!empty($ketua->foto_ketua)): ?>
 										<div class="mb-2">
-											<img src="<?php echo base_url('public/ketua/'.$ketua->foto_ketua) ?>" width="80">
+											<img src="<?php echo foto_url($ketua->foto_ketua, 'ketua') ?>" width="80">
 										</div>
 									<?php endif ?>
 									<input type="file" name="foto_ketua" class="form-control-file">
-									<input type="hidden" name="foto_ketua_old" value="<?php echo $ketua->foto_ketua ?>">
 								</div>
 							</div>
 						</div>
