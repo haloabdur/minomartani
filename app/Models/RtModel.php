@@ -42,12 +42,17 @@ class RtModel extends Model
     public function rekap(?int $idRw): array
     {
         $builder = $this->db->table('rt')
-            ->select("rt.id_rt, rt.nama, rt.slug,
+            ->select("rt.id_rt, rt.nama, rt.slug, rt.alamat, rt.deskripsi, rt.no_wa, rt.id_rw,
                 (SELECT COUNT(*) FROM warga w WHERE w.id_rt = rt.id_rt AND w.status_warga = 1) jml_warga,
                 (SELECT COUNT(DISTINCT w.no_kk) FROM warga w WHERE w.id_rt = rt.id_rt AND w.status_warga = 1) jml_kk,
                 (SELECT COUNT(*) FROM warga w WHERE w.id_rt = rt.id_rt AND w.jenis_kelamin = 'L' AND w.status_warga = 1) jml_l,
                 (SELECT COUNT(*) FROM warga w WHERE w.id_rt = rt.id_rt AND w.jenis_kelamin = 'P' AND w.status_warga = 1) jml_p,
-                (SELECT COUNT(*) FROM surat s WHERE s.id_rt = rt.id_rt) jml_surat", false)
+                (SELECT COUNT(*) FROM surat s WHERE s.id_rt = rt.id_rt) jml_surat,
+                (SELECT COUNT(*) FROM alamat a WHERE a.id_rt = rt.id_rt) jml_alamat,
+                (SELECT COUNT(*) FROM inventaris i WHERE i.id_rt = rt.id_rt) jml_inventaris,
+                (SELECT COUNT(*) FROM kesehatan_catatan kc WHERE kc.id_rt = rt.id_rt) jml_kesehatan,
+                (SELECT COUNT(*) FROM presensi_kehadiran pk WHERE pk.id_rt = rt.id_rt) jml_presensi,
+                (SELECT k.nama_ketua FROM ketua k WHERE k.id_rt = rt.id_rt ORDER BY k.id_ketua DESC LIMIT 1) nama_ketua", false)
             ->where('rt.is_aktif', 1)
             ->orderBy('rt.nama');
 

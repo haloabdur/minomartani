@@ -63,7 +63,10 @@ class WargaModel extends Model
         }
 
         return $this->db->table($this->table)
-            ->select('warga.id_rt, jenis_kelamin, tanggal_lahir, pendidikan')
+            ->select('warga.id_rt, warga.id_warga, warga.nama_warga, warga.no_kk, warga.jenis_kelamin, warga.tanggal_lahir, warga.pendidikan, warga.gol_darah, warga.agama, warga.status_kawin, warga.id_status_keluarga, warga.id_status_penduduk, warga.sumber_air, warga.id_pekerjaan, pekerjaan.nama_pekerjaan, status_penduduk.status as status_penduduk, status_keluarga.status as status_keluarga')
+            ->join('pekerjaan', 'pekerjaan.id_pekerjaan = warga.id_pekerjaan', 'left')
+            ->join('status_penduduk', 'status_penduduk.id_status_penduduk = warga.id_status_penduduk', 'left')
+            ->join('status_keluarga', 'status_keluarga.id_status_keluarga = warga.id_status_keluarga', 'left')
             ->where('status_warga', 1)
             ->whereIn('warga.id_rt', $idRts)
             ->get()->getResult();
