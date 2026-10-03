@@ -6,8 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <?php $__rt = (isset($rt) && $rt !== null) ? $rt : current_rt(); ?>
-    <title>Situs Resmi - <?= esc($__rt !== null ? $__rt->nama : 'RT 29') ?> Minomartani</title>
+    <?php
+    $__rt = (isset($rt) && $rt !== null) ? $rt : current_rt();
+    $__siteNama = (isset($rw) && $rw !== null) ? $rw->nama : ($__rt !== null ? $__rt->nama : 'RT 29');
+    ?>
+    <title>Situs Resmi - <?= esc($__siteNama) ?> Minomartani</title>
     <!-- Favicon-->
     <link rel="icon" type="image/x-icon" href="<?= base_url('public/home/') ?>assets/logo-sleman.jpg" />
     <!-- Font Awesome icons (free version)-->

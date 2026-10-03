@@ -1,6 +1,6 @@
 <?= view('includes/nav-white') ?>
 
-<section class="page-section">
+<section class="page-section bg-light detail-page-section" id="layanan-sukses" style="min-height: 85vh;">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6">

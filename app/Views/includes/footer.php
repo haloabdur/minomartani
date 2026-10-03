@@ -1,6 +1,8 @@
-<?php $__rt     = (isset($rt) && $rt !== null) ? $rt : current_rt(); ?>
-<?php $__rtNama = $__rt !== null ? $__rt->nama : 'RT 29'; ?>
-<?php $__rtWa   = ($__rt !== null && !empty($__rt->no_wa)) ? $__rt->no_wa : '6283869281843'; ?>
+<?php
+$__rt     = (isset($rt) && $rt !== null) ? $rt : current_rt();
+$__siteNama = (isset($rw) && $rw !== null) ? $rw->nama : ($__rt !== null ? $__rt->nama : 'RT 29');
+$__rtWa   = ($__rt !== null && !empty($__rt->no_wa)) ? $__rt->no_wa : '6283869281843';
+?>
 <!-- Clients-->
 <div class="py-5 my-5" id="hubungi-kami">
     <div class="container">
@@ -16,8 +18,8 @@
 <footer class="footer py-5">
     <div class="container">
         <div class="row align-items-center">
-            <div class="text-center">Dibuat oleh tim <?= esc($__rtNama) ?> Minomartani dengan penuh cinta <img src="<?= base_url('public/home/assets/') ?>heart-icon.svg"> dan ☕</div>
-            <div class="text-center text-muted">Copyright &copy; <?= esc($__rtNama) ?> Minomartani <?= date('Y') ?></div>
+            <div class="text-center">Dibuat oleh tim <?= esc($__siteNama) ?> Minomartani dengan penuh cinta <img src="<?= base_url('public/home/assets/') ?>heart-icon.svg"> dan ☕</div>
+            <div class="text-center text-muted">Copyright &copy; <?= esc($__siteNama) ?> Minomartani <?= date('Y') ?></div>
         </div>
     </div>
 </footer>

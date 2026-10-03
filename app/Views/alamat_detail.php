@@ -1,6 +1,6 @@
 <?= view('includes/nav-white') ?>
 
-<section class="page-section" id="tentang-kami">
+<section class="page-section bg-light detail-page-section" id="alamat-detail" style="min-height: 85vh;">
     <div class="container">
         <div class="row justify-content-center">
             <div style="border-radius: 2rem" class="card col-md-6 p-5 shadow">

@@ -56,7 +56,7 @@ $__homeUrl      = base_url($__isSlugged ? $rt->slug : '');
     }
 </style>
 
-<section class="page-section bg-light" id="daftar-berita" style="min-height: 85vh;">
+<section class="page-section bg-light detail-page-section" id="daftar-berita" style="min-height: 85vh;">
     <div class="container">
         <!-- Breadcrumb / Back button -->
         <div class="row mb-4">
