@@ -80,6 +80,264 @@ class WargaModel extends Model
             ->get()->getRow();
     }
 
+    /**
+     * Silsilah pohon keluarga (multi-generasi terhubung):
+     * - Seluruh anggota satu No. KK
+     * - Orang tua (Ayah/Ibu) dari warga baik via numeric id_warga maupun teks manual
+     * - Anak kandung lintas KK (yang mencatat warga ini sebagai ayah/ibu)
+     *
+     * @param int|string $id
+     * @return array
+     */
+    public function getFamilyTree($id): array
+    {
+        $rtId = current_rt_id();
+
+        $query = $this->db->table($this->table)
+            ->select('warga.*, status_keluarga.status as status_keluarga')
+            ->join('status_keluarga', 'status_keluarga.id_status_keluarga = warga.id_status_keluarga', 'left')
+            ->where('warga.id_warga', $id);
+
+        if ($rtId !== null) {
+            $query->where('warga.id_rt', $rtId);
+        }
+
+        $current = $query->get()->getRow();
+
+        if (!$current) {
+            return [
+                'current_id' => (int) $id,
+                'nodes'      => [],
+                'edges'      => [],
+                'has_data'   => false,
+            ];
+        }
+
+        $residents = [];
+        $residents[(int) $current->id_warga] = $current;
+
+        // 1. Seluruh warga dalam No. KK yang sama
+        if (!empty($current->no_kk) && trim($current->no_kk) !== '-' && trim($current->no_kk) !== '0') {
+            $kkQuery = $this->db->table($this->table)
+                ->select('warga.*, status_keluarga.status as status_keluarga')
+                ->join('status_keluarga', 'status_keluarga.id_status_keluarga = warga.id_status_keluarga', 'left')
+                ->where('warga.no_kk', $current->no_kk);
+
+            if ($rtId !== null) {
+                $kkQuery->where('warga.id_rt', $rtId);
+            }
+
+            $kkRows = $kkQuery->orderBy('warga.id_status_keluarga ASC, warga.tanggal_lahir ASC')->get()->getResult();
+            foreach ($kkRows as $r) {
+                $residents[(int) $r->id_warga] = $r;
+            }
+        }
+
+        // 2. Orang tua dari warga yang sedang dilihat (jika numeric ID warga di RT yang sama)
+        foreach (['ayah', 'ibu'] as $pCol) {
+            $pVal = $current->{$pCol} ?? null;
+            if (!empty($pVal) && ctype_digit((string) $pVal)) {
+                $pId = (int) $pVal;
+                if (!isset($residents[$pId])) {
+                    $pQuery = $this->db->table($this->table)
+                        ->select('warga.*, status_keluarga.status as status_keluarga')
+                        ->join('status_keluarga', 'status_keluarga.id_status_keluarga = warga.id_status_keluarga', 'left')
+                        ->where('warga.id_warga', $pId);
+                    if ($rtId !== null) {
+                        $pQuery->where('warga.id_rt', $rtId);
+                    }
+                    $pRow = $pQuery->get()->getRow();
+                    if ($pRow) {
+                        $residents[$pId] = $pRow;
+                    }
+                }
+            }
+        }
+
+        // 3. Anak kandung lintas KK (warga lain yang mencatat warga ini sebagai ayah atau ibu)
+        $childQuery = $this->db->table($this->table)
+            ->select('warga.*, status_keluarga.status as status_keluarga')
+            ->join('status_keluarga', 'status_keluarga.id_status_keluarga = warga.id_status_keluarga', 'left')
+            ->groupStart()
+                ->where('warga.ayah', (string) $id)
+                ->orWhere('warga.ibu', (string) $id)
+            ->groupEnd();
+
+        if ($rtId !== null) {
+            $childQuery->where('warga.id_rt', $rtId);
+        }
+
+        $childRows = $childQuery->get()->getResult();
+        foreach ($childRows as $cr) {
+            $residents[(int) $cr->id_warga] = $cr;
+        }
+
+        $nodes = [];
+        $edges = [];
+
+        // Penanganan Orang Tua Manual / Teks (Luar RT)
+        if (!empty($current->ayah) && !ctype_digit((string) $current->ayah) && trim($current->ayah) !== '-') {
+            $mAyahId = 'manual-ayah-' . $current->id_warga;
+            $nodes[$mAyahId] = [
+                'id'              => $mAyahId,
+                'id_warga'        => null,
+                'nama'            => trim($current->ayah),
+                'nik'             => '-',
+                'no_kk'           => '-',
+                'jenis_kelamin'   => 'L',
+                'status_keluarga' => 'Ayah (Luar RT)',
+                'is_hidup'        => 1,
+                'is_current'      => false,
+                'is_manual'       => true,
+                'url'             => null,
+            ];
+            $edges[] = ['from' => $mAyahId, 'to' => 'w-' . $current->id_warga, 'type' => 'parent'];
+        }
+
+        if (!empty($current->ibu) && !ctype_digit((string) $current->ibu) && trim($current->ibu) !== '-') {
+            $mIbuId = 'manual-ibu-' . $current->id_warga;
+            $nodes[$mIbuId] = [
+                'id'              => $mIbuId,
+                'id_warga'        => null,
+                'nama'            => trim($current->ibu),
+                'nik'             => '-',
+                'no_kk'           => '-',
+                'jenis_kelamin'   => 'P',
+                'status_keluarga' => 'Ibu (Luar RT)',
+                'is_hidup'        => 1,
+                'is_current'      => false,
+                'is_manual'       => true,
+                'url'             => null,
+            ];
+            $edges[] = ['from' => $mIbuId, 'to' => 'w-' . $current->id_warga, 'type' => 'parent'];
+        }
+
+        if (isset($nodes['manual-ayah-' . $current->id_warga]) && isset($nodes['manual-ibu-' . $current->id_warga])) {
+            $edges[] = [
+                'from' => 'manual-ayah-' . $current->id_warga,
+                'to'   => 'manual-ibu-' . $current->id_warga,
+                'type' => 'spouse',
+            ];
+        }
+
+        // Tambahkan seluruh warga terdaftar sebagai node
+        foreach ($residents as $rId => $res) {
+            $key = 'w-' . $rId;
+            $nodes[$key] = [
+                'id'              => $key,
+                'id_warga'        => $rId,
+                'nama'            => $res->nama_warga,
+                'nik'             => $res->nik,
+                'no_kk'           => $res->no_kk,
+                'jenis_kelamin'   => strtoupper(trim($res->jenis_kelamin ?? 'L')),
+                'status_keluarga' => $res->status_keluarga ?: 'Warga',
+                'is_hidup'        => (int) ($res->is_hidup ?? 1),
+                'is_current'      => ($rId === (int) $id),
+                'is_manual'       => false,
+                'url'             => base_url('admin/warga/view/' . $rId),
+            ];
+        }
+
+        // 4. Hubungan orang tua - anak via kolom ayah / ibu
+        foreach ($residents as $rId => $res) {
+            $cKey = 'w-' . $rId;
+            if (!empty($res->ayah) && ctype_digit((string) $res->ayah)) {
+                $pKey = 'w-' . ((int) $res->ayah);
+                if (isset($nodes[$pKey])) {
+                    $edges[] = ['from' => $pKey, 'to' => $cKey, 'type' => 'parent'];
+                }
+            }
+            if (!empty($res->ibu) && ctype_digit((string) $res->ibu)) {
+                $mKey = 'w-' . ((int) $res->ibu);
+                if (isset($nodes[$mKey])) {
+                    $edges[] = ['from' => $mKey, 'to' => $cKey, 'type' => 'parent'];
+                }
+            }
+        }
+
+        // 5. Hubungan dalam 1 KK (Kepala Keluarga <-> Pasangan & Anak-anak)
+        $kkGroups = [];
+        foreach ($residents as $rId => $res) {
+            if (!empty($res->no_kk) && trim($res->no_kk) !== '-' && trim($res->no_kk) !== '0') {
+                $kkGroups[$res->no_kk][] = $res;
+            }
+        }
+
+        foreach ($kkGroups as $noKk => $members) {
+            $kkHead = null;
+            $kkSpouse = null;
+            $kkChildren = [];
+
+            foreach ($members as $m) {
+                $st = strtolower($m->status_keluarga ?? '');
+                if ((int) ($m->id_status_keluarga ?? 0) === 1 || str_contains($st, 'kepala keluarga')) {
+                    $kkHead = $m;
+                } elseif (str_contains($st, 'istri') || str_contains($st, 'suami')) {
+                    $kkSpouse = $m;
+                } elseif (str_contains($st, 'anak')) {
+                    $kkChildren[] = $m;
+                }
+            }
+
+            if ($kkHead && $kkSpouse) {
+                $edges[] = [
+                    'from' => 'w-' . $kkHead->id_warga,
+                    'to'   => 'w-' . $kkSpouse->id_warga,
+                    'type' => 'spouse',
+                ];
+            }
+
+            // Jika ada anak yang belum terhubung relasi orang tua ke KK Head / Spouse
+            foreach ($kkChildren as $child) {
+                $cKey = 'w-' . $child->id_warga;
+                if ($kkHead) {
+                    $hKey = 'w-' . $kkHead->id_warga;
+                    $hasHeadEdge = false;
+                    foreach ($edges as $e) {
+                        if ($e['from'] === $hKey && $e['to'] === $cKey) {
+                            $hasHeadEdge = true;
+                            break;
+                        }
+                    }
+                    if (!$hasHeadEdge) {
+                        $edges[] = ['from' => $hKey, 'to' => $cKey, 'type' => 'parent'];
+                    }
+                }
+                if ($kkSpouse) {
+                    $sKey = 'w-' . $kkSpouse->id_warga;
+                    $hasSpouseEdge = false;
+                    foreach ($edges as $e) {
+                        if ($e['from'] === $sKey && $e['to'] === $cKey) {
+                            $hasSpouseEdge = true;
+                            break;
+                        }
+                    }
+                    if (!$hasSpouseEdge) {
+                        $edges[] = ['from' => $sKey, 'to' => $cKey, 'type' => 'parent'];
+                    }
+                }
+            }
+        }
+
+        // Deduplikasi edges
+        $uniqueEdges = [];
+        $seen = [];
+        foreach ($edges as $edge) {
+            $hash = $edge['from'] . '->' . $edge['to'] . ':' . $edge['type'];
+            if (!isset($seen[$hash])) {
+                $seen[$hash] = true;
+                $uniqueEdges[] = $edge;
+            }
+        }
+
+        return [
+            'current_id' => (int) $id,
+            'nodes'      => array_values($nodes),
+            'edges'      => $uniqueEdges,
+            'has_data'   => !empty($nodes),
+        ];
+    }
+
     public function kk_count()
     {
         return $this->db->table($this->table)

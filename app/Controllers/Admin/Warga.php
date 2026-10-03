@@ -89,8 +89,12 @@ class Warga extends BaseController
     public function view($id)
     {
         $this->global['pageTitle'] = 'Lihat Warga';
-        $data['warga']     = $this->wargaModel->detail($id);
-        $data['pekerjaan'] = $this->pekerjaanModel->detail($data['warga']->id_pekerjaan);
+        $data['warga'] = $this->wargaModel->detail($id);
+        if ($data['warga'] === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+        $data['pekerjaan']  = $this->pekerjaanModel->detail($data['warga']->id_pekerjaan);
+        $data['familyTree'] = $this->wargaModel->getFamilyTree($id);
         return $this->loadViews('admin/lihat_warga', $this->global, $data);
     }
 

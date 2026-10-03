@@ -73,6 +73,15 @@ The app is multi-tenant (hierarchy: `rw` → `rt`; RT 29 is tenant `id_rt = 1`).
 - Schema changes go through `app/Database/Migrations/`. Separately, `Admin\DbSync` (`admin/dbsync/*`, `group:superadmin`) is the sanctioned dev-ops tool: download a full/structure-only SQL dump, upload + execute an arbitrary `.sql` file, run pending migrations from the browser, diff pending migration files, and push/pull the whole DB between local and production over `POST /api/dbsync` (shared-secret `dbsync.token`, local↔prod URL in `dbsync.productionURL`; push/pull can only be *initiated* from a non-production environment). Its `import()`/`push()` paths execute arbitrary SQL with `FOREIGN_KEY_CHECKS=0` against the live DB — treat them like raw `mysql` access: back up first. Its cURL calls disable SSL peer/host verification, so the token crosses the wire on whatever TLS the target happens to have; keep the token long and unguessable.
 - `DatabaseTestTrait`'s `$namespace` defaults to `'Tests\Support'` (the framework's own example migrations), not `App` — override `protected $namespace = null;` in a test class to run this app's real migrations before the test.
 
+### UI & AdminLTE Styling Gotchas
+
+- **AdminLTE 3 Clearfix on `.card-*` vs CSS Flexbox (`::after` gotcha)**:
+  AdminLTE 3 defines `.card-header::after, .card-body::after, .card-footer::after { display: block; clear: both; content: ""; }`. In CSS Flexbox, pseudo-elements (`::after`) are treated as flex items. If you add `.d-flex.justify-content-between` directly to `.card-header` or `.card-footer`, flexbox distributes space between 3 items (left item, right item, and the invisible `::after`), pushing the right item (button/badge) to the middle!
+  - **Fix 1**: Wrap flex items in an inner `<div class="d-flex justify-content-between align-items-center w-100">` and add `ml-auto` to the right-side button group.
+  - **Fix 2**: For `.card-header`, always place badges/tools inside `<div class="card-tools">` or `<div class="card-tools ml-auto">`.
+  - **Global Reset**: `app/Views/layouts/header.php` suppresses `::before` and `::after` on `.card-header.d-flex`, `.card-body.d-flex`, `.card-footer.d-flex`. See `.agents/rules/adminlte-flex-gotcha.md`.
+
 ### Deployment
 
 See `DEPLOYMENT.md` for the full checklist (TLS is required — `forcehttps` is a required filter in production; encryption key must be generated fresh per environment; pre-deploy DB backup, etc.) and `.env.production.example` for the production `.env` template.
+

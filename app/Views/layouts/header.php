@@ -57,6 +57,19 @@ if ($__rt !== null) {
         .nav-link.active {
             color: white !important;
         }
+
+        /* Fix AdminLTE 3 clearfix conflict with flexbox:
+           AdminLTE sets ::after { content: ""; display: block; clear: both; } on .card-header, .card-body, .card-footer.
+           In flexbox, ::after becomes an anonymous 3rd flex item, causing justify-content-between to push the 2nd item
+           to the center instead of the far right. */
+        .card-header.d-flex::before,
+        .card-header.d-flex::after,
+        .card-body.d-flex::before,
+        .card-body.d-flex::after,
+        .card-footer.d-flex::before,
+        .card-footer.d-flex::after {
+            display: none !important;
+        }
     </style>
 </head>
 
