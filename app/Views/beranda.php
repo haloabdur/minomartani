@@ -9,6 +9,9 @@ $__rtWa   = (isset($rt) && $rt !== null && !empty($rt->no_wa)) ? $rt->no_wa : '6
 $__rtHero = (isset($rt) && $rt !== null && !empty($rt->foto_hero))
     ? base_url('public/rt/' . $rt->foto_hero)
     : base_url('public/home/') . 'assets/img/tentang-kami.png';
+$uri            = service('uri');
+$__isSlugged    = ($uri->getTotalSegments() > 0 && isset($rt->slug) && $uri->getSegment(1) === $rt->slug);
+$__beritaPrefix = $__isSlugged ? $rt->slug . '/' : '';
 ?>
 <!-- Navigation-->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
@@ -61,10 +64,17 @@ $__rtHero = (isset($rt) && $rt !== null && !empty($rt->foto_hero))
                     <div class="card-img-bg" style="background-image: url('<?= foto_url($berita->foto) ?>');"></div>
                     <div class="card-body">
                         <h4 class="py-2"><?= $berita->judul ?></h4>
-                        <a class="stretched-link" href="<?= base_url('berita/' . $berita->slug) ?>"></a>
+                        <a class="stretched-link" href="<?= base_url($__beritaPrefix . 'berita/' . $berita->slug) ?>"></a>
                     </div>
                 </div>
             <?php endforeach ?>
+            <?php if (!empty($beritas)): ?>
+                <div class="col-12 text-center mt-5">
+                    <a href="<?= base_url($__beritaPrefix . 'berita') ?>" class="btn btn-primary btn-xl shadow" style="min-width: 250px; width: auto; padding: 0.85rem 2.5rem;">
+                        Lihat Semua Berita <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </section>

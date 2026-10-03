@@ -47,6 +47,7 @@ class Home extends BaseController
         $data['rw']        = $rt !== null ? (new RwModel())->find($rt->id_rw) : null;
         $data['ketuas']    = $db->table('ketua')->where('id_rt', current_rt_id())->get()->getResult();
         $data['beritas']   = $db->table('berita')->where('id_rt', current_rt_id())->where('is_status', 1)->orderBy('created_time', 'desc')->limit(3)->get()->getResult();
+        $data['total_berita'] = $this->beritaModel->where('id_rt', current_rt_id())->where('is_status', 1)->countAllResults();
         $data['papanInformasis'] = $this->papanInformasiModel->published();
         $data['kk']        = $this->wargaModel->kk_count();
         $data['laki']      = $this->wargaModel->laki_count();
@@ -88,6 +89,31 @@ class Home extends BaseController
         }
 
         return $this->load_view('alamat_detail', $data);
+    }
+
+    public function daftarBerita(?string $slug = null)
+    {
+        $this->resolveTenant($slug);
+
+        $rt   = current_rt();
+        $cari = trim((string) $this->request->getGet('cari'));
+
+        $query = $this->beritaModel
+            ->where('id_rt', current_rt_id())
+            ->where('is_status', 1);
+
+        if ($cari !== '') {
+            $query = $query->like('judul', $cari);
+        }
+
+        $beritas = $query->orderBy('created_time', 'desc')->paginate(9);
+
+        $data['rt']      = $rt;
+        $data['beritas'] = $beritas;
+        $data['pager']   = $this->beritaModel->pager;
+        $data['cari']    = $cari;
+
+        return $this->load_view('berita_list', $data);
     }
 
     public function berita($param1, $param2 = null)

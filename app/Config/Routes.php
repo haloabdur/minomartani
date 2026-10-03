@@ -9,6 +9,7 @@ use CodeIgniter\Router\RouteCollection;
 // Front-end routes
 $routes->get('/', 'Home::index');
 $routes->get('detail/(:any)', 'Home::alamat/$1');
+$routes->get('berita', 'Home::daftarBerita');
 $routes->get('berita/(:any)', 'Home::berita/$1');
 $routes->get('papan-informasi/(:any)', 'Home::papanInformasi/$1');
 $routes->get('layanan', 'Layanan::index');
@@ -207,6 +208,7 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
 // Slug-prefixed front-end routes (optional tenant routing)
 $routes->get('(:segment)', 'Home::index/$1');
 $routes->get('(:segment)/detail/(:any)', 'Home::alamat/$1/$2');
+$routes->get('(:segment)/berita', 'Home::daftarBerita/$1');
 $routes->get('(:segment)/berita/(:any)', 'Home::berita/$1/$2');
 $routes->get('(:segment)/papan-informasi/(:any)', 'Home::papanInformasi/$1/$2');
 $routes->get('(:segment)/layanan', 'Layanan::index/$1');
