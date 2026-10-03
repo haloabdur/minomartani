@@ -169,6 +169,7 @@ class Berita extends BaseController
             'slug'       => url_title($this->request->getPost('judul'), '-', true),
             'deskripsi'  => $this->request->getPost('deskripsi'),
             'lampiran'   => $this->request->getPost('lampiran'),
+            'sumber'     => $this->request->getPost('sumber'),
             'kategori'   => $this->request->getPost('kategori'),
             'created_by' => auth()->user() ? auth()->user()->id : 0,
             'id_rt'      => current_rt_id(),
@@ -184,7 +185,7 @@ class Berita extends BaseController
         }
 
         $data['foto']      = $urls[0];
-        $data['is_status'] = 0;
+        $data['is_status'] = $this->request->getPost('is_status') !== null ? (int) $this->request->getPost('is_status') : 1;
 
         $createdTime = $this->parseCreatedTime();
         if ($createdTime !== null) {
@@ -334,7 +335,8 @@ class Berita extends BaseController
             'slug'      => url_title($this->request->getPost('judul'), '-', true),
             'deskripsi' => $this->request->getPost('deskripsi'),
             'lampiran'  => $this->request->getPost('lampiran'),
-            'is_status' => $this->request->getPost('is_status'),
+            'sumber'    => $this->request->getPost('sumber'),
+            'is_status' => (int) $this->request->getPost('is_status'),
             'kategori'  => $this->request->getPost('kategori'),
         ];
 

@@ -9,7 +9,7 @@ class BeritaModel extends Model
     protected $table         = 'berita';
     protected $primaryKey    = 'id_berita';
     protected $returnType    = 'object';
-    protected $allowedFields = ['judul', 'slug', 'deskripsi', 'lampiran', 'foto', 'kategori', 'is_status', 'created_by', 'timestamp', 'created_time', 'id_rt'];
+    protected $allowedFields = ['judul', 'slug', 'deskripsi', 'lampiran', 'sumber', 'foto', 'kategori', 'is_status', 'created_by', 'timestamp', 'created_time', 'id_rt'];
 
     public function all()
     {
