@@ -3,15 +3,84 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Libraries\ImageCompressor;
+use App\Libraries\R2Storage;
 use App\Models\InventarisModel;
 
 class Inventaris extends BaseController
 {
     protected $inventarisModel;
+    protected $r2Storage;
+    protected $imageCompressor;
 
     public function __construct()
     {
         $this->inventarisModel = new InventarisModel();
+        $this->r2Storage       = new R2Storage();
+        $this->imageCompressor = new ImageCompressor();
+    }
+
+    /**
+     * R2 key prefix "inventaris/{rt_slug}", so new uploads land grouped by
+     * tenant in the bucket (e.g. inventaris/rt29/...). Falls back to bare
+     * "inventaris" if no tenant is resolvable.
+     */
+    private function r2Prefix(): string
+    {
+        $rt = current_rt();
+
+        return $rt !== null ? 'inventaris/' . $rt->slug : 'inventaris';
+    }
+
+    /**
+     * Compresses to WebP and uploads to R2 under "inventaris/{rt_slug}"; falls
+     * back to local disk (public/inventaris) if the R2 call fails. Throws
+     * RuntimeException if the image cannot be compressed.
+     */
+    private function storeFoto($foto): string
+    {
+        $foto = $this->imageCompressor->compress($foto);
+
+        try {
+            return $this->r2Storage->upload($foto, $this->r2Prefix());
+        } catch (\Throwable $e) {
+            log_message('error', 'R2 upload failed for inventaris foto, falling back to local disk: ' . $e->getMessage());
+
+            $newName = $foto->getRandomName();
+            if (!is_dir(FCPATH . 'public/inventaris')) {
+                mkdir(FCPATH . 'public/inventaris', 0755, true);
+            }
+            rename($foto->getTempName(), FCPATH . 'public/inventaris/' . $newName);
+
+            return 'public/inventaris/' . $newName;
+        } finally {
+            if (is_file($foto->getTempName())) {
+                @unlink($foto->getTempName());
+            }
+        }
+    }
+
+    /**
+     * Deletes an inventaris photo, routing to R2 or local disk based
+     * on the stored value's format.
+     */
+    private function deleteFoto(?string $oldFoto): void
+    {
+        if (empty($oldFoto)) {
+            return;
+        }
+
+        if (str_starts_with($oldFoto, 'http://') || str_starts_with($oldFoto, 'https://')) {
+            try {
+                $this->r2Storage->delete($oldFoto);
+            } catch (\Throwable $e) {
+                log_message('error', 'R2 delete failed for inventaris foto ' . $oldFoto . ': ' . $e->getMessage());
+            }
+        } elseif (file_exists(FCPATH . $oldFoto)) {
+            unlink(FCPATH . $oldFoto);
+        } elseif (file_exists(FCPATH . 'public/inventaris/' . basename($oldFoto))) {
+            unlink(FCPATH . 'public/inventaris/' . basename($oldFoto));
+        }
     }
 
     public function index()
@@ -36,7 +105,8 @@ class Inventaris extends BaseController
         $validation = \Config\Services::validation();
         $validation->setRules([
             'nama_barang' => 'required',
-            'stok'        => 'required|numeric'
+            'stok'        => 'required|numeric',
+            'foto'        => 'permit_empty|is_image[foto]|max_size[foto,5120]'
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -53,15 +123,12 @@ class Inventaris extends BaseController
         $foto = $this->request->getFile('foto');
 
         if ($foto && $foto->isValid() && !$foto->hasMoved()) {
-            $newName = 'item-' . date('ymd') . '-' . substr(md5(rand()), 0, 10) . '.' . $foto->getExtension();
-
-            $path = FCPATH . 'public/inventaris';
-            if (!is_dir($path)) {
-                mkdir($path, 0777, true);
+            try {
+                $data['foto'] = $this->storeFoto($foto);
+            } catch (\RuntimeException $e) {
+                setFlashData('error', $e->getMessage());
+                return redirect()->back()->withInput();
             }
-
-            $foto->move($path, $newName);
-            $data['foto'] = 'public/inventaris/' . $newName;
         }
 
         $this->inventarisModel->insert($data);
@@ -90,14 +157,16 @@ class Inventaris extends BaseController
         // InventarisModel::update() is the base Model method - it only
         // filters by primary key, not id_rt. detail() is tenant-scoped,
         // so a mismatched or nonexistent id resolves to null/empty here.
-        if (empty($this->inventarisModel->detail($id))) {
+        $oldItem = $this->inventarisModel->detail($id);
+        if (empty($oldItem)) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
         $validation = \Config\Services::validation();
         $validation->setRules([
             'nama_barang' => 'required',
-            'stok'        => 'required|numeric'
+            'stok'        => 'required|numeric',
+            'foto'        => 'permit_empty|is_image[foto]|max_size[foto,5120]'
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -113,20 +182,16 @@ class Inventaris extends BaseController
         $foto = $this->request->getFile('foto');
 
         if ($foto && $foto->isValid() && !$foto->hasMoved()) {
-            $newName = 'item-' . date('ymd') . '-' . substr(md5(rand()), 0, 10) . '.' . $foto->getExtension();
-
-            $path = FCPATH . 'public/inventaris';
-            if (!is_dir($path)) {
-                mkdir($path, 0777, true);
+            try {
+                $data['foto'] = $this->storeFoto($foto);
+            } catch (\RuntimeException $e) {
+                setFlashData('error', $e->getMessage());
+                return redirect()->back()->withInput();
             }
 
-            $foto->move($path, $newName);
-            $data['foto'] = 'public/inventaris/' . $newName;
-
             // Delete old photo
-            $oldItem = $this->inventarisModel->detail($id);
-            if (!empty($oldItem->foto) && file_exists(FCPATH . $oldItem->foto)) {
-                unlink(FCPATH . $oldItem->foto);
+            if (!empty($oldItem->foto)) {
+                $this->deleteFoto($oldItem->foto);
             }
         }
 
@@ -139,8 +204,8 @@ class Inventaris extends BaseController
     {
         $item = $this->inventarisModel->detail($id);
         if (!empty($item)) {
-            if (!empty($item->foto) && file_exists(FCPATH . $item->foto)) {
-                unlink(FCPATH . $item->foto);
+            if (!empty($item->foto)) {
+                $this->deleteFoto($item->foto);
             }
             $this->inventarisModel->hapus($id);
             setFlashData('success', 'Data inventaris berhasil dihapus!');

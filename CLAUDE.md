@@ -48,9 +48,9 @@ New controllers should call one of these rather than CI4's native `view()` compo
 
 Grab-bag of utility functions carried over from CI3: `pre()` (dump+exit), `setFlashData()`/`loadFlashData()` (flash message + toast HTML), `convert_to_rupiah()`, `bulan_indo()`, `tanggal()`, `umur()`, `nicetime()`, `assets()` (prefixes `public/`), `back()`. Password-hashing helpers were deliberately dropped when Shield took over auth.
 
-### Photo uploads: local disk (R2 planned, not built)
+### Photo uploads: Cloudflare R2 storage via `App\Libraries\R2Storage`
 
-Inventaris and Berita photos save to local disk (`public/inventaris/…` relative path incl. directory, resp. bare filename rendered as `public/berita/<name>`). The Cloudflare R2 migration (`docs/superpowers/specs/2026-07-05-inventaris-r2-storage-design.md`) was never executed beyond `composer require async-aws/s3` — there is no `Config\R2`, no `App\Libraries\R2Storage`, no `foto_url()` helper. All `foto` column values are local references; don't assume R2/absolute-URL values exist.
+Photo uploads for Berita, Ketua RT, and Inventaris are uploaded to Cloudflare R2 via `App\Libraries\R2Storage` (using `Config\R2` and `async-aws/s3`), re-encoded as WebP via `App\Libraries\ImageCompressor` (max 500KB), and stored under tenant-scoped prefixes (`<module>/{rt_slug}/item-...webp`). When an R2 upload fails, a fallback saves the file to local disk (`public/<module>/`). Views render URLs via the `foto_url()` helper in `app/Helpers/kbw_helper.php`, which transparently handles full R2 URLs (`https://...`), legacy relative paths (`public/inventaris/...`), and fallback bare filenames (`public/<module>/<file>`).
 
 ### Auth: CodeIgniter Shield, not the legacy `user` table
 

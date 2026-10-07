@@ -43,14 +43,16 @@
         </li>
         <?php endif ?>
 
-        <!-- <li class="nav-item">
+        <?php if (auth()->user()->can('menu.inventaris')): ?>
+        <li class="nav-item">
             <a href="<?= base_url('admin/inventaris') ?>" class="nav-link">
                 <i class="nav-icon fas fa-boxes"></i>
                 <p>
                     Inventaris RT
                 </p>
             </a>
-        </li> -->
+        </li>
+        <?php endif ?>
 
         <li class="nav-header">MASTER DATA</li>
         <?php if (auth()->user()->can('menu.berita')): ?>

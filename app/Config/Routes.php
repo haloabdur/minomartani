@@ -82,13 +82,15 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->get('delete/(:num)', 'Admin\Ketua::delete/$1');
     });
 
-    // Inventaris
-    $routes->get('inventaris', 'Admin\Inventaris::index');
-    $routes->get('inventaris/add', 'Admin\Inventaris::add');
-    $routes->post('inventaris/store', 'Admin\Inventaris::store');
-    $routes->get('inventaris/edit/(:num)', 'Admin\Inventaris::edit/$1');
-    $routes->post('inventaris/update/(:num)', 'Admin\Inventaris::update/$1');
-    $routes->get('inventaris/delete/(:num)', 'Admin\Inventaris::delete/$1');
+    // Inventaris - per-user menu access, see Config\AuthGroups + Admin\Users
+    $routes->group('inventaris', ['filter' => 'menuaccess:inventaris'], function ($routes) {
+        $routes->get('/', 'Admin\Inventaris::index');
+        $routes->get('add', 'Admin\Inventaris::add');
+        $routes->post('store', 'Admin\Inventaris::store');
+        $routes->get('edit/(:num)', 'Admin\Inventaris::edit/$1');
+        $routes->post('update/(:num)', 'Admin\Inventaris::update/$1');
+        $routes->get('delete/(:num)', 'Admin\Inventaris::delete/$1');
+    });
 
     // Pekerjaan - shared lookup table (no id_rt), so edits affect every
     // tenant; restrict to the 'superadmin' Shield group like other

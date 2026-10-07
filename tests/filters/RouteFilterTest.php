@@ -70,6 +70,7 @@ final class RouteFilterTest extends CIUnitTestCase
     public function testMenuGatedRoutesRequireMenuPermission(): void
     {
         $this->assertFilter('admin/warga', 'before', 'menuaccess:warga');
+        $this->assertFilter('admin/inventaris', 'before', 'menuaccess:inventaris');
         $this->assertFilter('admin/alamat', 'before', 'menuaccess:alamat');
         $this->assertFilter('admin/berita', 'before', 'menuaccess:berita');
         // Kesehatan Lansia is a plain 'menu.kesehatan' permission for

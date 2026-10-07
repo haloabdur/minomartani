@@ -84,6 +84,7 @@ class AuthGroups extends ShieldAuthGroups
         'users.delete'        => 'Can delete existing non-admin users',
         'beta.access'         => 'Can access beta-level features',
         'menu.warga'          => 'Can access the Warga menu',
+        'menu.inventaris'     => 'Can access the Inventaris RT menu',
         'menu.alamat'         => 'Can access the Alamat menu',
         'menu.berita'         => 'Can access the Berita menu',
         'menu.papan_informasi' => 'Can access the Papan Informasi menu',

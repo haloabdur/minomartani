@@ -29,7 +29,7 @@
                                         </td>
                                         <td>
                                             <?php if (!empty($item->foto)): ?>
-                                                <img src="<?php echo base_url($item->foto); ?>" alt="<?php echo $item->nama_barang; ?>" style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;" onclick="showImage('<?php echo base_url($item->foto); ?>', '<?php echo $item->nama_barang; ?>')">
+                                                <img src="<?php echo foto_url($item->foto, 'inventaris'); ?>" alt="<?php echo esc($item->nama_barang); ?>" style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;" onclick="showImage('<?php echo foto_url($item->foto, 'inventaris'); ?>', '<?php echo esc($item->nama_barang, 'js'); ?>')">
                                             <?php else: ?>
                                                 <span class="text-muted">No Image</span>
                                             <?php endif; ?>

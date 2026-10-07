@@ -18,7 +18,7 @@
                             <br>
                             <?php if (!empty($item->foto)): ?>
                                 <div id="current-image">
-                                    <img src="<?php echo base_url($item->foto); ?>" alt="<?php echo $item->nama_barang; ?>" style="width: 100px; height: 100px; object-fit: cover;" class="mb-2">
+                                    <img src="<?php echo foto_url($item->foto, 'inventaris'); ?>" alt="<?php echo esc($item->nama_barang); ?>" style="width: 100px; height: 100px; object-fit: cover;" class="mb-2">
                                     <p class="small text-muted">Foto saat ini</p>
                                 </div>
                             <?php endif; ?>

@@ -15,11 +15,12 @@ class Users extends BaseController
      * and at the route level (see Config\Routes' 'menuaccess' filter).
      */
     private const ADMIN_MENU_PERMISSIONS = [
-        'menu.warga'  => 'Warga',
-        'menu.alamat' => 'Alamat',
-        'menu.berita' => 'Berita',
+        'menu.warga'           => 'Warga',
+        'menu.inventaris'      => 'Inventaris RT',
+        'menu.alamat'          => 'Alamat',
+        'menu.berita'          => 'Berita',
         'menu.papan_informasi' => 'Papan Informasi',
-        'menu.ketua'  => 'Ketua RT',
+        'menu.ketua'           => 'Ketua RT',
     ];
 
     /**

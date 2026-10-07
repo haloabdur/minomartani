@@ -387,9 +387,15 @@ if (!function_exists('foto_url')) {
             return '';
         }
 
-        return (str_starts_with($path, 'http://') || str_starts_with($path, 'https://'))
-            ? $path
-            : base_url('public/' . $dir . '/' . $path);
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        if (str_starts_with($path, 'public/')) {
+            return base_url($path);
+        }
+
+        return base_url('public/' . $dir . '/' . $path);
     }
 }
 

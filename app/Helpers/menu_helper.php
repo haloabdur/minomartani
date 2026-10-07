@@ -34,11 +34,12 @@ if (! function_exists('default_admin_route')) {
                 'menu.presensi'  => 'admin/presensi',
             ]
             : [
-                'menu.warga'     => 'admin/warga',
-                'menu.alamat'    => 'admin/alamat',
-                'menu.berita'    => 'admin/berita',
-                'menu.kesehatan' => 'admin/kesehatan',
-                'menu.presensi'  => 'admin/presensi',
+                'menu.warga'      => 'admin/warga',
+                'menu.inventaris' => 'admin/inventaris',
+                'menu.alamat'     => 'admin/alamat',
+                'menu.berita'     => 'admin/berita',
+                'menu.kesehatan'  => 'admin/kesehatan',
+                'menu.presensi'   => 'admin/presensi',
             ];
 
         foreach ($ordered as $permission => $route) {
