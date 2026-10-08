@@ -1,53 +1,73 @@
+<?php
+
+use App\Libraries\SuratPemohon;
+use App\Models\SuratModel;
+?>
 <div class="container-fluid">
-	<!-- Permohonan surat masuk lewat form Layanan publik; admin hanya meninjau & menyetujui di sini. -->
+	<!-- Permohonan surat masuk lewat form Layanan publik; admin meninjau, menyetujui atau menolak di sini. -->
 	<div class="row">
 		<div class="col-12">
 			<div class="card">
 				<div class="card-body">
 					<div class="table-responsive">
-					<table class="table table-bordered table-striped datatable">
+					<table class="table table-bordered table-striped datatable" data-order='[]'>
 						<thead>
 							<tr>
 								<th width="1">No.</th>
-								<th>Warga</th>
+								<th>Pemohon</th>
 								<th>Tujuan</th>
-								<th>Surat</th>
+								<th>Data</th>
 								<th>Tanggal</th>
 								<th>Status</th>
 								<th>Action</th>
 							</tr>
 						</thead>
 						<tbody>
-							<?php
-								foreach ($surats as $i=>$surat) {
+							<?php foreach ($surats as $i => $surat):
+								$nama  = SuratPemohon::hasSnapshot($surat) ? $surat->nama_pemohon : $surat->rt_nama;
+								$hp    = SuratPemohon::normalizePhone(SuratPemohon::hasSnapshot($surat) ? $surat->no_hp : $surat->rt_no_hp);
+								$beda  = SuratPemohon::jumlahBeda($surat);
 							?>
 							<tr>
-								<td><?php echo $i+1 ?></td>
+								<td><?= $i + 1 ?></td>
 								<td>
-									<?php echo $surat->nama_warga ?> <br>
-									<?php if ($surat->no_hp): ?>
-										<a target="_blank" href="https://wa.me/62<?php echo $surat->no_hp ?>" alt="Whatsapp"> +62<?php echo $surat->no_hp ?></a>
+									<?= esc($nama) ?> <br>
+									<?php if ($hp !== ''): ?>
+										<a target="_blank" href="https://wa.me/62<?= esc($hp) ?>"> +62<?= esc($hp) ?></a>
 									<?php endif ?>
 								</td>
 								<td>
-									<span class="text-muted">Maksut : </span><?php echo $surat->maksut ?> <br>
-									<span class="text-muted">Perlu : </span><?php echo $surat->perlu ?> <br>
-									<span class="small text-muted"><i class="fas fa-file-alt"></i> &nbsp;<?php echo $surat->lampiran ?></span>
+									<span class="text-muted">Maksud : </span><?= esc($surat->maksut) ?> <br>
+									<span class="text-muted">Perlu : </span><?= esc($surat->perlu) ?> <br>
+									<span class="small text-muted"><i class="fas fa-file-alt"></i> &nbsp;<?= esc(implode(', ', SuratPemohon::parseLampiran($surat->lampiran))) ?></span>
 								</td>
-								<td> <a href="<?php echo base_url('admin/surat/view/'.$surat->id_surat) ?>"><img src="<?php echo base_url('public/img/pdf.svg') ?>" width="48" ></a> </td>
-								<td><?php echo date('d-m-Y', strtotime($surat->created_at)) ?> <br> <small class="text-muted"><i class="fas fa-clock"></i> <?php echo date('H:i', strtotime($surat->created_at)) ?></small></td>
-								<td><?php echo $surat->status_surat == 1 ? '<label class="badge badge-pills badge-success">Disetujui</label>' : '<label class="badge badge-pills badge-danger">Belum Disetujui</label>' ?></td>
-								<td width="80">
-									<?php if ($surat->status_surat == 0) { ?>
-										<a onclick="return confirm('Apakah Anda yakin akan mensetujui lampiran ini?')" class="btn btn-success btn-sm" href="<?php echo base_url('admin/surat/setuju/'.$surat->id_surat) ?>">
-										Setujui
-									</a>
-									<?php } else { ?>
-										<p class="text-muted small"><i>Disetujui : <br><?php echo $surat->timestamp ?></i></p>
-									<?php } ?>
+								<td>
+									<?php if (! SuratPemohon::hasSnapshot($surat)): ?>
+										<span class="badge badge-secondary">Data lama</span>
+									<?php elseif ($beda > 0): ?>
+										<span class="badge badge-danger"><?= $beda ?> data tidak sama dengan data RT</span>
+									<?php else: ?>
+										<span class="badge badge-success">Sama dengan data RT</span>
+									<?php endif ?>
+								</td>
+								<td><?= date('d-m-Y', strtotime($surat->created_at)) ?> <br> <small class="text-muted"><i class="fas fa-clock"></i> <?= date('H:i', strtotime($surat->created_at)) ?></small></td>
+								<td>
+									<?php if ((int) $surat->status_surat === SuratModel::STATUS_DISETUJUI): ?>
+										<span class="badge badge-success">Disetujui</span>
+									<?php elseif ((int) $surat->status_surat === SuratModel::STATUS_DITOLAK): ?>
+										<span class="badge badge-dark">Ditolak</span>
+									<?php else: ?>
+										<span class="badge badge-warning">Menunggu</span>
+									<?php endif ?>
+								</td>
+								<td width="120">
+									<a class="btn btn-primary btn-sm" href="<?= base_url('admin/surat/view/' . $surat->id_surat) ?>">Periksa</a>
+									<?php if ((int) $surat->status_surat === SuratModel::STATUS_DISETUJUI): ?>
+										<p class="text-muted small mb-0 mt-1"><i>Disetujui : <br><?= esc($surat->timestamp) ?></i></p>
+									<?php endif ?>
 								</td>
 							</tr>
-						<?php } ?>
+							<?php endforeach ?>
 						</tbody>
 					</table>
 					</div>

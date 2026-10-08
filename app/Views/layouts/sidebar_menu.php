@@ -43,6 +43,21 @@
         </li>
         <?php endif ?>
 
+        <?php if (auth()->user()->can('menu.surat')): ?>
+        <?php $__suratMenunggu = (new \App\Models\SuratModel())->countMenunggu(); ?>
+        <li class="nav-item">
+            <a href="<?= base_url('admin/surat') ?>" class="nav-link">
+                <i class="nav-icon fas fa-envelope-open-text"></i>
+                <p>
+                    Surat
+                    <?php if ($__suratMenunggu > 0): ?>
+                        <span class="badge badge-danger right"><?= $__suratMenunggu ?></span>
+                    <?php endif ?>
+                </p>
+            </a>
+        </li>
+        <?php endif ?>
+
         <?php if (auth()->user()->can('menu.inventaris')): ?>
         <li class="nav-item">
             <a href="<?= base_url('admin/inventaris') ?>" class="nav-link">

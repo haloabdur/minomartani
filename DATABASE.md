@@ -68,7 +68,7 @@ PK: `id_alamat` (AI). Index: `id_rt`. Engine/charset: InnoDB, `latin1`/`latin1_s
 | `id_alamat` | int(11) | PK, AUTO_INCREMENT |
 | `alamat` | varchar(50) | NULL |
 | `qrcode` | varchar(100) | NULL |
-| `kode_rumah` | varchar(20) | NULL — PIN Layanan per alamat, ditambahkan via `2026-07-15-071000_AddKodeRumahToAlamat.php`. Nullable tanpa backfill (fail-closed), diisi manual per alamat lewat Admin > Alamat |
+| `kode_rumah` | varchar(20) | NULL — PIN Layanan per alamat, ditambahkan via `2026-07-15-071000_AddKodeRumahToAlamat.php`. Nullable tanpa backfill (fail-closed), diisi manual per alamat lewat Admin > Alamat. Warga memilih alamat dulu baru memasukkan PIN, jadi PIN **tidak perlu unik** antar alamat; salah PIN dibatasi 5x per alamat lalu terkunci 15 menit (`PinThrottle`, di cache, bukan tabel) |
 | `timestamp` | timestamp | NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() |
 | `id_rt` | int(11) | NOT NULL DEFAULT 1 |
 
@@ -135,13 +135,25 @@ PK: `id_surat` (AI). Index: `id_rt`. Engine/charset: InnoDB, `latin1`/`latin1_sw
 | `id_warga` | int(11) | NOT NULL |
 | `maksut` | varchar(100) | NOT NULL |
 | `perlu` | varchar(100) | NOT NULL |
-| `lampiran` | varchar(255) | NULL |
-| `status_surat` | tinyint(4) | NOT NULL DEFAULT 0 |
+| `lampiran` | text | NULL — daftar berkas (maks. 10). Format baru: JSON array; baris lama: string dipisah koma (dibaca keduanya oleh `SuratPemohon::parseLampiran()`). Dilebarkan dari varchar(255) oleh `2026-10-08-100000_AddPemohonSnapshotToSurat.php` |
+| `status_surat` | tinyint(4) | NOT NULL DEFAULT 0 — 0=menunggu, 1=disetujui, 2=ditolak (`SuratModel::STATUS_*`) |
+| `nama_pemohon` | varchar(255) | NULL — salinan isian pemohon (lihat catatan snapshot di bawah) |
+| `nik_pemohon` | varchar(50) | NULL |
+| `alamat_pemohon` | varchar(255) | NULL |
+| `tempat_lahir` | varchar(50) | NULL |
+| `tanggal_lahir` | date | NULL |
+| `agama` | varchar(30) | NULL |
+| `no_hp` | varchar(20) | NULL — dinormalkan tanpa awalan 0/62 (sama seperti `warga.no_hp`) |
+| `alasan_tolak` | varchar(255) | NULL — wajib terisi saat `status_surat = 2` (ditegakkan di `Admin\Surat::tolak()`) |
 | `created_at` | timestamp | NOT NULL DEFAULT current_timestamp() |
 | `timestamp` | timestamp | NOT NULL DEFAULT `'0000-00-00 00:00:00'` ON UPDATE current_timestamp() — literal zero-date legacy, lihat catatan di migration |
 | `id_rt` | int(11) | NOT NULL DEFAULT 1 |
 
 Catatan: kolom `no_surat`/`id_alamat` yang sebelumnya dipakai fitur "Tambah Surat" manual di admin sudah tidak relevan — fiturnya dihapus (bukan kolomnya yang ditambah), lihat temuan #1 di atas.
+
+**Snapshot pemohon** (`nama_pemohon` … `no_hp`, ditambahkan `2026-10-08-100000_AddPemohonSnapshotToSurat.php`): form publik Layanan mengisi otomatis dari `warga`, tapi semua field boleh diubah pemohon; nilai yang benar-benar dikirim disimpan di baris `surat` dan **tidak pernah menimpa `warga`**. Admin membandingkannya dengan data `warga` yang aktif (`SuratPemohon::bandingkan()`), field yang beda diberi badge merah. Baris yang dibuat sebelum migration ini punya kolom-kolom ini NULL → tampil tanpa perbandingan, cetak memakai data `warga`. Kolom sengaja mengikuti charset tabel (`latin1`), karakter di luar latin1 jadi `?`.
+
+Aturan aplikasi (bukan constraint DB): satu `id_warga` hanya boleh punya satu surat berstatus menunggu (`SuratModel::hasMenunggu()`).
 
 ### `inventaris` — Inventaris barang RT
 PK: `id` (AI, unsigned). Index: `id_rt`. Engine/charset: InnoDB, `utf8mb3`/`utf8mb3_general_ci`.
@@ -322,6 +334,8 @@ PK: `id_rt` (AI). Unique: `slug`, `subdomain`. Index: `id_rw`. Engine/charset: I
 | `deskripsi` | text NULL — dipakai di landing page publik |
 | `no_wa` | varchar(20) NULL — kontak WhatsApp landing page publik |
 | `foto_hero` | varchar(255) NULL — nama file di `public/public/rt/`, dipakai di landing page publik |
+| `nama_dukuh` | varchar(100) NULL — dicetak di tanda tangan Surat Keterangan, diisi superadmin lewat Kelola RT/RW (`2026-10-08-100100_AddPejabatToRt.php`) |
+| `nama_ketua_rw` | varchar(100) NULL — idem |
 | `created_at` | timestamp NULL DEFAULT current_timestamp() |
 
 ---

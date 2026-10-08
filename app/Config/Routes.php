@@ -13,6 +13,9 @@ $routes->get('berita', 'Home::daftarBerita');
 $routes->get('berita/(:any)', 'Home::berita/$1');
 $routes->get('papan-informasi/(:any)', 'Home::papanInformasi/$1');
 $routes->get('layanan', 'Layanan::index');
+$routes->post('layanan/verifikasi', 'Layanan::verifikasi');
+$routes->get('layanan/pilih', 'Layanan::pilih');
+$routes->get('layanan/form/(:num)', 'Layanan::formDefault/$1');
 $routes->post('layanan/store', 'Layanan::store');
 $routes->get('layanan/sukses', 'Layanan::sukses');
 
@@ -104,13 +107,18 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
     });
 
     // Surat - requests come in via the public Layanan form; admin only
-    // reviews and approves them here. The old manual add/edit routes
-    // were removed (they pointed at no_surat/id_alamat columns that
-    // don't exist in the surat table, and at admin/tambah_surat.php /
-    // admin/ubah_surat.php views that were never created).
-    $routes->get('surat', 'Admin\Surat::index');
-    $routes->get('surat/view/(:num)', 'Admin\Surat::view/$1');
-    $routes->get('surat/setuju/(:num)', 'Admin\Surat::setuju/$1');
+    // reviews, approves or rejects them here. The old manual add/edit
+    // routes were removed (they pointed at no_surat/id_alamat columns
+    // that don't exist in the surat table, and at admin/tambah_surat.php
+    // / admin/ubah_surat.php views that were never created).
+    // Per-user menu access, see Config\AuthGroups + Admin\Users.
+    $routes->group('surat', ['filter' => 'menuaccess:surat'], function ($routes) {
+        $routes->get('/', 'Admin\Surat::index');
+        $routes->get('view/(:num)', 'Admin\Surat::view/$1');
+        $routes->get('cetak/(:num)', 'Admin\Surat::cetak/$1');
+        $routes->post('setuju/(:num)', 'Admin\Surat::setuju/$1');
+        $routes->post('tolak/(:num)', 'Admin\Surat::tolak/$1');
+    });
 
     // Users - highest blast-radius admin surface, restricted to the
     // 'superadmin' Shield group
@@ -214,6 +222,9 @@ $routes->get('(:segment)/berita', 'Home::daftarBerita/$1');
 $routes->get('(:segment)/berita/(:any)', 'Home::berita/$1/$2');
 $routes->get('(:segment)/papan-informasi/(:any)', 'Home::papanInformasi/$1/$2');
 $routes->get('(:segment)/layanan', 'Layanan::index/$1');
+$routes->post('(:segment)/layanan/verifikasi', 'Layanan::verifikasi/$1');
+$routes->get('(:segment)/layanan/pilih', 'Layanan::pilih/$1');
+$routes->get('(:segment)/layanan/form/(:num)', 'Layanan::form/$1/$2');
 $routes->post('(:segment)/layanan/store', 'Layanan::store/$1');
 $routes->get('(:segment)/layanan/sukses', 'Layanan::sukses/$1');
 

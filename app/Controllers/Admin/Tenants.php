@@ -202,6 +202,8 @@ class Tenants extends BaseController
             'alamat'    => $this->request->getPost('alamat'),
             'deskripsi' => $this->request->getPost('deskripsi'),
             'no_wa'     => $this->request->getPost('no_wa'),
+            'nama_dukuh'    => trim((string) $this->request->getPost('nama_dukuh')) ?: null,
+            'nama_ketua_rw' => trim((string) $this->request->getPost('nama_ketua_rw')) ?: null,
         ];
 
         $fotoHero = $this->request->getFile('foto_hero');

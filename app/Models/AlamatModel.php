@@ -20,6 +20,22 @@ class AlamatModel extends Model
             ->get()->getResult();
     }
 
+    /**
+     * Address picker for the public Layanan form. Only the address label
+     * is exposed - never PINs or resident names - and only addresses
+     * whose PIN has been set (the rest can't pass verification anyway).
+     */
+    public function pilihanLayanan()
+    {
+        return $this->db->table($this->table)
+            ->select('alamat.id_alamat, alamat.alamat')
+            ->where('alamat.id_rt', current_rt_id())
+            ->where('alamat.kode_rumah IS NOT NULL', null, false)
+            ->where("alamat.kode_rumah <> ''", null, false)
+            ->orderBy('alamat.alamat')
+            ->get()->getResult();
+    }
+
     public function alamat_detail($kode)
     {
         return $this->db->table($this->table)

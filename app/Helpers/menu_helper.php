@@ -38,6 +38,7 @@ if (! function_exists('default_admin_route')) {
                 'menu.inventaris' => 'admin/inventaris',
                 'menu.alamat'     => 'admin/alamat',
                 'menu.berita'     => 'admin/berita',
+                'menu.surat'      => 'admin/surat',
                 'menu.kesehatan'  => 'admin/kesehatan',
                 'menu.presensi'   => 'admin/presensi',
             ];

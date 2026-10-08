@@ -31,6 +31,7 @@ class Dashboard extends BaseController
         $data['kk']        = $this->wargaModel->kk_count();
         $data['berita']    = $this->beritaModel->count();
         $data['surat']     = $this->suratModel->count();
+        $data['surat_menunggu'] = $this->suratModel->countMenunggu();
         $data['laki']      = $this->wargaModel->laki_count();
         $data['perempuan'] = $this->wargaModel->perempuan_count();
         $data['alamat']    = $this->alamatModel->alamat_count();

@@ -377,6 +377,41 @@ class WargaModel extends Model
             ->get()->getRow();
     }
 
+    /**
+     * Living, active residents of one address, for the public Layanan
+     * "who is applying" step. Tenant-scoped like every other query here.
+     */
+    public function anggotaAlamat(int $idAlamat)
+    {
+        return $this->db->table($this->table)
+            ->select('warga.id_warga, warga.nama_warga, status_keluarga.status status_keluarga')
+            ->join('status_keluarga', 'status_keluarga.id_status_keluarga = warga.id_status_keluarga', 'left')
+            ->where('warga.id_alamat', $idAlamat)
+            ->where('warga.id_rt', current_rt_id())
+            ->where('warga.status_warga', 1)
+            ->where('warga.is_hidup', 1)
+            ->orderBy('warga.id_status_keluarga, warga.nama_warga')
+            ->get()->getResult();
+    }
+
+    /**
+     * One resident of the given address (null if they live elsewhere,
+     * are inactive, deceased or belong to another RT), with the block
+     * address joined in, to prefill the Layanan form.
+     */
+    public function untukLayanan(int $idWarga, int $idAlamat)
+    {
+        return $this->db->table($this->table)
+            ->select('warga.*, alamat.alamat')
+            ->join('alamat', 'alamat.id_alamat = warga.id_alamat')
+            ->where('warga.id_warga', $idWarga)
+            ->where('warga.id_alamat', $idAlamat)
+            ->where('warga.id_rt', current_rt_id())
+            ->where('warga.status_warga', 1)
+            ->where('warga.is_hidup', 1)
+            ->get()->getRow();
+    }
+
     public function get_status_keluarga()
     {
         return $this->db->table('status_keluarga')->get()->getResult();

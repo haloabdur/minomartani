@@ -49,7 +49,7 @@
       <div class="small-box bg-danger">
         <div class="inner">
           <h3><?php echo $surat; ?></h3>
-          <p>Layanan</p>
+          <p>Layanan<?php if ($surat_menunggu > 0): ?> &middot; <strong><?php echo $surat_menunggu; ?> menunggu persetujuan</strong><?php endif; ?></p>
         </div>
         <div class="icon">
           <i class="fas fa-info"></i>

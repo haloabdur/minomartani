@@ -43,6 +43,16 @@
                             <label for="no_wa">Nomor WhatsApp Kontak</label>
                             <input type="text" id="no_wa" name="no_wa" class="form-control" placeholder="Contoh: 6281234567890" value="<?= esc($rt->no_wa ?? '') ?>">
                         </div>
+                        <hr>
+                        <p class="text-muted mb-2">Nama pejabat untuk lembar cetak Surat Keterangan (opsional, kosong = garis tanda tangan dibiarkan kosong):</p>
+                        <div class="form-group">
+                            <label for="nama_dukuh">Nama Dukuh</label>
+                            <input type="text" id="nama_dukuh" name="nama_dukuh" class="form-control" maxlength="100" value="<?= esc($rt->nama_dukuh ?? '') ?>">
+                        </div>
+                        <div class="form-group">
+                            <label for="nama_ketua_rw">Nama Ketua RW</label>
+                            <input type="text" id="nama_ketua_rw" name="nama_ketua_rw" class="form-control" maxlength="100" value="<?= esc($rt->nama_ketua_rw ?? '') ?>">
+                        </div>
                         <div class="form-group">
                             <label for="foto_hero">Foto Hero (landing page)</label>
                             <?php if (! empty($rt->foto_hero)): ?>
