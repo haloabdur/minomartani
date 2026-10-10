@@ -50,6 +50,7 @@ class Surat extends BaseController
         $surat = $this->findOrFail($id);
 
         $this->global['pageTitle'] = 'Detail Pengajuan Surat';
+        $this->global['back']      = 'admin/surat';
         $data['surat']     = $surat;
         $data['banding']   = SuratPemohon::bandingkan($surat);
         $data['lampiran']  = SuratPemohon::parseLampiran($surat->lampiran);
@@ -63,6 +64,7 @@ class Surat extends BaseController
         $rt    = current_rt();
 
         $this->global['pageTitle'] = 'Surat Keterangan';
+        $this->global['back']      = 'admin/surat/view/' . (int) $id;
         $data['surat']    = $surat;
         $data['pemohon']  = SuratPemohon::dataCetak($surat);
         $data['lampiran'] = SuratPemohon::parseLampiran($surat->lampiran);
