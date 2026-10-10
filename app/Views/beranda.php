@@ -133,6 +133,7 @@ $__tenantPrefix = $__isSlugged ? $rt->slug . '/' : '';
                 <li class="nav-item"><a class="nav-link" href="#tentang-kami">Profil</a></li>
                 <li class="nav-item"><a class="nav-link" href="#berita">Berita RT</a></li>
                 <li class="nav-item"><a class="nav-link" href="#papan-informasi">Papan Informasi</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= base_url($__tenantPrefix . 'layanan') ?>">Layanan</a></li>
                 <li class="nav-item"><a class="nav-link" href="#ketua-rt">Ketua RT</a></li>
                 <li class="nav-item"><a class="nav-link" href="#hubungi-kami">Hubungi Kami</a></li>
             </ul>
@@ -145,7 +146,12 @@ $__tenantPrefix = $__isSlugged ? $rt->slug . '/' : '';
     <div class="container">
         <div class="masthead-heading">Situs Resmi <br> <?= esc($__rtNama) ?> Minomartani</div>
         <div class="masthead-subheading"><?= esc($__rtAlamat) ?></div>
-        <a class="btn btn-primary btn-xl my-3 shadow" href="#tentang-kami">Profil Kami</a>
+        <div class="d-flex flex-wrap justify-content-center gap-3 my-3">
+            <a class="btn btn-primary btn-xl shadow" href="#tentang-kami">Profil Kami</a>
+            <a class="btn btn-outline-light btn-xl shadow" href="<?= base_url($__tenantPrefix . 'layanan') ?>">
+                <i class="fas fa-file-alt me-2"></i> Pengajuan Surat
+            </a>
+        </div>
     </div>
 </header>
 
@@ -249,6 +255,55 @@ $__tenantPrefix = $__isSlugged ? $rt->slug . '/' : '';
                         </div>
                     </div>
                 <?php endforeach ?>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Layanan Warga Online -->
+<section class="page-section" id="layanan-surat">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6 order-lg-2">
+                <h3 class="section-subheading mb-1">LAYANAN MANDIRI</h3>
+                <h2 class="section-heading mb-3">Pengajuan Surat Keterangan Online</h2>
+                <p class="text-muted mb-4" style="line-height: 1.8; font-size: 1.05rem;">
+                    Kini warga <?= esc($__rtNama) ?> dapat mengajukan permohonan Surat Keterangan / Pengantar RT secara mandiri, cepat, dan praktis tanpa antre. Cukup verifikasi alamat dengan PIN rumah, pilih anggota keluarga yang memohon, dan ajukan secara online.
+                </p>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-4 bg-light h-100 border border-light">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-2 me-2 d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; flex-shrink: 0;">
+                                    <i class="fas fa-lock small"></i>
+                                </div>
+                                <strong class="text-dark small">Aman &amp; Terverifikasi</strong>
+                            </div>
+                            <small class="text-muted">Dilindungi PIN unik tiap rumah tangga untuk menjamin keamanan &amp; privasi data.</small>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 rounded-4 bg-light h-100 border border-light">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="rounded-circle bg-success bg-opacity-10 text-success p-2 me-2 d-flex align-items-center justify-content-center" style="width: 34px; height: 34px; flex-shrink: 0;">
+                                    <i class="fas fa-bolt small"></i>
+                                </div>
+                                <strong class="text-dark small">Praktis &amp; Terdata</strong>
+                            </div>
+                            <small class="text-muted">Langsung terhubung ke sistem RT untuk ditinjau dan disetujui pengurus.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-3">
+                    <a class="btn btn-primary rounded-pill px-5 py-3 shadow fw-bold" href="<?= base_url($__tenantPrefix . 'layanan') ?>">
+                        <i class="fas fa-file-signature me-2"></i> Ajukan Surat Sekarang
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 order-lg-1 text-center">
+                <img style="max-height: 380px; width: auto; max-width: 100%;" class="img-fluid" src="<?= base_url('public/home/assets/layanan.svg') ?>" alt="Layanan Surat Pengantar <?= esc($__rtNama) ?>" />
             </div>
         </div>
     </div>

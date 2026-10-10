@@ -3,6 +3,7 @@ $__rt           = (isset($rt) && $rt !== null) ? $rt : current_rt();
 $uri            = service('uri');
 $__isSlugged    = ($uri->getTotalSegments() > 0 && isset($__rt->slug) && $uri->getSegment(1) === $__rt->slug);
 $__homeUrl      = base_url($__isSlugged ? $__rt->slug : '');
+$__tenantPrefix = $__isSlugged ? $__rt->slug . '/' : '';
 ?>
 
 <!-- Fixed Navigation with Solid White Background for Detail/Secondary Pages -->
@@ -19,7 +20,8 @@ $__homeUrl      = base_url($__isSlugged ? $__rt->slug : '');
         color: #495057 !important;
         font-weight: 600;
     }
-    #mainNav .nav-link:hover {
+    #mainNav .nav-link:hover,
+    #mainNav .nav-link.active {
         color: #1A75CF !important;
     }
     #mainNav .navbar-toggler {
@@ -61,6 +63,7 @@ $__homeUrl      = base_url($__isSlugged ? $__rt->slug : '');
                 <li class="nav-item"><a class="nav-link" href="<?= $__homeUrl ?>#tentang-kami">Profil</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= $__homeUrl ?>#berita">Berita</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= $__homeUrl ?>#papan-informasi">Pengumuman</a></li>
+                <li class="nav-item"><a class="nav-link <?= strpos(current_url(), '/layanan') !== false ? 'active' : '' ?>" href="<?= base_url($__tenantPrefix . 'layanan') ?>">Layanan</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= $__homeUrl ?>#hubungi-kami">Hubungi Kami</a></li>
             </ul>
         </div>
