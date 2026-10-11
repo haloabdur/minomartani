@@ -135,6 +135,17 @@
         </li>
         <?php endif ?>
 
+        <?php if (auth()->user() && auth()->user()->inGroup('superadmin', 'admin')): ?>
+        <li class="nav-item">
+            <a href="<?= base_url('admin/aktivitas') ?>" class="nav-link <?= (service('uri')->getTotalSegments() >= 2 && service('uri')->getSegment(2) === 'aktivitas') ? 'active' : '' ?>">
+                <i class="nav-icon fas fa-history"></i>
+                <p>
+                    Log Aktivitas
+                </p>
+            </a>
+        </li>
+        <?php endif ?>
+
         <?php if (auth()->user() && auth()->user()->can('menu.rekap')): ?>
         <li class="nav-item">
             <a href="<?= base_url('admin/rekap') ?>" class="nav-link">

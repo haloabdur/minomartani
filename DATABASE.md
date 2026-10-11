@@ -126,6 +126,23 @@ PK: `id_papan` (AI). Index: `id_rt`. Engine/charset: InnoDB, `utf8mb4`/`utf8mb4_
 | `timestamp` | timestamp | NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp() |
 | `id_rt` | int(11) | NOT NULL DEFAULT 1 |
 
+### `activity_log` — Log aktivitas ubah data (audit trail)
+PK: `id` (AI). Index: `(id_rt, created_at)`, `(module, record_id)`. Engine/charset: InnoDB, `utf8mb4`/`utf8mb4_general_ci`. Diisi otomatis oleh trait `App\Models\Concerns\Auditable` (saat ini `WargaModel`); tidak pernah dihapus/di-purge. `user_name` dan `record_label` adalah snapshot supaya log tetap terbaca setelah user/data dihapus.
+
+| Kolom | Tipe | Nullable / Default |
+|---|---|---|
+| `id` | bigint(20) unsigned | PK, AUTO_INCREMENT |
+| `id_rt` | int(11) | NULL |
+| `user_id` | int(11) unsigned | NULL — NULL bila tanpa user login (CLI/sistem) |
+| `user_name` | varchar(100) | NOT NULL DEFAULT 'system' |
+| `module` | varchar(50) | NOT NULL — mis. `warga` |
+| `record_id` | int(11) | NOT NULL — PK baris yang diubah |
+| `record_label` | varchar(255) | NULL — mis. nama warga |
+| `action` | varchar(10) | NOT NULL — `create` / `update` / `delete` |
+| `changes` | longtext | NULL — JSON `{field: [lama, baru]}` |
+| `ip_address` | varchar(45) | NULL |
+| `created_at` | timestamp | NOT NULL DEFAULT current_timestamp() |
+
 ### `surat` — Permintaan surat/pengantar
 PK: `id_surat` (AI). Index: `id_rt`. Engine/charset: InnoDB, `latin1`/`latin1_swedish_ci`.
 

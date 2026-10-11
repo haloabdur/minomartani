@@ -8,7 +8,7 @@ use CodeIgniter\Pager\PagerRenderer;
 $pager->setSurroundCount(2);
 ?>
 
-<nav aria-label="Navigasi Halaman Berita">
+<nav aria-label="Navigasi Halaman">
     <ul class="pagination justify-content-center mb-0 flex-wrap">
         <?php if ($pager->hasPrevious()) : ?>
             <li class="page-item">

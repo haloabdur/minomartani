@@ -156,6 +156,13 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->post('check-migrations', 'Admin\DbSync::checkMigrations');
     });
 
+    // Log aktivitas (siapa mengubah data apa), per tenant. Hanya group
+    // 'admin' (RT) dan 'superadmin'; akun 'rw' tidak punya id_rt sehingga
+    // tidak ikut. Query selalu difilter current_rt_id().
+    $routes->group('aktivitas', ['filter' => 'group:superadmin,admin'], function ($routes) {
+        $routes->get('/', 'Admin\Aktivitas::index');
+    });
+
     // CI error log viewer (Superadmin only)
     $routes->group('logs', ['filter' => 'group:superadmin'], function ($routes) {
         $routes->get('/', 'Admin\Logs::index');

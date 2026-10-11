@@ -368,7 +368,12 @@
 					<i class="fas fa-arrow-left mr-1"></i> Kembali ke Daftar Warga
 				</a>
 				<div class="ml-auto">
-					<a href="<?php echo base_url('admin/warga/edit/' . $warga->id_warga) ?>" class="btn btn-primary px-3 my-1">
+					<?php if (auth()->user()->inGroup('superadmin', 'admin')): ?>
+							<a href="<?php echo base_url('admin/aktivitas?module=warga&record_id=' . $warga->id_warga) ?>" class="btn btn-light border px-3 my-1 mr-1">
+								<i class="fas fa-history mr-1"></i> Riwayat
+							</a>
+						<?php endif ?>
+						<a href="<?php echo base_url('admin/warga/edit/' . $warga->id_warga) ?>" class="btn btn-primary px-3 my-1">
 						<i class="fas fa-edit mr-1"></i> Ubah Data Warga
 					</a>
 				</div>

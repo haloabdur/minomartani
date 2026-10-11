@@ -2,11 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 use CodeIgniter\Model;
 
 class WargaModel extends Model
 {
+    use Auditable;
+
+    protected string $auditModule        = 'warga';
+    protected string $auditLabelField    = 'nama_warga';
+    protected array  $auditIgnoredFields = ['id_alamat', 'id_rt'];
+
     protected $table         = 'warga';
     protected $primaryKey    = 'id_warga';
     protected $allowedFields = [

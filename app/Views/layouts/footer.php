@@ -125,8 +125,11 @@
             return this.href == url;
         }).parents("li.treeview-menu").addClass('menu-open');
 
-        // Global loading animation on form submit
+        // Global loading animation on form submit (POST only)
         $('form').on('submit', function() {
+            if ($(this).attr('method') && $(this).attr('method').toLowerCase() === 'get') {
+                return;
+            }
             var btn = $(this).find('button[type="submit"]');
             btn.prop('disabled', true);
             btn.html('<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...');
