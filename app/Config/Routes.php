@@ -95,6 +95,16 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->get('delete/(:num)', 'Admin\Inventaris::delete/$1');
     });
 
+    // Kucing - per-user menu access, see Config\AuthGroups + Admin\Users
+    $routes->group('kucing', ['filter' => 'menuaccess:kucing'], function ($routes) {
+        $routes->get('/', 'Admin\Kucing::index');
+        $routes->get('add', 'Admin\Kucing::add');
+        $routes->post('store', 'Admin\Kucing::store');
+        $routes->get('edit/(:num)', 'Admin\Kucing::edit/$1');
+        $routes->post('update/(:num)', 'Admin\Kucing::update/$1');
+        $routes->get('delete/(:num)', 'Admin\Kucing::delete/$1');
+    });
+
     // Pekerjaan - shared lookup table (no id_rt), so edits affect every
     // tenant; restrict to the 'superadmin' Shield group like other
     // cross-tenant master data (users, tenants, dbsync)
@@ -228,6 +238,7 @@ $routes->get('(:segment)/detail/(:any)', 'Home::alamat/$1/$2');
 $routes->get('(:segment)/berita', 'Home::daftarBerita/$1');
 $routes->get('(:segment)/berita/(:any)', 'Home::berita/$1/$2');
 $routes->get('(:segment)/papan-informasi/(:any)', 'Home::papanInformasi/$1/$2');
+$routes->get('(:segment)/kucing', 'Home::daftarKucing/$1');
 $routes->get('(:segment)/layanan', 'Layanan::index/$1');
 $routes->post('(:segment)/layanan/verifikasi', 'Layanan::verifikasi/$1');
 $routes->get('(:segment)/layanan/pilih', 'Layanan::pilih/$1');

@@ -36,6 +36,7 @@ if (! function_exists('default_admin_route')) {
             : [
                 'menu.warga'      => 'admin/warga',
                 'menu.inventaris' => 'admin/inventaris',
+                'menu.kucing'     => 'admin/kucing',
                 'menu.alamat'     => 'admin/alamat',
                 'menu.berita'     => 'admin/berita',
                 'menu.surat'      => 'admin/surat',

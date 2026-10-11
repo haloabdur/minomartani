@@ -85,6 +85,7 @@ class AuthGroups extends ShieldAuthGroups
         'beta.access'         => 'Can access beta-level features',
         'menu.warga'          => 'Can access the Warga menu',
         'menu.inventaris'     => 'Can access the Inventaris RT menu',
+        'menu.kucing'         => 'Can access the Pendataan Kucing menu',
         'menu.alamat'         => 'Can access the Alamat menu',
         'menu.berita'         => 'Can access the Berita menu',
         'menu.papan_informasi' => 'Can access the Papan Informasi menu',

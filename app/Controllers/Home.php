@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\AlamatModel;
 use App\Models\BeritaFotoModel;
 use App\Models\BeritaModel;
+use App\Models\KucingModel;
 use App\Models\PapanInformasiModel;
 use App\Models\RwModel;
 use App\Models\WargaModel;
@@ -114,6 +115,26 @@ class Home extends BaseController
         $data['cari']    = $cari;
 
         return $this->load_view('berita_list', $data);
+    }
+
+    public function daftarKucing(?string $slug = null)
+    {
+        $this->resolveTenant($slug);
+
+        $cari        = trim((string) $this->request->getGet('cari'));
+        $kucingModel = model(KucingModel::class);
+
+        // Not rolled out to this RT yet: no cats registered means the page
+        // doesn't exist (a search with no hits still renders the page).
+        if ($kucingModel->jumlah() === 0) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $data['rt']      = current_rt();
+        $data['kucings'] = $kucingModel->publik($cari);
+        $data['cari']    = $cari;
+
+        return $this->load_view('kucing_list', $data);
     }
 
     public function berita($param1, $param2 = null)

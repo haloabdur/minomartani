@@ -99,6 +99,28 @@ final class MenuAccessTest extends CIUnitTestCase
         $response->assertRedirectTo('admin/warga');
     }
 
+    public function testAdminWithoutKucingPermissionIsBlockedFromKucing(): void
+    {
+        $admin = $this->createAdmin('nokucing', ['menu.warga']);
+
+        $response = $this->actingAs($admin)
+            ->withSession(['tenant_rt_id' => $this->rtId])
+            ->get('admin/kucing');
+
+        $response->assertRedirectTo('admin/warga');
+    }
+
+    public function testAdminWithKucingPermissionCanReachKucing(): void
+    {
+        $admin = $this->createAdmin('haskucing', ['menu.kucing']);
+
+        $response = $this->actingAs($admin)
+            ->withSession(['tenant_rt_id' => $this->rtId])
+            ->get('admin/kucing');
+
+        $response->assertOK();
+    }
+
     public function testSuperadminReachesWargaWithoutExplicitPermission(): void
     {
         $userModel = model(UserModel::class);

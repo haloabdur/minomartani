@@ -69,6 +69,17 @@
         </li>
         <?php endif ?>
 
+        <?php if (auth()->user()->can('menu.kucing')): ?>
+        <li class="nav-item">
+            <a href="<?= base_url('admin/kucing') ?>" class="nav-link">
+                <i class="nav-icon fas fa-cat"></i>
+                <p>
+                    Pendataan Kucing
+                </p>
+            </a>
+        </li>
+        <?php endif ?>
+
         <li class="nav-header">MASTER DATA</li>
         <?php if (auth()->user()->can('menu.berita')): ?>
         <li class="nav-item">

@@ -15,7 +15,7 @@ Terakhir diperbarui: 2026-07-15.
 
 ## Ringkasan arsitektur
 
-- **Multi-tenant**: hierarki `rw` → `rt`. Tabel data milik tenant (`warga`, `alamat`, `berita`, `berita_foto`, `surat`, `inventaris`, `dawis`, `ketua`, `papan_informasi`) dan `kesehatan_kegiatan`/`kesehatan_catatan`/`presensi_acara`/`presensi_kehadiran` punya kolom `id_rt` (`kesehatan_kegiatan` dan `presensi_acara` juga bisa `id_rw` untuk kegiatan/acara level RW). Tabel lookup (`pekerjaan`, `status_keluarga`, `status_penduduk`) global, tanpa `id_rt`.
+- **Multi-tenant**: hierarki `rw` → `rt`. Tabel data milik tenant (`warga`, `alamat`, `berita`, `berita_foto`, `surat`, `inventaris`, `kucing`, `dawis`, `ketua`, `papan_informasi`) dan `kesehatan_kegiatan`/`kesehatan_catatan`/`presensi_acara`/`presensi_kehadiran` punya kolom `id_rt` (`kesehatan_kegiatan` dan `presensi_acara` juga bisa `id_rw` untuk kegiatan/acara level RW). Tabel lookup (`pekerjaan`, `status_keluarga`, `status_penduduk`) global, tanpa `id_rt`.
 - **Auth**: CodeIgniter Shield (`users`, `auth_identities`, dst). Tabel `user` (legacy CI3) diarsipkan, tidak dipakai aplikasi.
 - **Charset campuran**: tabel era CI3 pakai `latin1`/`latin1_swedish_ci` (`alamat`, `dawis`, `ketua`, `pekerjaan`, `status_keluarga`, `status_penduduk`, `surat`, `user`, `warga`); tabel baru (dan `berita`, dikonversi via `ConvertBeritaToUtf8mb4` biar emoji gak kesimpen jadi `?`) pakai `utf8mb4` (`auth_*`, `berita`, `berita_foto`, `kesehatan_*`, `presensi_*`, `papan_informasi`, `rt`, `rw`, `settings`, `users`); `inventaris` pakai `utf8mb3`.
 - **FK constraint nyata di DB cuma sedikit**: `dawis.id_warga → warga.id_warga`, `berita_foto.id_berita → berita.id_berita` (`ON DELETE CASCADE`), dan rantai `auth_*.user_id → users.id` (semua `ON DELETE CASCADE`). Semua relasi tenant/lookup lainnya (warga→alamat, warga→pekerjaan, surat→warga, dst) ditegakkan di query aplikasi, bukan constraint DB.
@@ -184,6 +184,27 @@ PK: `id` (AI, unsigned). Index: `id_rt`. Engine/charset: InnoDB, `utf8mb3`/`utf8
 | `created_at` | datetime | NULL |
 | `updated_at` | datetime | NULL |
 | `id_rt` | int(11) | NOT NULL DEFAULT 1 |
+
+### `kucing` — Pendataan kucing warga
+PK: `id_kucing` (AI, unsigned). Index: `id_rt`, `id_warga`. Tanpa FK (relasi ke `warga` ditegakkan di query aplikasi, `KucingModel::pemilikValid()`). Engine/charset: InnoDB, `utf8mb4`/`utf8mb4_general_ci`. Dibuat via `2026-10-11-090000_CreateKucingTable.php`.
+
+Kucing yang tidak terdaftar dianggap kucing liar (kesepakatan rapat RT). Kucing yang mati/hilang/pindah **dihapus** (hard delete + foto R2/lokal ikut dihapus), jadi tidak ada kolom status. Fitur baru ada di RT 29: menu `menu.kucing` hanya di-backfill ke akun `admin` dengan `users.id_rt = 1` (`2026-10-11-090100_BackfillKucingMenuPermission.php`), dan tidak dicentang default saat membuat user baru. Halaman publik `/{slug}/kucing` hanya menampilkan foto, nama, ciri, dan bagian jalan dari `alamat.alamat` (`jalan/nomor` → `jalan`); nama pemilik tidak pernah dikirim ke publik.
+
+| Kolom | Tipe | Nullable / Default |
+|---|---|---|
+| `id_kucing` | int(11) unsigned | PK, AUTO_INCREMENT |
+| `id_rt` | int(11) | NOT NULL DEFAULT 1 |
+| `id_warga` | int(11) | NOT NULL — pemilik, `warga.id_warga` |
+| `nama` | varchar(100) | NOT NULL |
+| `foto` | varchar(255) | NULL — satu foto, URL R2 penuh atau `public/kucing/<file>` (fallback) |
+| `warna_ciri` | varchar(255) | NULL |
+| `jenis_kelamin` | varchar(10) | NULL — `jantan`/`betina` |
+| `steril` | tinyint(1) | NOT NULL DEFAULT 0 |
+| `vaksin` | tinyint(1) | NOT NULL DEFAULT 0 |
+| `created_at` | datetime | NULL |
+| `updated_at` | datetime | NULL |
+
+Catatan: aplikasi saat ini **tidak punya fitur hapus warga** (hanya mengubah `status_warga`/`is_hidup`), jadi aturan "tolak hapus warga yang masih punya kucing" belum punya titik penerapan. `KucingModel::countByWarga()` disediakan kalau fitur hapus warga ditambahkan nanti.
 
 ### `dawis` — Kelompok dasa wisma
 PK: `id_dawis` (AI). Index: `id_warga`, `id_rt`. FK: `id_warga → warga.id_warga` (`dawis_ibfk_1`). Engine/charset: InnoDB, `latin1`/`latin1_swedish_ci`.

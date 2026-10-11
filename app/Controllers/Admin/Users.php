@@ -17,6 +17,7 @@ class Users extends BaseController
     private const ADMIN_MENU_PERMISSIONS = [
         'menu.warga'           => 'Warga',
         'menu.inventaris'      => 'Inventaris RT',
+        'menu.kucing'          => 'Pendataan Kucing',
         'menu.alamat'          => 'Alamat',
         'menu.berita'          => 'Berita',
         'menu.papan_informasi' => 'Papan Informasi',
@@ -95,8 +96,10 @@ class Users extends BaseController
         // this user. ACTION_PERMISSIONS is deliberately absent - data
         // export has to be granted consciously, not inherited from the
         // default.
+        // 'menu.kucing' is also left unchecked: the feature is RT 29 only
+        // for now, so it must be ticked deliberately for other RTs.
         $data['userPermissions'] = array_merge(
-            array_keys(self::ADMIN_MENU_PERMISSIONS),
+            array_diff(array_keys(self::ADMIN_MENU_PERMISSIONS), ['menu.kucing']),
             array_keys(self::RW_MENU_PERMISSIONS),
             array_keys(self::SHARED_MENU_PERMISSIONS)
         );
