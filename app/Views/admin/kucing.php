@@ -1,54 +1,72 @@
 <div class="container-fluid">
-    <div class="row mb-3">
-        <div class="col"><a href="<?php echo base_url('admin/kucing/add') ?>" class="btn btn-primary">Tambah Kucing</a></div>
-    </div>
-
     <div class="row">
         <div class="col-12">
-            <div class="card">
+            <div class="card card-outline card-primary shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <h3 class="card-title font-weight-bold text-dark mb-0">
+                            <i class="fas fa-cat text-primary mr-2"></i> Daftar Kucing Terdaftar
+                        </h3>
+                        <a href="<?= base_url('admin/kucing/add') ?>" class="btn btn-primary btn-sm font-weight-bold shadow-sm">
+                            <i class="fas fa-plus mr-1"></i> Tambah Kucing
+                        </a>
+                    </div>
+                </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-striped datatable">
+                        <table class="table table-bordered table-striped datatable align-middle">
                             <thead>
                                 <tr>
-                                    <th width="1">No.</th>
-                                    <th>Foto</th>
-                                    <th>Nama</th>
+                                    <th width="1" class="text-center">No.</th>
+                                    <th width="80" class="text-center">Foto</th>
+                                    <th>Nama Kucing</th>
                                     <th>Pemilik</th>
-                                    <th>Ciri-ciri</th>
-                                    <th>Kelamin</th>
-                                    <th>Steril</th>
-                                    <th>Vaksin</th>
-                                    <th>Action</th>
+                                    <th>Ciri-ciri Fisik</th>
+                                    <th class="text-center">Kelamin</th>
+                                    <th class="text-center">Steril</th>
+                                    <th class="text-center">Vaksin</th>
+                                    <th width="90" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach ($kucings as $i => $k): ?>
                                     <tr>
-                                        <td><?= $i + 1 ?></td>
-                                        <td>
+                                        <td class="text-center align-middle"><?= $i + 1 ?></td>
+                                        <td class="text-center align-middle">
                                             <?php if (!empty($k->foto)): ?>
-                                                <img src="<?= foto_url($k->foto, 'kucing') ?>" alt="<?= esc($k->nama) ?>" style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;" onclick="showImage('<?= foto_url($k->foto, 'kucing') ?>', '<?= esc($k->nama, 'js') ?>')">
+                                                <img src="<?= foto_url($k->foto, 'kucing') ?>" alt="<?= esc($k->nama) ?>" style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;" class="rounded border shadow-sm" onclick="showImage('<?= foto_url($k->foto, 'kucing') ?>', '<?= esc($k->nama, 'js') ?>')">
                                             <?php else: ?>
-                                                <span class="text-muted">No Image</span>
+                                                <span class="badge badge-light border text-muted">No Image</span>
                                             <?php endif; ?>
                                         </td>
-                                        <td><?= esc($k->nama) ?></td>
-                                        <td>
-                                            <?= esc($k->nama_warga ?? '-') ?>
+                                        <td class="align-middle font-weight-bold"><?= esc($k->nama) ?></td>
+                                        <td class="align-middle">
+                                            <span class="text-dark font-weight-bold"><?= esc($k->nama_warga ?? '-') ?></span>
                                             <?php if (!empty($k->alamat)): ?>
-                                                <br><span class="text-muted small"><?= esc($k->alamat) ?></span>
+                                                <br><span class="text-muted small"><i class="fas fa-map-marker-alt text-danger mr-1"></i><?= esc($k->alamat) ?></span>
                                             <?php endif; ?>
                                         </td>
-                                        <td><?= esc($k->warna_ciri ?? '-') ?></td>
-                                        <td><?= esc(ucfirst($k->jenis_kelamin ?? '-')) ?></td>
-                                        <td><?= $k->steril ? 'Ya' : 'Belum' ?></td>
-                                        <td><?= $k->vaksin ? 'Ya' : 'Belum' ?></td>
-                                        <td>
-                                            <a class="text-success mr-1" href="<?= base_url('admin/kucing/edit/' . $k->id_kucing) ?>">
+                                        <td class="align-middle"><?= esc($k->warna_ciri ?? '-') ?></td>
+                                        <td class="text-center align-middle">
+                                            <?php if (($k->jenis_kelamin ?? '') === 'jantan'): ?>
+                                                <span class="badge badge-primary"><i class="fas fa-mars mr-1"></i>Jantan</span>
+                                            <?php elseif (($k->jenis_kelamin ?? '') === 'betina'): ?>
+                                                <span class="badge badge-danger"><i class="fas fa-venus mr-1"></i>Betina</span>
+                                            <?php else: ?>
+                                                <span class="text-muted">-</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <?= $k->steril ? '<span class="badge badge-success"><i class="fas fa-check mr-1"></i>Ya</span>' : '<span class="badge badge-light border text-muted">Belum</span>' ?>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <?= $k->vaksin ? '<span class="badge badge-info"><i class="fas fa-shield-alt mr-1"></i>Ya</span>' : '<span class="badge badge-light border text-muted">Belum</span>' ?>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <a class="btn btn-sm btn-outline-info mr-1" href="<?= base_url('admin/kucing/edit/' . $k->id_kucing) ?>" title="Ubah Data">
                                                 <i class="far fa-edit"></i>
                                             </a>
-                                            <a class="text-danger" href="<?= base_url('admin/kucing/delete/' . $k->id_kucing) ?>" onclick="return confirm('Apakah anda yakin ingin menghapus data ini?')">
+                                            <a class="btn btn-sm btn-outline-danger" href="<?= base_url('admin/kucing/delete/' . $k->id_kucing) ?>" onclick="return confirm('Apakah anda yakin ingin menghapus data ini?')" title="Hapus Data">
                                                 <i class="far fa-trash-alt"></i>
                                             </a>
                                         </td>

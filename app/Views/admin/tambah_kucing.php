@@ -1,15 +1,36 @@
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <form action="<?php echo base_url('admin/kucing/store') ?>" method="post" enctype="multipart/form-data">
-                        <?= csrf_field() ?>
-                        <?= view('admin/_form_kucing', ['pemilik' => $pemilik]) ?>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
-                    </form>
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-12">
+            <div class="card card-outline card-primary shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <h3 class="card-title font-weight-bold text-dark mb-0">
+                            <i class="fas fa-cat text-primary mr-2"></i> Tambah Data Kucing
+                        </h3>
+                        <a href="<?= base_url('admin/kucing') ?>" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left mr-1"></i> Kembali ke Daftar Kucing
+                        </a>
+                    </div>
                 </div>
+
+                <form action="<?= base_url('admin/kucing/store') ?>" method="post" enctype="multipart/form-data">
+                    <?= csrf_field() ?>
+                    <div class="card-body">
+                        <?= view('admin/_form_kucing', ['pemilik' => $pemilik]) ?>
+                    </div>
+                    <div class="card-footer bg-white border-top py-3">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <a href="<?= base_url('admin/kucing') ?>" class="btn btn-default px-4">
+                                <i class="fas fa-times mr-1"></i> Batal
+                            </a>
+                            <button type="submit" class="btn btn-primary px-5 font-weight-bold shadow-sm">
+                                <i class="fas fa-save mr-1"></i> Simpan Data Kucing
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+

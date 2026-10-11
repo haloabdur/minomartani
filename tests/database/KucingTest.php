@@ -132,4 +132,21 @@ final class KucingTest extends CIUnitTestCase
         $this->assertCount(0, (new KucingModel())->publik('zzz'));
         $this->assertCount(1, (new KucingModel())->publik('mim'));
     }
+
+    public function testControllerRulesRequireOwnerNameAndPhotoOnCreate(): void
+    {
+        $controller = new \App\Controllers\Admin\Kucing();
+        $ref = new \ReflectionMethod($controller, 'rules');
+        $ref->setAccessible(true);
+
+        $createRules = $ref->invoke($controller, true);
+        $this->assertStringContainsString('required', $createRules['id_warga']);
+        $this->assertStringContainsString('required', $createRules['nama']);
+        $this->assertStringContainsString('uploaded[foto]', $createRules['foto']);
+        $this->assertStringContainsString('required', $createRules['jenis_kelamin']);
+
+        $updateRules = $ref->invoke($controller, false);
+        $this->assertStringContainsString('permit_empty', $updateRules['foto']);
+    }
 }
+

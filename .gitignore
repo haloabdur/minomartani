@@ -136,3 +136,5 @@ _modules/*
 /phpunit*.xml
 
 .ua/*
+# Fallback lokal upload foto kucing (utama di R2)
+public/public/kucing/

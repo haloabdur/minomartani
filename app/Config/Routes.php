@@ -11,6 +11,7 @@ $routes->get('/', 'Home::index');
 $routes->get('detail/(:any)', 'Home::alamat/$1');
 $routes->get('berita', 'Home::daftarBerita');
 $routes->get('berita/(:any)', 'Home::berita/$1');
+$routes->get('kucing', 'Home::daftarKucing');
 $routes->get('papan-informasi/(:any)', 'Home::papanInformasi/$1');
 $routes->get('layanan', 'Layanan::index');
 $routes->post('layanan/verifikasi', 'Layanan::verifikasi');
