@@ -15,7 +15,7 @@ Terakhir diperbarui: 2026-07-15.
 
 ## Ringkasan arsitektur
 
-- **Multi-tenant**: hierarki `rw` → `rt`. Tabel data milik tenant (`warga`, `alamat`, `berita`, `berita_foto`, `surat`, `inventaris`, `kucing`, `dawis`, `ketua`, `papan_informasi`) dan `kesehatan_kegiatan`/`kesehatan_catatan`/`presensi_acara`/`presensi_kehadiran` punya kolom `id_rt` (`kesehatan_kegiatan` dan `presensi_acara` juga bisa `id_rw` untuk kegiatan/acara level RW). Tabel lookup (`pekerjaan`, `status_keluarga`, `status_penduduk`) global, tanpa `id_rt`.
+- **Multi-tenant**: hierarki `rw` → `rt`. Tabel data milik tenant (`warga`, `alamat`, `berita`, `berita_foto`, `surat`, `inventaris`, `kucing`, `dawis`, `ketua`, `papan_informasi`) dan `kesehatan_kegiatan`/`kesehatan_catatan`/`presensi_acara`/`presensi_kehadiran` punya kolom `id_rt` (`kesehatan_kegiatan` dan `presensi_acara` juga bisa `id_rw` untuk kegiatan/acara level RW). `struktur_organisasi` punya `id_rt` **atau** `id_rw` tergantung kolom `level`. Tabel lookup (`pekerjaan`, `status_keluarga`, `status_penduduk`) global, tanpa `id_rt`.
 - **Auth**: CodeIgniter Shield (`users`, `auth_identities`, dst). Tabel `user` (legacy CI3) diarsipkan, tidak dipakai aplikasi.
 - **Charset campuran**: tabel era CI3 pakai `latin1`/`latin1_swedish_ci` (`alamat`, `dawis`, `ketua`, `pekerjaan`, `status_keluarga`, `status_penduduk`, `surat`, `user`, `warga`); tabel baru (dan `berita`, dikonversi via `ConvertBeritaToUtf8mb4` biar emoji gak kesimpen jadi `?`) pakai `utf8mb4` (`auth_*`, `berita`, `berita_foto`, `kesehatan_*`, `presensi_*`, `papan_informasi`, `rt`, `rw`, `settings`, `users`); `inventaris` pakai `utf8mb3`.
 - **FK constraint nyata di DB cuma sedikit**: `dawis.id_warga → warga.id_warga`, `berita_foto.id_berita → berita.id_berita` (`ON DELETE CASCADE`), dan rantai `auth_*.user_id → users.id` (semua `ON DELETE CASCADE`). Semua relasi tenant/lookup lainnya (warga→alamat, warga→pekerjaan, surat→warga, dst) ditegakkan di query aplikasi, bukan constraint DB.
@@ -205,6 +205,24 @@ Kucing yang tidak terdaftar dianggap kucing liar (kesepakatan rapat RT). Kucing 
 | `updated_at` | datetime | NULL |
 
 Catatan: aplikasi saat ini **tidak punya fitur hapus warga** (hanya mengubah `status_warga`/`is_hidup`), jadi aturan "tolak hapus warga yang masih punya kucing" belum punya titik penerapan. `KucingModel::countByWarga()` disediakan kalau fitur hapus warga ditambahkan nanti.
+
+### `struktur_organisasi` — Struktur pengurus RT dan RW
+PK: `id_struktur` (AI, unsigned). Index: `id_rt`, `id_rw`, `id_warga`, `id_atasan`. Tanpa FK (relasi ke `warga` dan self-reference `id_atasan` ditegakkan di `StrukturOrganisasiModel`). Engine/charset: InnoDB, `utf8mb4`/`utf8mb4_general_ci`. Dibuat via `2026-10-12-090000_CreateStrukturOrganisasiTable.php`; permission `menu.struktur` di-backfill ke semua akun `admin` lewat `2026-10-12-090100_BackfillStrukturMenuPermission.php`.
+
+Satu baris = satu jabatan yang dipegang satu warga; rangkap jabatan = beberapa baris dengan `id_warga` sama. Kepemilikan dua level seperti `presensi_acara`: `level = 'rt'` mengisi `id_rt` (`id_rw` NULL, warga harus dari RT itu), `level = 'rw'` mengisi `id_rw` (`id_rt` NULL, warga boleh dari semua RT aktif di RW itu; dibagi bersama semua RT di RW dan boleh diubah admin RT mana pun di RW tsb). `id_atasan` selalu menunjuk baris sepelevel dan sepemilik (NULL = akar); akar level `rt` digantung di bawah akar `rw` pertama hanya pada visualisasi, bukan di data. Menghapus jabatan memindahkan bawahannya ke atasan jabatan itu. Halaman publik `/struktur` (atau `/{slug}/struktur`) 404 bila RT dan RW induknya belum punya data.
+
+| Kolom | Tipe | Nullable / Default |
+|---|---|---|
+| `id_struktur` | int(11) unsigned | PK, AUTO_INCREMENT |
+| `level` | varchar(2) | NOT NULL — `rt` / `rw` |
+| `id_rt` | int(11) | NULL — terisi bila `level = 'rt'` |
+| `id_rw` | int(11) | NULL — terisi bila `level = 'rw'` |
+| `id_warga` | int(11) | NOT NULL — `warga.id_warga` |
+| `jabatan` | varchar(100) | NOT NULL — teks bebas |
+| `id_atasan` | int(11) unsigned | NULL — `struktur_organisasi.id_struktur` |
+| `urutan` | int(11) | NOT NULL DEFAULT 0 |
+| `created_at` | datetime | NULL |
+| `updated_at` | datetime | NULL |
 
 ### `dawis` — Kelompok dasa wisma
 PK: `id_dawis` (AI). Index: `id_warga`, `id_rt`. FK: `id_warga → warga.id_warga` (`dawis_ibfk_1`). Engine/charset: InnoDB, `latin1`/`latin1_swedish_ci`.
@@ -510,3 +528,4 @@ Auth CI3 lama, digantikan Shield (lihat migration `MigrateLegacyUsersToShield.ph
 - `kesehatan_catatan.id_kegiatan → kesehatan_kegiatan.id_kegiatan` / `kesehatan_catatan.id_warga → warga.id_warga` / `kesehatan_catatan.id_rt → rt.id_rt`
 - `presensi_acara.id_rt → rt.id_rt` / `presensi_acara.id_rw → rw.id_rw`
 - `presensi_kehadiran.id_acara → presensi_acara.id_acara` / `presensi_kehadiran.id_warga → warga.id_warga` / `presensi_kehadiran.id_rt → rt.id_rt`
+- `struktur_organisasi.id_rt → rt.id_rt` / `struktur_organisasi.id_rw → rw.id_rw` / `struktur_organisasi.id_warga → warga.id_warga` / `struktur_organisasi.id_atasan → struktur_organisasi.id_struktur`

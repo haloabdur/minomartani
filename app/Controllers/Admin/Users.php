@@ -22,6 +22,7 @@ class Users extends BaseController
         'menu.berita'          => 'Berita',
         'menu.papan_informasi' => 'Papan Informasi',
         'menu.ketua'           => 'Ketua RT',
+        'menu.struktur'        => 'Struktur Organisasi',
         'menu.surat'           => 'Surat (Layanan)',
     ];
 

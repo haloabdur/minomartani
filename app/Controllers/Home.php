@@ -8,6 +8,7 @@ use App\Models\BeritaModel;
 use App\Models\KucingModel;
 use App\Models\PapanInformasiModel;
 use App\Models\RwModel;
+use App\Models\StrukturOrganisasiModel;
 use App\Models\WargaModel;
 
 class Home extends BaseController
@@ -135,6 +136,24 @@ class Home extends BaseController
         $data['cari']    = $cari;
 
         return $this->load_view('kucing_list', $data);
+    }
+
+    public function struktur(?string $slug = null)
+    {
+        $this->resolveTenant($slug);
+
+        $model = model(StrukturOrganisasiModel::class);
+        $tree  = $model->tree();
+
+        // Not rolled out to this RT/RW yet: no page (same as daftarKucing).
+        if (! $tree['has_data']) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $data['rt']   = current_rt();
+        $data['tree'] = $tree;
+
+        return $this->load_view('struktur_list', $data);
     }
 
     public function berita($param1, $param2 = null)
