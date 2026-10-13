@@ -12,6 +12,7 @@ $routes->get('detail/(:any)', 'Home::alamat/$1');
 $routes->get('berita', 'Home::daftarBerita');
 $routes->get('berita/(:any)', 'Home::berita/$1');
 $routes->get('kucing', 'Home::daftarKucing');
+$routes->get('struktur', 'Home::struktur');
 $routes->get('papan-informasi/(:any)', 'Home::papanInformasi/$1');
 $routes->get('layanan', 'Layanan::index');
 $routes->post('layanan/verifikasi', 'Layanan::verifikasi');
@@ -104,6 +105,17 @@ $routes->group('admin', ['filter' => ['session', 'tenant']], function ($routes) 
         $routes->get('edit/(:num)', 'Admin\Kucing::edit/$1');
         $routes->post('update/(:num)', 'Admin\Kucing::update/$1');
         $routes->get('delete/(:num)', 'Admin\Kucing::delete/$1');
+    });
+
+    // Struktur Organisasi RT & RW - per-user menu access, see Config\AuthGroups + Admin\Users.
+    // Delete is POST (CSRF-protected), unlike the legacy GET deletes above.
+    $routes->group('struktur', ['filter' => 'menuaccess:struktur'], function ($routes) {
+        $routes->get('/', 'Admin\Struktur::index');
+        $routes->get('add/(:segment)', 'Admin\Struktur::add/$1');
+        $routes->post('store', 'Admin\Struktur::store');
+        $routes->get('edit/(:num)', 'Admin\Struktur::edit/$1');
+        $routes->post('update/(:num)', 'Admin\Struktur::update/$1');
+        $routes->post('delete/(:num)', 'Admin\Struktur::delete/$1');
     });
 
     // Pekerjaan - shared lookup table (no id_rt), so edits affect every
@@ -240,6 +252,7 @@ $routes->get('(:segment)/berita', 'Home::daftarBerita/$1');
 $routes->get('(:segment)/berita/(:any)', 'Home::berita/$1/$2');
 $routes->get('(:segment)/papan-informasi/(:any)', 'Home::papanInformasi/$1/$2');
 $routes->get('(:segment)/kucing', 'Home::daftarKucing/$1');
+$routes->get('(:segment)/struktur', 'Home::struktur/$1');
 $routes->get('(:segment)/layanan', 'Layanan::index/$1');
 $routes->post('(:segment)/layanan/verifikasi', 'Layanan::verifikasi/$1');
 $routes->get('(:segment)/layanan/pilih', 'Layanan::pilih/$1');

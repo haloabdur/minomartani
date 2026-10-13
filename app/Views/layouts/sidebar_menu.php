@@ -124,6 +124,17 @@
             </a>
         </li>
         <?php endif ?>
+
+        <?php if (auth()->user()->can('menu.struktur')): ?>
+        <li class="nav-item">
+            <a href="<?= base_url('admin/struktur') ?>" class="nav-link">
+                <i class="nav-icon fas fa-sitemap"></i>
+                <p>
+                    Struktur Organisasi
+                </p>
+            </a>
+        </li>
+        <?php endif ?>
         <?php endif ?>
 
         <li class="nav-header">DATA RT/RW</li>

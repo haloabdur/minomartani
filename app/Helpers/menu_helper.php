@@ -39,6 +39,7 @@ if (! function_exists('default_admin_route')) {
                 'menu.kucing'     => 'admin/kucing',
                 'menu.alamat'     => 'admin/alamat',
                 'menu.berita'     => 'admin/berita',
+                'menu.struktur'   => 'admin/struktur',
                 'menu.surat'      => 'admin/surat',
                 'menu.kesehatan'  => 'admin/kesehatan',
                 'menu.presensi'   => 'admin/presensi',
