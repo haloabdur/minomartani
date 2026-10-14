@@ -10,7 +10,7 @@ class KucingModel extends Model
     protected $primaryKey    = 'id_kucing';
     protected $allowedFields = ['id_rt', 'id_warga', 'nama', 'foto', 'warna_ciri', 'jenis_kelamin', 'steril', 'vaksin', 'created_at', 'updated_at'];
 
-    /** Admin list: every cat in the current RT with its owner's name. */
+    /** Admin list: every cat in the current RT with its owner's name, ordered by owner then cat name. */
     public function all()
     {
         return $this->db->table($this->table)
@@ -18,7 +18,8 @@ class KucingModel extends Model
             ->join('warga', 'warga.id_warga = kucing.id_warga', 'left')
             ->join('alamat', 'alamat.id_alamat = warga.id_alamat', 'left')
             ->where('kucing.id_rt', current_rt_id())
-            ->orderBy('kucing.nama')
+            ->orderBy('warga.nama_warga', 'ASC')
+            ->orderBy('kucing.nama', 'ASC')
             ->get()->getResult();
     }
 
@@ -31,22 +32,27 @@ class KucingModel extends Model
     }
 
     /**
-     * Public listing: deliberately exposes no owner name, only the street
-     * part of the owner's alamat ("jalan/nomor" -> "jalan").
+     * Public listing: includes owner name and street, ordered by owner then cat name.
      */
     public function publik(?string $cari = null)
     {
         $builder = $this->db->table($this->table)
-            ->select("kucing.id_kucing, kucing.nama, kucing.foto, kucing.warna_ciri, kucing.jenis_kelamin, SUBSTRING_INDEX(alamat.alamat, '/', 1) AS jalan", false)
+            ->select("kucing.id_kucing, kucing.nama, kucing.foto, kucing.warna_ciri, kucing.jenis_kelamin, kucing.steril, kucing.vaksin, warga.nama_warga, SUBSTRING_INDEX(alamat.alamat, '/', 1) AS jalan", false)
             ->join('warga', 'warga.id_warga = kucing.id_warga', 'left')
             ->join('alamat', 'alamat.id_alamat = warga.id_alamat', 'left')
             ->where('kucing.id_rt', current_rt_id());
 
         if ($cari !== null && $cari !== '') {
-            $builder->like('kucing.nama', $cari);
+            $builder->groupStart()
+                ->like('kucing.nama', $cari)
+                ->orLike('warga.nama_warga', $cari)
+                ->groupEnd();
         }
 
-        return $builder->orderBy('kucing.nama')->get()->getResult();
+        return $builder
+            ->orderBy('warga.nama_warga', 'ASC')
+            ->orderBy('kucing.nama', 'ASC')
+            ->get()->getResult();
     }
 
     /** Owner picker: living warga of the current RT only. */

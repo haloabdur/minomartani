@@ -125,15 +125,15 @@ class Home extends BaseController
         $cari        = trim((string) $this->request->getGet('cari'));
         $kucingModel = model(KucingModel::class);
 
-        // Not rolled out to this RT yet: no cats registered means the page
-        // doesn't exist (a search with no hits still renders the page).
-        if ($kucingModel->jumlah() === 0) {
+        $totalKucing = $kucingModel->jumlah();
+        if ($totalKucing === 0) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
-        $data['rt']      = current_rt();
-        $data['kucings'] = $kucingModel->publik($cari);
-        $data['cari']    = $cari;
+        $data['rt']          = current_rt();
+        $data['totalKucing'] = $totalKucing;
+        $data['kucings']     = $kucingModel->publik($cari);
+        $data['cari']        = $cari;
 
         return $this->load_view('kucing_list', $data);
     }

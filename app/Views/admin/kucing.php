@@ -29,7 +29,18 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                <?php
+                                $adminOwnerCounts = [];
+                                foreach ($kucings as $item) {
+                                    $oName = !empty($item->nama_warga) ? trim($item->nama_warga) : 'Tanpa Pemilik';
+                                    $adminOwnerCounts[$oName] = ($adminOwnerCounts[$oName] ?? 0) + 1;
+                                }
+                                ?>
                                 <?php foreach ($kucings as $i => $k): ?>
+                                    <?php
+                                    $ownerName = !empty($k->nama_warga) ? trim($k->nama_warga) : 'Tanpa Pemilik';
+                                    $catCount  = $adminOwnerCounts[$ownerName] ?? 1;
+                                    ?>
                                     <tr>
                                         <td class="text-center align-middle"><?= $i + 1 ?></td>
                                         <td class="text-center align-middle">
@@ -42,6 +53,7 @@
                                         <td class="align-middle font-weight-bold"><?= esc($k->nama) ?></td>
                                         <td class="align-middle">
                                             <span class="text-dark font-weight-bold"><?= esc($k->nama_warga ?? '-') ?></span>
+                                            <span class="badge badge-light border text-primary ml-1" title="Pemilik memiliki total <?= $catCount ?> kucing terdaftar"><i class="fas fa-paw mr-1"></i><?= $catCount ?> kucing</span>
                                             <?php if (!empty($k->alamat)): ?>
                                                 <br><span class="text-muted small"><i class="fas fa-map-marker-alt text-danger mr-1"></i><?= esc($k->alamat) ?></span>
                                             <?php endif; ?>
