@@ -10,6 +10,8 @@ $total_aktif_hidup = 0; // aktif DAN hidup — dasar seluruh statistik demografi
 $total_lk = 0;
 $total_pr = 0;
 
+$total_nik_tmp = 0; // NIK masih sementara (TMP-...)
+
 $umur_balita = 0; // 0-5
 $umur_anak = 0;   // 6-11
 $umur_remaja = 0; // 12-25
@@ -25,6 +27,10 @@ $pend_kuliah = 0;
 foreach ($wargas as $w) {
 	$is_hidup = ($w->is_hidup == 1);
 	$is_aktif = ($w->status_warga == 1);
+
+	if (\App\Models\WargaModel::isTempNik($w->nik)) {
+		$total_nik_tmp++;
+	}
 
 	if ($is_hidup) {
 		$total_hidup++;
@@ -138,6 +144,13 @@ foreach ($wargas as $w) {
 							</a>
 						</div>
 					</div>
+					<?php if ($total_nik_tmp > 0): ?>
+						<div class="pt-2 border-top text-center">
+							<a href="javascript:void(0)" class="filter-trigger badge badge-warning" data-filter-type="nik-tmp" data-filter-value="1">
+								<i class="fas fa-exclamation-triangle mr-1"></i><span><?php echo $total_nik_tmp; ?> NIK sementara</span>
+							</a>
+						</div>
+					<?php endif; ?>
 				</div>
 			</div>
 		</div>
@@ -251,6 +264,7 @@ foreach ($wargas as $w) {
 										data-age="<?php echo $age; ?>"
 										data-hidup="<?php echo $warga->is_hidup; ?>"
 										data-aktif="<?php echo $warga->status_warga; ?>"
+										data-nik-tmp="<?php echo \App\Models\WargaModel::isTempNik($warga->nik) ? 1 : 0; ?>"
 										data-age-group="<?php echo ($age <= 5 ? 'balita' : ($age <= 11 ? 'anak' : ($age <= 25 ? 'remaja' : ($age <= 59 ? 'dewasa' : 'lansia')))); ?>"
 										data-education="<?php
 											$p = strtoupper(trim($warga->pendidikan));

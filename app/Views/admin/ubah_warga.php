@@ -30,8 +30,12 @@
 										<div class="col-md-6">
 											<div class="form-group">
 												<label>NIK <a href="#" class="ml-2 small text-primary" onclick="toggleNik(event)">Ubah NIK</a></label>
-												<input type="text" name="nik" id="nik-field" class="form-control" placeholder="NIK" value="<?php echo $warga->nik ?>" readonly required>
+												<input type="text" name="nik" id="nik-field" class="form-control" placeholder="NIK" value="<?php echo $warga->nik ?>" <?php echo \App\Models\WargaModel::isTempNik($warga->nik) ? '' : 'readonly' ?> required>
 												<input type="hidden" name="onik" value="<?php echo $warga->nik ?>">
+													<?php $nik_sementara = \App\Models\WargaModel::isTempNik($warga->nik); ?>
+													<?php if ($nik_sementara): ?>
+														<small class="form-text text-warning font-weight-bold"><i class="fas fa-exclamation-triangle mr-1"></i>NIK sementara, isi NIK asli bila sudah terbit</small>
+													<?php endif; ?>
 											</div>
 										</div>
 										<div class="col-md-12">

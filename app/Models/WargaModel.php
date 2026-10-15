@@ -696,6 +696,27 @@ class WargaModel extends Model
     }
 
     /**
+     * Placeholder NIK for residents who don't have one yet (newborns,
+     * quick-add). `nik` is NOT NULL + UNIQUE across ALL tenants, so the
+     * existence check deliberately bypasses the id_rt scoping.
+     */
+    public const TEMP_NIK_PREFIX = 'TMP-';
+
+    public static function isTempNik(?string $nik): bool
+    {
+        return $nik !== null && strncmp($nik, self::TEMP_NIK_PREFIX, strlen(self::TEMP_NIK_PREFIX)) === 0;
+    }
+
+    public function generateTempNik(): string
+    {
+        do {
+            $nik = self::TEMP_NIK_PREFIX . bin2hex(random_bytes(6));
+        } while ($this->db->table($this->table)->where('nik', $nik)->countAllResults() > 0);
+
+        return $nik;
+    }
+
+    /**
      * Insert a resident from just a name (+ optional gender/approx.
      * birth year), for the Kesehatan "tambah warga baru" flow - someone
      * shows up to a posyandu/checkup with no existing warga row and no
@@ -715,7 +736,7 @@ class WargaModel extends Model
                 $this->insert([
                     'nama_warga'    => $namaWarga,
                     'no_kk'         => '-',
-                    'nik'           => 'TMP-' . bin2hex(random_bytes(6)),
+                    'nik'           => $this->generateTempNik(),
                     'jenis_kelamin' => $jenisKelamin ?: null,
                     'tempat_lahir'  => '-',
                     'tanggal_lahir' => $tanggalLahir,
