@@ -44,15 +44,24 @@ class Warga extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
-        // Check unique NIK
-        $validation = \Config\Services::validation();
-        $validation->setRules([
-            'nik' => 'required|is_unique[warga.nik]'
-        ]);
+        // NIK belum ada (mis. bayi baru lahir): generate NIK sementara
+        $nikBelumAda = (bool) $this->request->getPost('nik_belum_ada');
 
-        if (!$validation->withRequest($this->request)->run()) {
-            setFlashData('error', 'Nomor NIK sudah ada dalam database!');
-            return redirect()->to(back());
+        if ($nikBelumAda) {
+            $nik = $this->wargaModel->generateTempNik();
+        } else {
+            // Check unique NIK
+            $validation = \Config\Services::validation();
+            $validation->setRules([
+                'nik' => 'required|is_unique[warga.nik]'
+            ]);
+
+            if (!$validation->withRequest($this->request)->run()) {
+                setFlashData('error', 'Nomor NIK sudah ada dalam database!');
+                return redirect()->to(back());
+            }
+
+            $nik = $this->request->getPost('nik');
         }
 
         $data = [
@@ -60,7 +69,7 @@ class Warga extends BaseController
             'no_kk'             => $this->request->getPost('no_kk') ?: '-',
             'id_alamat'         => $this->request->getPost('id_alamat'),
             'alamat_lengkap'    => $this->request->getPost('alamat_lengkap'),
-            'nik'               => $this->request->getPost('nik'),
+            'nik'               => $nik,
             'jenis_kelamin'     => $this->request->getPost('jenis_kelamin'),
             'tempat_lahir'      => $this->request->getPost('tempat_lahir'),
             'tanggal_lahir'     => $this->request->getPost('tanggal_lahir'),

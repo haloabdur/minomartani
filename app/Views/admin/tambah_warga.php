@@ -29,7 +29,11 @@
 										<div class="col-md-6">
 											<div class="form-group">
 												<label>NIK <span class="text-danger">*</span></label>
-												<input type="text" name="nik" class="form-control" placeholder="NIK" required>
+												<input type="text" name="nik" id="input-nik" class="form-control" placeholder="NIK" required>
+												<div class="custom-control custom-checkbox mt-2">
+													<input type="checkbox" class="custom-control-input" id="nik-belum-ada" name="nik_belum_ada" value="1">
+													<label class="custom-control-label font-weight-normal" for="nik-belum-ada">NIK belum ada (mis. bayi baru lahir)</label>
+												</div>
 											</div>
 										</div>
 										<div class="col-md-12">
@@ -363,6 +367,16 @@
 		// When the modal is shown, adjust columns of DataTable inside it
 		jQuery('#wargaModal').on('shown.bs.modal', function () {
 			jQuery(jQuery.fn.dataTable.tables(true)).DataTable().columns.adjust();
+		});
+
+		// NIK belum ada: kunci input, server generate NIK sementara (TMP-...)
+		jQuery('#nik-belum-ada').on('change', function() {
+			var nik = jQuery('#input-nik');
+			if (this.checked) {
+				nik.val('').prop('disabled', true).prop('required', false).attr('placeholder', 'NIK sementara dibuat otomatis');
+			} else {
+				nik.prop('disabled', false).prop('required', true).attr('placeholder', 'NIK');
+			}
 		});
 
 		// Handle Pilih button click inside modal
