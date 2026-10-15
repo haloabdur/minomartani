@@ -102,7 +102,7 @@ final class KucingTest extends CIUnitTestCase
         $this->assertFalse($model->pemilikValid($this->wargaB));
     }
 
-    public function testPublicListingHidesOwnerNameAndShowsOnlyStreet(): void
+    public function testPublicListingShowsOwnerNameAndStreetOrderedByOwner(): void
     {
         tenant_set_rt(1);
 
@@ -111,8 +111,7 @@ final class KucingTest extends CIUnitTestCase
         $this->assertCount(1, $rows);
         $this->assertSame('Mimi', $rows[0]->nama);
         $this->assertSame('Mawar', $rows[0]->jalan);
-        $this->assertObjectNotHasProperty('nama_warga', $rows[0]);
-        $this->assertObjectNotHasProperty('id_warga', $rows[0]);
+        $this->assertSame('Pemilik A', $rows[0]->nama_warga);
     }
 
     public function testJumlahCountsOnlyCurrentTenantAndIsZeroForEmptyTenant(): void
